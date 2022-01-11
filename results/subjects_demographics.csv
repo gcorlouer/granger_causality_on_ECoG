@@ -1,0 +1,14 @@
+Id,age,gender,language,chans,visual,R,O,F,P
+DiAs,28,m,english,68,15,2,2,6,0
+AnRi,50,m,spanish,55,14,2,6,0,0
+BeFe,44,f,english,77,10,2,1,1,0
+AnRa,29,f,english,57,21,3,3,3,0
+JuRo,34,f,english,68,18,2,2,3,2
+SoGi,30,f,spanish,95,15,0,0,3,3
+NeLa,29,f,english,123,27,0,0,1,7
+FaWa,55,f,english,122,7,0,0,1,0
+ArLa,27,f,english,154,40,1,2,11,3
+KiAl,33,f,english,93,10,0,0,3,0
+total,,,,912,177,12,16,32,15
+mean,35.9,,,91.2,17.7,1.2,1.6,3.2,1.5
+std,10.1,,,32.8,9.8,1.1,1.8,3.2,2.3

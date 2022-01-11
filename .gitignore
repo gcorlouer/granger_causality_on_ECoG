@@ -4,4 +4,10 @@
 data/
 # Ignore deprecated scripts
 scripts/deprecated
-
+# Ignore results (for now)
+results/
+# Ignore electrodes mapping files
+scripts/bipolar_montage_scripts/
+scripts/electrode_mapping/
+scripts/plot_brain_example_code/
+scripts/plot_electrodes_on_brain_new_scripts/plot_brain_master

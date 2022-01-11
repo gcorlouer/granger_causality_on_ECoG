@@ -14,14 +14,9 @@ import scipy.stats as spstats
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
-import os 
-import mne 
 
-from numpy import inf
-from statsmodels.stats.multitest import fdrcorrection, multipletests
+from statsmodels.stats.multitest import fdrcorrection
 from scipy import stats
-from pathlib import Path, PurePath
-from shutil import copy
 
 #%% Create Ecog class to read data
 

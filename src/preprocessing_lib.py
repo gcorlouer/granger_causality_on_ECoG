@@ -19,10 +19,12 @@ from statsmodels.stats.multitest import fdrcorrection
 from scipy import stats
 
 #%% Create Ecog class to read data
-
-class Ecog:
+#TODO : decompose read_ecog in 2 function: one for source and another for 
+# derivatives (it is confusing to have parameters run and condition when
+# reading derivatives data)
+class EcogReader:
     """
-    Ecog class to read source, preprocessed ecog time series and anatomical
+    Reader class to read source, preprocessed ecog time series and anatomical
     data.
     """
     def __init__(self, path, subject='DiAs', stage='preprocessed',
@@ -236,7 +238,7 @@ def mark_physio_chan(raw):
 
 # %% Extract hfb envelope
 
-class Hfb:
+class HfbExtractor:
     """
     Class for HFB envelope extraction
     """
@@ -284,7 +286,7 @@ class Hfb:
         
         for band in bands:
             # extract narrow band envelope
-            envelope = self.extract_envelope(raw, band)
+            envelope = self.extract_envelope(raw)
             # Rescale narrow band envelope by its mean amplitude 
             env_norm = self.mean_normalise(envelope)
             # hfb is weighted average of narrow bands envelope over high gamma band
@@ -327,7 +329,7 @@ class Hfb:
         bands = [self.l_freq + i * self.band_size for i in range(0, self.nband)]
         return bands
 
-    def extract_envelope(self, raw, band):
+    def extract_envelope(self, raw):
         """
         Extract the envelope of a bandpass signal. The filter is constructed 
         using MNE python filter function. Hilbert transform is computed from MNE
@@ -348,7 +350,7 @@ class Hfb:
         envelope: MNE raw object
                  The envelope of the bandpass signal
         """
-        raw_band = raw.copy().filter(l_freq=band, h_freq=band+self.band_size,
+        raw_band = raw.copy().filter(l_freq=self.l_freq, h_freq=self.l_freq+self.band_size,
                                      phase=self.phase, filter_length=self.filter_length,
                                      l_trans_bandwidth= self.l_trans_bandwidth, 
                                      h_trans_bandwidth= self.h_trans_bandwidth,
@@ -378,7 +380,7 @@ class Hfb:
 
 #%% Epoch HFA envelope and normalise with baseline
 
-class Hfb_db(Hfb):
+class HfbEpocher(HfbExtractor):
     """
     Class for HFB rescaling and dB transform 
     """

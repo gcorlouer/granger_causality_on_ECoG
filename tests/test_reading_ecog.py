@@ -1,6 +1,5 @@
 from src.preprocessing_lib import Ecog
 from src.input_config import args
-import pytest
 
 #%% Some unit tests
 

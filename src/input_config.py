@@ -14,15 +14,14 @@ from pathlib import Path, PurePath
 cohort = ['AnRa',  'AnRi',  'ArLa',  'BeFe',  'DiAs',  'FaWa',  'JuRo', 'NeLa', 'SoGi']
 
 # Path to subjects repository. Enter your own path in local machine
-cohort_path = Path('~','projects', 'CIFAR', 'data', 'derivatives', 'iEEG_10', 
-                   'subjects').expanduser()
+path = Path('~','projects', 'cifar', 'data').expanduser()
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--cohort_path", type=list, default=cohort_path)
+parser.add_argument("--path", type=list, default=path)
 parser.add_argument("--cohort", type=list, default=cohort)
-parser.add_argument("--subject", type=str, default='ArLa')
-parser.add_argument("--proc", type=str, default='preproc')
-parser.add_argument("--stage", type=str, default='_bad_chans_removed_raw.fif')
+parser.add_argument("--subject", type=str, default='DiAs')
+parser.add_argument("--stage", type=str, default='bipolar_montage')
+parser.add_argument("--preprocessed_suffix", type=str, default='_BP_montage_HFB_raw.fif')
 parser.add_argument("--epoch", type=bool, default=False)
 parser.add_argument("--channels", type=str, default='visual_channels.csv')
 

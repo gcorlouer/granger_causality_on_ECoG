@@ -6,14 +6,9 @@ This script remove bad channels for all subjects and concatenate ieeg dataset
 @author: guime
 """
 
-
-import mne
-import pandas as pd
 import HFB_process as hf
-import numpy as np
 
-from pathlib import Path, PurePath
-from config import args 
+from input_config import args 
 #%%
 
 for subject in args.cohort:

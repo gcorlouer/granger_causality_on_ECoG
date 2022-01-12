@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Jun 29 11:09:57 2020
-This script contains functions and classes to load and preprocess data.
+This script contains functions and classes to read, preprocess data.
 @author: guime
 """
 
@@ -22,31 +22,39 @@ from scipy import stats
 
 class Ecog:
     """
-    Ecog class to read data
+    Ecog class to read source, preprocessed ecog time series and anatomical
+    data.
     """
-    def __init__(self, cohort_path, subject='DiAs', proc='preproc',
-                 stage='_BP_montage_HFB_raw.fif', preload=True, epoch=False):
+    def __init__(self, path, subject='DiAs', stage='preprocessed',
+                 preprocessed_suffix='_BP_montage_HFB_raw.fif', preload=True, 
+                 epoch=False):
         """
         Parameters:
-            - subject: Id of subject
-            - proc: 'raw_signal', 'bipolar_montage', 'preproc'
-                    'preproc' is the repository containing data at some 
+            -path: path to data folder (specified by user in input_config.py file)
+            -subject: Id of subject
+            -stage: 'raw_signal', 'bipolar_montage', 'preprocessing',
+                    'preprocessing' is the repository containing data at some 
                     preprocessed stage
-            -stage: Name of the file corresponding to a preprocessed stage 
-                    (see config.py file for all possible file names)
+            -preprocessed_suffix: suffix of filename corresponding to preprocessing
+            stage  
+                Filename suffixes: 
+                    '_bad_chans_removed_raw.fif': Bad channels removed and 
+                        concatenated 
+                    '_hfb_extracted_raw.fif' : extracted hfb
+                    '_hfb_db_epo.fif' epoched and db transformed hfb
             -preload: True, False
                         Preloading data with MNE
             -epoch: True, False
                     Read epoched file with read_epochs function
         """
-        self.cohort_path = cohort_path
+        self.path = path
         self.subject = subject
-        self.proc = proc
         self.stage = stage
-        self.preload=preload
+        self.preprocessed_suffix = preprocessed_suffix
+        self.preload = preload
         self.epoch = epoch
 
-    def read_dataset(self, run=1, task='stimuli'):
+    def read_ecog(self, run=1, condition='stimuli'):
         """
         Reads ECoG dataset of interest. 
         If reads raw or bipolar montage dataset
@@ -56,26 +64,39 @@ class Ecog:
         -------
         Inputs:
         -------
-        - task: 'stimuli', 'rest_baseline', 'sleep' 
+        - condition: 'stimuli', 'rest_baseline', 'sleep' 
         - run : 1, 2
         """
-        assert isinstance(run, int), "Run must be an integer"
-        subject_path = self.cohort_path.joinpath(self.subject)
-        proc_path = subject_path.joinpath('EEGLAB_datasets', self.proc)
-        if self.proc == 'preproc':
-            fname = self.subject + self.stage
-            fpath = proc_path.joinpath(fname)
+        # Check that the variable run is an integer
+        assert isinstance(run, int)
+        # If reading preprocessed ecog then read in derivatives folder with 
+        # filename suffix corresponding to a specific preprocessing step
+        if self.stage == 'preprocessed':
+            fname = self.subject + self.preprocessed_suffix
+            fpath = self.path.joinpath('derivatives', self.subject, 'ieeg', fname)
+            # Read continuous data
             if self.epoch==False:
                 raw = mne.io.read_raw_fif(fpath, preload=self.preload)
+            # Read epoched data
             else:
                 raw = mne.read_epochs(fpath, preload=self.preload)
+        # Write file path and name for raw or bipolar rereferenced. 
         else:
-            fname = [self.subject, "freerecall", task, str(run), 'preprocessed']
-            if self.proc == 'bipolar_montage':
-                fname.append('BP_montage')
-            fname = "_".join(fname)
+            fpath = self.path.joinpath('source_data','iEEG_10', 'subjects', 
+                                       self.subject, 'EEGLAB_datasets')
+            fname = [self.subject, "freerecall", condition, str(run), 'preprocessed']
+            fname = '_'.join(fname)
+            # filepath and filename for bipolar rereferenced data
+            if self.stage == 'bipolar_montage':
+                fpath = fpath.joinpath('bipolar_montage')
+                sfx = '_BP_montage'
+                fname = fname + sfx
+            # file path for raw data
+            else:
+                fpath = fpath.joinpath('raw_signal')
+            # Read ecog source data
             fname = fname + '.set'
-            fpath = proc_path.joinpath(fname)
+            fpath = fpath.joinpath(fname)
             raw = mne.io.read_raw_eeglab(fpath, preload=self.preload)
         return raw
 
@@ -86,33 +107,31 @@ class Ecog:
         Input
         ------
         fname: file name of the channels
-        fname= 'electrodes_info.csv', 'visual_channels.csv'
-        Note:
-        If user wants to read visually responsive channels from all subjects in
-        one table, look up 'visual_electrodes.csv' file in /iEEG_10 path.
+        fname= 'electrodes_info.csv', 'visual_channels.csv', 'BP_channels'
         """
-        subject_path = self.cohort_path.joinpath(self.subject)
-        brain_path = subject_path.joinpath('brain')
+        # Write path to info about anatomical details of subject in derivatives
+        brain_path = self.path.joinpath('derivatives',self.subject, 'brain')
         channel_path = brain_path.joinpath(fname)
+        # Read channel info in a csv file
         channel_info = pd.read_csv(channel_path)
         return channel_info
     
-    def concatenate_raw(self):
+    def concatenate_condition(self):
         """
-        Concatenate ECoG datasets first by conditions
+        Concatenate resting state and stimuli presentation ECoG datasets
         """
-        raw = self.concatenate_run(task='rest_baseline')
-        raw_stimuli = self.concatenate_run(task='stimuli')
-        # Concatenante both conditions
+        raw = self.concatenate_run(condition='rest_baseline')
+        raw_stimuli = self.concatenate_run(condition='stimuli')
+        # Concatenante all conditions
         raw.append([raw_stimuli])
         return raw
     
-    def concatenate_run(self,  task='stimuli'):
+    def concatenate_run(self,  condition='stimuli'):
         """
-        Concatenate ECoG datasets by run
+        Concatenate ECoG datasets by runs
         """
-        raw = self.read_dataset(run=1, task=task)
-        raw_2 = self.read_dataset(run=2, task=task)
+        raw = self.read_ecog(run=1, condition=condition)
+        raw_2 = self.read_ecog(run=2, condition=condition)
         # Concatenate both run
         raw.append([raw_2])
         return raw
@@ -1214,7 +1233,7 @@ def cross_subject_ts(cohort_path, cohort, proc='preproc',
         subject = cohort[s]  
         ecog = Ecog(cohort_path, subject=subject, proc=proc, 
                        stage = stage, epoch=epoch)
-        hfb = ecog.read_dataset()
+        hfb = ecog.read_ecog()
         df_visual = ecog.read_channels_info(fname=channels)
         visual_chan = df_visual['chan_name'].to_list()
         ts[s], time = category_ts(hfb, visual_chan, sfreq=sfreq, 

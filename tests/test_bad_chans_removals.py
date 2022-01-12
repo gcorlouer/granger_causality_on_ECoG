@@ -50,6 +50,19 @@ def test_mark_physio():
         
 test_mark_physio()
 
+#%% Test drop all bad chans:
+
+def test_drop_bad_chans():
+    for subject in cohort:
+        ecog = Ecog(path, stage = stage, subject=subject, preload=True, 
+                         epoch=False)
+        raw = ecog.concatenate_condition()
+        raw, bads = drop_bad_chans(raw)
+        print(f"All bad chans are {bads}")
+
+test_drop_bad_chans()
+
+
 #%% Plot psd to check no bad channels is left
 
 for subject in cohort:

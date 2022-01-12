@@ -142,40 +142,49 @@ def drop_bad_chans(raw, q=99, voltage_threshold=500e-6, n_std=5):
     """
     Automatic bad channel removal from standard deviation, percentile
     voltage values and removing physiological channels that are not
-    rereferenced
+    bipolar referenced
     """
+    # Mark physiological channels
     raw = mark_physio_chan(raw)
-    raw = detect_std_outliers(raw, n_std=n_std)
-    outliers_chans = detect_outliers_chans(raw, q=q,
+    # Mark channels above 5 std deviation
+    raw = mark_high_std_outliers(raw, n_std=n_std)
+    # Pick channels in 99th percentile
+    outliers_chans = pick_99_percentile_chans(raw, q=q,
                                            voltage_threshold=voltage_threshold)
     raw.info['bads'].extend(outliers_chans)
     bads = raw.info['bads']
     print(f'List of all bad chans: {bads}')
+    # Drop bad channels
     raw = raw.copy().drop_channels(bads)
-    return raw
+    return raw, bads
 
 
-def detect_outliers_chans(raw, q=99, voltage_threshold=500e-6):
+def pick_99_percentile_chans(raw, q=99, voltage_threshold=500e-6):
     """
      Return outliers channels. Outliers are channels whose average value
-     in the 99th percentile are above voltage_threshold (500 muV)
+     in the 99th percentile are above a voltage_threshold chosen at 500 muV
+     Choice of threshold follows Itzik Norman study (see preprocessing methods
+     in Neuronal baseline shifts underlying boundary setting during free recall). 
     """
     X = raw.copy().get_data()
-    top_percentile = np.percentile(X, q=q, axis=1)
+    (nchan, nobs) = X.shape
+    obs_ax = 1
+    # Compute 99 percentile value of each channel
+    top_percentile = np.percentile(X, q=q, axis=obs_ax)
     count = np.zeros_like(top_percentile)
-    average_99 = np.zeros_like(top_percentile)
-    nchan = X.shape[0]
-    nobs = X.shape[1]
+    average_value_in_top_percentile = np.zeros_like(top_percentile)
+    # Compute average value of each channel in top percentile
     for i in range(nchan):
         for j in range(nobs):
             if X[i,j] >= top_percentile[i]:
-                average_99[i] += X[i,j]
+                average_value_in_top_percentile[i] += X[i,j]
                 count[i] += 1
             else:
                 continue
-        average_99[i] = average_99[i]/count[i]
-    # Return outliers channels
-    outliers_indices = np.where(average_99>=voltage_threshold)[0].tolist()
+        average_value_in_top_percentile[i] = average_value_in_top_percentile[i]/count[i]
+    # Return channels whose average value in the top percentile is above voltage
+    # threshold
+    outliers_indices = np.where(average_value_in_top_percentile>=voltage_threshold)[0].tolist()
     ch_names = raw.info['ch_names']
     outliers_chans = []
     for i in outliers_indices:
@@ -183,10 +192,11 @@ def detect_outliers_chans(raw, q=99, voltage_threshold=500e-6):
     print(f'List of outliers channels: {outliers_chans}')
     return outliers_chans
 
-def detect_std_outliers(raw, n_std=5):
+def mark_high_std_outliers(raw, n_std=5):
     """
     Detect channels having standard deviation n_std times larger or
-    smaller than standard deviation of all joint channels.
+    smaller than standard deviation of all joint channels. Methods inspired by
+    J. Schrouff. 
     """
     X = raw.copy().get_data()
     std = np.std(X)
@@ -205,19 +215,19 @@ def detect_std_outliers(raw, n_std=5):
         outlier_chan.append(chan_names[i])
         
     raw.info['bads'].extend(outlier_chan)
-    bads = raw.info['bads']
     return raw
 
 def mark_physio_chan(raw):
     """
-    Add physiological channels to bad channels. Phisiological channels 
-    are channels who are not bipolar rereferenced
+    Append physiological channels to bad channels. Phisiological channels 
+    are not bipolar rereferenced
     """
     ch_names = raw.info['ch_names']
-    bad_chan = []
     for chan in ch_names:
+        # Keep bipolar channels
         if '-' in chan:
             continue
+        # Remove physiological channels (those are non bipolar channels)
         else:
             raw.info['bads'].append(chan)
     bads = raw.info['bads']

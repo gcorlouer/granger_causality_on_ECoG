@@ -2,28 +2,49 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue May 18 09:33:20 2021
-This script remove bad channels for all subjects and concatenate ieeg dataset
+This script concatenate ieeg dataset and remove bad channels for all subjects.
+It also saves all bad channels into a csv file 
 @author: guime
 """
+from src.preprocessing_lib import Ecog, drop_bad_chans
+from src.input_config import args 
+from pathlib import Path
 
-import HFB_process as hf
+import pandas as pd
+#%% 
 
-from input_config import args 
-#%%
+# Make sure you are in the "/scripts" directory 
+derivatives_path = Path('../data/derivatives/')
+result_path = Path('../results/')
+cohort = args.cohort
+data_path = args.path
+stage = args.stage
 
-for subject in args.cohort:
-    ecog = hf.Ecog(args.cohort_path, subject=subject, proc='bipolar_montage')
-    raw_concat = ecog.concatenate_raw()
-    raw_concat = hf.drop_bad_chans(raw_concat, q=99, voltage_threshold=500e-6, n_std=5)
-    # Check if channels looks ok by plotting psd
-    raw_concat.plot_psd(xscale='log')
-    # Save file
-    subject_path = args.cohort_path.joinpath(subject)
-    proc_path = subject_path.joinpath('EEGLAB_datasets', args.proc)
+#%% Save bad channels name in a dataframe
+
+columns = ['bad_channel', 'subject']
+df = pd.DataFrame(columns=columns)
+for subject in cohort:
+    # Read bipolar montage data
+    ecog = Ecog(data_path, stage = stage, subject=subject, preload=True, 
+                     epoch=False)
+    raw = ecog.concatenate_condition()
+    # Drop bad channels
+    raw, bad_chans = drop_bad_chans(raw, q=99, voltage_threshold=500e-6, n_std=5)
+    # Append bad channels to dataframe 
+    subject_list = [subject]*len(bad_chans)
+    dfi = pd.DataFrame({'bad_channel':bad_chans, 'subject': subject_list})
+    df = df.append(dfi, ignore_index=True)    
+    # Save dataset with bad channels removed
     fname = subject + '_bad_chans_removed_raw.fif'
-    fpath = proc_path.joinpath(fname)
-    raw_concat.save(fpath, overwrite=True)
+    fpath = derivatives_path.joinpath(subject).joinpath('ieeg').joinpath(fname)
+    print(fpath)
+    raw.save(fpath, overwrite=True)
 
 #%%
-
-
+    
+# Save all bad channels into csv file
+    
+fname = 'all_bad_channels.csv'
+fpath = result_path.joinpath(fname)
+df.to_csv(fpath)

@@ -7,7 +7,7 @@ PROBLEM: How to pass argument into other script by calling them from terminal?
 @author: guime
 """
 import argparse
-from pathlib import Path, PurePath
+from pathlib import Path
 
 #%% Loading data parameters
 

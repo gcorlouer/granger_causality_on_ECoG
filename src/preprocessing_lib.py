@@ -238,7 +238,7 @@ def mark_physio_chan(raw):
 
 # %% Extract hfb envelope
 
-class HfbExtractor:
+class HfbExtractor():
     """
     Class for HFB envelope extraction
     """

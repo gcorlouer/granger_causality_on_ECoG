@@ -13,11 +13,15 @@ from pathlib import Path
 
 cohort = ['AnRa',  'AnRi',  'ArLa',  'BeFe',  'DiAs',  'FaWa',  'JuRo', 'NeLa', 'SoGi']
 
-# Path to subjects repository. Enter your own path in local machine
+# Path to source data, derivatives and results. Enter your own path in local machine
 data_path = Path('~','projects', 'cifar', 'data').expanduser()
+derivatives_path = Path('../data/derivatives/')
+result_path = Path('../results/')
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", type=list, default=data_path)
+parser.add_argument("--derivatives_path", type=list, default=derivatives_path)
+parser.add_argument("--result_path", type=list, default=result_path)
 parser.add_argument("--cohort", type=list, default=cohort)
 parser.add_argument("--subject", type=str, default='DiAs')
 parser.add_argument("--stage", type=str, default='preprocessed')
@@ -25,18 +29,20 @@ parser.add_argument("--preprocessed_suffix", type=str, default='_bad_chans_remov
 parser.add_argument("--epoch", type=bool, default=False)
 parser.add_argument("--channels", type=str, default='visual_channels.csv')
 
+# Input parameters:
 # Stages
 # bipolar_montage
-# preproc
+# preprocessed
 
-# Preprocessing stages:
+# Preprocessing suffix:
 
 # _bad_chans_removed_raw.fif: Bad channels removed and concatenated lfp
-# '_hfb_extracted_raw.fif' : extracted hfb
+# '_hfb_continuous_raw.fif' : Continuous hfb
 # '_hfb_db_epo.fif' epoched and db transformed hfb
 # _preprocessed_raw.fif
 
-# Channels:
+# Channels info:
+# 'all_bad_channels.csv'
 # 'visual_channels.csv'
 # 'all_visual_channels.csv'
 # 'electrodes_info.csv'

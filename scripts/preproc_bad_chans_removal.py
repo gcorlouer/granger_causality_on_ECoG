@@ -6,7 +6,7 @@ This script concatenate ieeg dataset and remove bad channels for all subjects.
 It also saves all bad channels into a csv file 
 @author: guime
 """
-from src.preprocessing_lib import Ecog, drop_bad_chans
+from src.preprocessing_lib import EcogReader, drop_bad_chans
 from src.input_config import args 
 from pathlib import Path
 
@@ -26,7 +26,7 @@ columns = ['bad_channel', 'subject']
 df = pd.DataFrame(columns=columns)
 for subject in cohort:
     # Read bipolar montage data
-    ecog = Ecog(data_path, stage = stage, subject=subject, preload=True, 
+    ecog = EcogReader(data_path, stage = stage, subject=subject, preload=True, 
                      epoch=False)
     raw = ecog.concatenate_condition()
     # Drop bad channels

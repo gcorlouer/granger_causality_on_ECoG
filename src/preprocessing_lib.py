@@ -382,7 +382,20 @@ class HfbExtractor:
 
 class HfbEpocher(HfbExtractor):
     """
-    Class for HFB rescaling and dB transform 
+    Class for HFB rescaling and dB transform. 
+    -----------
+    Parameters: 
+        t_prestim: prestimulus onset 
+        t_postim: end of postimulus baseline
+        baseline: Boolean, rescale by baseline with MNE when epoching (cause 
+        issues)
+        tmin_baseline: prestimulus baseline onset
+        tmax_baseline: end of prestimulus baseline
+        mode: 'logratio' or simply ratio
+        See MNE python epochs object for more information
+    -----------
+    We apply dB transform for visual channel detection and classification. We
+    do not recommand dB transform for GC analysis (simply epoching)
     """
     def __init__(self, t_prestim=-0.5, t_postim = 1.75, baseline=None,
                  preload=True, tmin_baseline=-0.4, tmax_baseline=-0.1, 
@@ -396,72 +409,6 @@ class HfbEpocher(HfbExtractor):
         self.tmax_baseline = tmax_baseline
         self.mode = mode
     
-    def raw_to_hfb(self, raw):
-        """
-        Return epoched hfb from raw LFP
-        ----------
-        Parameters
-        ----------
-        raw: MNE raw object
-            The raw LFP
-        t_postim: float, optional
-            post stimulus epoch stop
-        t_prestim: float
-            pre stimulus epoch starts
-        tmin: float
-            baseline starts
-        tmax: float
-            baseline stops
-        See MNE python documentation for other optional parameters
-        """
-        hfb = self.extract_hfb(raw)
-        epochs = self.epoch_hfb(hfb)
-        return epochs
-    
-    def raw_to_hfb_db(self, raw):
-        """
-        Compute hfb in decibel from raw LFP
-        ----------
-        Parameters
-        ----------
-        raw: MNE raw object
-            The raw LFP
-        t_postim: float, optional
-            post stimulus epoch stop
-        t_prestim: float
-            pre stimulus epoch starts
-        tmin: float
-            baseline starts
-        tmax: float
-            baseline stops
-        See MNE python documentation for other optional parameters
-        """
-        hfb = self.extract_hfb(raw)
-        epochs = self.epoch_hfb(hfb)
-        hfb_db = self.db_transform(epochs)
-        return hfb_db
-
-    def hfb_to_db(self, raw):
-        """
-        Compute hfb in decibel from raw object (e.g. raw=hfb)
-        ----------
-        Parameters
-        ----------
-        raw: MNE raw object
-        t_postim: float, optional
-            post stimulus epoch stop
-        t_prestim: float
-            pre stimulus epoch starts
-        tmin: float
-            baseline starts
-        tmax: float
-            baseline stops
-        See MNE python documentation for other optional parameters
-        """
-        epochs = self.epoch_hfb(raw)
-        hfb_db = self.db_transform(epochs)
-        return hfb_db
-
     def epoch_hfb(self, hfb):
         """
         Epoch stimulus condition hfb using MNE Epochs function and log 
@@ -472,11 +419,18 @@ class HfbEpocher(HfbExtractor):
                         tmax=self.t_postim, baseline=self.baseline, preload=self.preload)
         #epochs = self.log_transform(epochs)
         return epochs
-
-
-    def db_transform(self, epochs):
+   
+    def scale_hfb(self, hfb):
         """
-        Normalise hfb with pre stimulus baseline and log transform for result in dB
+        Epoch hfb and scale with baseline
+        """
+        epochs = self.epoch_hfb(hfb)
+        hfb_scaled = self.baseline_rescale(epochs)
+        return hfb_scaled
+
+    def baseline_rescale(self, epochs):
+        """
+        Scale hfb with pre stimulus baseline and log transform for result in dB
         Allows for cross channel comparison relative to a single scale.
         """
         events = epochs.events
@@ -486,7 +440,7 @@ class HfbEpocher(HfbExtractor):
             del event_id['boundary']
         A = epochs.get_data()
         times = epochs.times
-        # db transform
+        # Baseline rescaling
         A = 10*mne.baseline.rescale(A, times, baseline=(self.tmin_baseline,self.tmax_baseline),
                                     mode=self.mode)
         # Create epoch object from array
@@ -502,8 +456,7 @@ class HfbEpocher(HfbExtractor):
         if 'boundary' in event_id:
             del event_id['boundary']
         A = epochs.get_data()
-        times = epochs.times
-        # db transform
+        # Log transform
         A = np.log(A)
         # Create epoch object from array
         hfb = mne.EpochsArray(A, epochs.info, events=events, 
@@ -512,9 +465,8 @@ class HfbEpocher(HfbExtractor):
 
     def extract_baseline(self, epochs):
         """
-        Extract baseline by averaging prestimulus accross time and trials. From 
-        testing, it does not differs much to MNE baseline.rescale, so might as well
-        use MNE
+        Extract baseline by averaging prestimulus accross time and trials. Does 
+        not differs much to MNE baseline.rescale, use MNE rescaling instead.
         """
         baseline = epochs.copy().crop(tmin=self.tmin_baseline, tmax=self.tmax_baseline) # Extract prestimulus baseline
         baseline = baseline.get_data()

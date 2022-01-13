@@ -19,7 +19,7 @@ chans = ['LTo1-LTo2', 'LTo5-LTo6', 'LGRD58-LGRD59', 'LGRD60-LGRD61']
 def test_epoch(chans):
     reader = EcogReader(args.data_path, subject=args.subject, stage=args.stage,
                  preprocessed_suffix=args.preprocessed_suffix)
-    epocher = Epocher(condition='Face', t_prestim=args.t_prestim, 
+    epocher = Epocher(condition='Stim', t_prestim=args.t_prestim, 
                       t_postim = args.t_postim, baseline=args.baseline, 
                       preload=args.preload, tmin_baseline=args.tmin_baseline, 
                       tmax_baseline=args.tmax_baseline, mode=args.mode)

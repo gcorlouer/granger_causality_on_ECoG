@@ -13,7 +13,7 @@ from src.input_config import args
 
 #%% Epoch baseline rescale hfb 
 
-conditions = ['Rest', 'Face', 'Place']
+conditions = ['Rest', 'Stim','Face', 'Place']
 for subject in args.cohort:
     reader = EcogReader(args.data_path, subject=subject, stage=args.stage, 
                    preprocessed_suffix=args.preprocessed_suffix)

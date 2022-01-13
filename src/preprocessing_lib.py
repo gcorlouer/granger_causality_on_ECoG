@@ -386,7 +386,7 @@ class Epocher():
     resting state, see later for rest) 
     -----------
     Parameters: 
-        condition: Rest, Face or Place
+        condition: Rest, Stim, Face or Place
         t_prestim: prestimulus onset 
         t_postim: end of postimulus baseline
         baseline: Boolean, rescale by baseline with MNE when epoching (cause 
@@ -451,9 +451,16 @@ class Epocher():
             epochs= mne.Epochs(raw, events, event_id= rest_id, 
                                 tmin=self.t_prestim, tmax=self.t_postim, 
                                 baseline= self.baseline, preload=self.preload)
-        # If stimulus epochs stimulus-annotated events     
-        else:
-            # Extract face/place id
+        # If stimulus epochs from stimulus-annotated events     
+        elif self.condition == 'Stim':
+            # Extract face and place id
+            events, events_id = mne.events_from_annotations(raw)
+            # Epochs stim hfb/ecog
+            epochs= mne.Epochs(raw, events, event_id= events_id, 
+                                tmin=self.t_prestim, tmax=self.t_postim, 
+                                baseline= self.baseline, preload=self.preload)
+        else :
+            # Extract face and place id
             events, events_id = mne.events_from_annotations(raw)
             # Extract condition specific events id
             condition_id = self.extract_condition_id(events_id)

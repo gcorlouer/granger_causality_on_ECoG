@@ -382,7 +382,8 @@ class HfbExtractor:
 
 class HfbEpocher(HfbExtractor):
     """
-    Class for HFB rescaling and dB transform. 
+    Class for HFB epoching and rescaling. Note this concern stimulus hfb (not
+    resting state, see later for rest) 
     -----------
     Parameters: 
         t_prestim: prestimulus onset 

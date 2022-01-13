@@ -59,7 +59,7 @@ parser.add_argument("--phase", type=str, default='minimum')
 parser.add_argument("--fir_window", type=str, default='blackman')
 
 #%% Epoching parameters
-
+parser.add_argument("--condition", type=str, default='Face') # Majuscule important here
 parser.add_argument("--t_prestim", type=float, default=-0.5)
 parser.add_argument("--t_postim", type=float, default=1.75)
 parser.add_argument("--baseline", default=None) # No baseline from MNE

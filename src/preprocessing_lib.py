@@ -378,14 +378,15 @@ class HfbExtractor:
         return envelope_norm
 
 
-#%% Epoch HFA envelope and normalise with baseline
+#%% Epoch HFA or ECoG 
 
-class HfbEpocher(HfbExtractor):
+class Epocher():
     """
     Class for HFB epoching and rescaling. Note this concern stimulus hfb (not
     resting state, see later for rest) 
     -----------
     Parameters: 
+        condition: Rest, Face or Place
         t_prestim: prestimulus onset 
         t_postim: end of postimulus baseline
         baseline: Boolean, rescale by baseline with MNE when epoching (cause 
@@ -395,13 +396,14 @@ class HfbEpocher(HfbExtractor):
         mode: 'logratio' or simply ratio
         See MNE python epochs object for more information
     -----------
-    We apply dB transform for visual channel detection and classification. We
-    do not recommand dB transform for GC analysis (simply epoching)
+    We apply baseline rescaling for visual channel detection and classification. We
+    do not recommand rescaling for GC analysis
     """
-    def __init__(self, t_prestim=-0.5, t_postim = 1.75, baseline=None,
-                 preload=True, tmin_baseline=-0.4, tmax_baseline=-0.1, 
+    def __init__(self, condition='Face', t_prestim=-0.5, t_postim = 1.75, 
+                 baseline=None, preload=True, tmin_baseline=-0.4, tmax_baseline=-0.1, 
                  mode='logratio'):
         super().__init__()
+        self.condition = condition
         self.t_prestim = t_prestim
         self.t_postim = t_postim
         self.baseline = baseline
@@ -410,24 +412,70 @@ class HfbEpocher(HfbExtractor):
         self.tmax_baseline = tmax_baseline
         self.mode = mode
     
-    def epoch_hfb(self, hfb):
+    def scale_epoch(self, raw):
         """
-        Epoch stimulus condition hfb using MNE Epochs function and log 
-        transform for gaussianity
+        Epoch condition specific hfb/Ecog and scale with baseline
         """
-        events, event_id = mne.events_from_annotations(hfb) 
-        epochs = mne.Epochs(hfb, events, event_id= event_id, tmin=self.t_prestim, 
-                        tmax=self.t_postim, baseline=self.baseline, preload=self.preload)
-        #epochs = self.log_transform(epochs)
+        epochs = self.epoch(raw)
+        epochs = self.baseline_rescale(epochs)
         return epochs
-   
-    def scale_hfb(self, hfb):
+    
+    def log_epoch(self, raw):
         """
-        Epoch hfb and scale with baseline
+        Epoch condition specific hfb/ecog and log transform
         """
-        epochs = self.epoch_hfb(hfb)
-        hfb_scaled = self.baseline_rescale(epochs)
-        return hfb_scaled
+        epochs = self.epoch(raw)
+        epochs = self.log_transform(epochs)
+        return epochs
+    
+    def epoch(self, raw):
+        """
+        Epoch condition specific raw object
+        Chosing [5 105]s in run 1 and [215 415]s in run 2 resting state 
+        epoched into 2s length trials
+         """
+        # If resting state epoch continuously
+        if self.condition == 'Rest':
+            # Select resting state time segment of length 200ms onset at 5 and 215s
+            # Resting state time segment is taken from concatenated-bad-chan-
+            # removed signal
+            events_1 = mne.make_fixed_length_events(raw, id=32, start=5, 
+                                                    stop=205, duration=2, first_samp=False, overlap=0.0)
+            events_2 = mne.make_fixed_length_events(raw, id=32, 
+                                                    start=215, stop=415, duration=2, first_samp=False, overlap=0.0)
+        
+            events = np.concatenate((events_1,events_2))
+            # Id of resing state event
+            rest_id = {'Rest': 32}
+            # epoch resting state events
+            epochs= mne.Epochs(raw, events, event_id= rest_id, 
+                                tmin=self.t_prestim, tmax=self.t_postim, 
+                                baseline= self.baseline, preload=self.preload)
+        # If stimulus epochs stimulus-annotated events     
+        else:
+            # Extract face/place id
+            events, events_id = mne.events_from_annotations(raw)
+            # Extract condition specific events id
+            condition_id = self.extract_condition_id(events_id)
+            # Epoch condition specific events
+            epochs= mne.Epochs(raw, events, event_id= events_id, 
+                                tmin=self.t_prestim, tmax=self.t_postim, 
+                                baseline= self.baseline, preload=self.preload)
+            epochs = epochs[condition_id]
+            #events = epochs.events
+        return epochs
+    
+    def extract_condition_id(self, event_id):
+        """
+        Returns event id of specific condition (Face or Place)
+        """
+        p = re.compile(self.condition)
+        stim_id = []
+        for key in event_id.keys():
+            if p.match(key):
+                stim_id.append(key)
+        return stim_id
+
 
     def baseline_rescale(self, epochs):
         """
@@ -769,16 +817,16 @@ class VisualClassifier(VisualDetector):
                     group[i]='R'
         return group
     
-    def extract_stim_id(self, event_id, cat = 'Face'):
-        """
-        Returns event id of specific stimuli category (Face or Place)
-        """
-        p = re.compile(cat)
-        stim_id = []
-        for key in event_id.keys():
-            if p.match(key):
-                stim_id.append(key)
-        return stim_id
+#    def extract_stim_id(self, event_id, cat = 'Face'):
+#        """
+#        Returns event id of specific stimuli category (Face or Place)
+#        """
+#        p = re.compile(cat)
+#        stim_id = []
+#        for key in event_id.keys():
+#            if p.match(key):
+#                stim_id.append(key)
+#        return stim_id
 
     def compute_peak_time(self, hfb, visual_chan, tmin=0.05, tmax=1.75):
         """
@@ -894,33 +942,33 @@ def category_hfb(hfb, visual_chan, cat='Rest', tmin_crop = -0.5, tmax_crop=1.5) 
     hfb = hfb.crop(tmin=tmin_crop, tmax=tmax_crop)
     return hfb
 
-def epoch_condition(raw, cat='Rest', tmin=-0.5, tmax=1.75):
-    """
-    Epoch condition specific raw object (raw can be hfb or lfp)
-    Can chose [100 156]s in run 1 and [300 356]s in run 2 epoched into 2s for
-    56 trials
-    Can also chose [5 205]s and [215 415]s for largest resting state data
-     """
-    condition = VisualClassifier()
-    if cat == 'Rest':
-        events_1 = mne.make_fixed_length_events(raw, id=32, start=5, 
-                                                stop=205, duration=2, first_samp=False, overlap=0.0)
-        events_2 = mne.make_fixed_length_events(raw, id=32, 
-                                                start=215, stop=415, duration=2, first_samp=False, overlap=0.0)
-        
-        events = np.concatenate((events_1,events_2))
-        rest_id = {'Rest': 32}
-        # epoch
-        epochs= mne.Epochs(raw, events, event_id= rest_id, 
-                            tmin=tmin, tmax=tmax, baseline= None, preload=True)
-    else:
-        stim_events, stim_events_id = mne.events_from_annotations(raw)
-        condition_id = condition.extract_stim_id(stim_events_id, cat = cat)
-        epochs= mne.Epochs(raw, stim_events, event_id= stim_events_id, 
-                            tmin=tmin, tmax=tmax, baseline= None, preload=True)
-        epochs = epochs[condition_id]
-        events = epochs.events
-    return epochs, events
+#def epoch_condition(raw, cat='Rest', tmin=-0.5, tmax=1.75):
+#    """
+#    Epoch condition specific raw object (raw can be hfb or lfp)
+#    Can chose [100 156]s in run 1 and [300 356]s in run 2 epoched into 2s for
+#    56 trials
+#    Can also chose [5 205]s and [215 415]s for largest resting state data
+#     """
+#    condition = VisualClassifier()
+#    if cat == 'Rest':
+#        events_1 = mne.make_fixed_length_events(raw, id=32, start=5, 
+#                                                stop=205, duration=2, first_samp=False, overlap=0.0)
+#        events_2 = mne.make_fixed_length_events(raw, id=32, 
+#                                                start=215, stop=415, duration=2, first_samp=False, overlap=0.0)
+#        
+#        events = np.concatenate((events_1,events_2))
+#        rest_id = {'Rest': 32}
+#        # epoch
+#        epochs= mne.Epochs(raw, events, event_id= rest_id, 
+#                            tmin=tmin, tmax=tmax, baseline= None, preload=True)
+#    else:
+#        stim_events, stim_events_id = mne.events_from_annotations(raw)
+#        condition_id = condition.extract_stim_id(stim_events_id, cat = cat)
+#        epochs= mne.Epochs(raw, stim_events, event_id= stim_events_id, 
+#                            tmin=tmin, tmax=tmax, baseline= None, preload=True)
+#        epochs = epochs[condition_id]
+#        events = epochs.events
+#    return epochs, events
 
 def sort_visual_chan(sorted_indices, hfb):
     """

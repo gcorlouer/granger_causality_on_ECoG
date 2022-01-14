@@ -43,7 +43,7 @@ class EcogReader:
                     '_bad_chans_removed_raw.fif': Bad channels removed and 
                         concatenated 
                     '_hfb_extracted_raw.fif' : extracted hfb
-                    '_hfb_db_epo.fif' epoched and db transformed hfb
+                    '_hfb_epo.fif' epoched and db transformed hfb
             -preload: True, False
                         Preloading data with MNE
             -epoch: True, False
@@ -459,6 +459,7 @@ class Epocher():
             epochs= mne.Epochs(raw, events, event_id= events_id, 
                                 tmin=self.t_prestim, tmax=self.t_postim, 
                                 baseline= self.baseline, preload=self.preload)
+        # Epoch condition specific hfb    
         else :
             # Extract face and place id
             events, events_id = mne.events_from_annotations(raw)
@@ -532,7 +533,7 @@ class Epocher():
 
 #%% Detect visually responsive populations
 
-class VisualDetector:
+class VisualDetector():
     """
     Detect visually responsive channels
     """
@@ -547,14 +548,14 @@ class VisualDetector:
         self.zero_method = zero_method
         self.alternative = alternative
         
-    def detect(self, hfb_db):
+    def detect(self, hfb):
         """
         Detect visually responsive channels by testing hypothesis of no difference 
-        between prestimulus and postimulus HFB amplitude.
+        between prestimulus and postimulus HFB amplitude (baseline scaled)
         ----------
         Parameters
         ----------
-        hfb_db: MNE raw object
+        hfb: MNE raw object
                 HFB of iEEG in decibels
         tmin_prestim: float
                     starting time prestimulus amplitude
@@ -577,34 +578,39 @@ class VisualDetector:
         effect_size: list
                      visual responsivity effect size
         """
-        A_prestim = self.crop_hfb(hfb_db, tmin=self.tmin_prestim, tmax=self.tmax_prestim)
-        A_postim = self.crop_hfb(hfb_db, tmin=self.tmin_postim, tmax=self.tmax_postim)
+        # Prestimulus amplitude
+        A_prestim = self.crop_hfb(hfb, tmin=self.tmin_prestim, tmax=self.tmax_prestim)
+        # Postimulus amplitude
+        A_postim = self.crop_hfb(hfb, tmin=self.tmin_postim, tmax=self.tmax_postim)
+        # Test no difference betwee pre and post stimulus amplitude
         reject, pval_correct, tstat = self.multiple_wilcoxon_test(A_postim, A_prestim)
+        # Compute visual responsivity 
         visual_responsivity = self.compute_visual_responsivity(A_postim, A_prestim)
-        visual_chan, effect_size = self.visual_chans_stats(reject, visual_responsivity, hfb_db)
+        # Return visually responsive channels
+        visual_chan, effect_size = self.visual_chans_stats(reject, visual_responsivity, hfb)
         return visual_chan, effect_size
     
     
-    def crop_hfb(self, hfb_db, tmin=-0.5, tmax=-0.05):
+    def crop_hfb(self, hfb, tmin=-0.5, tmax=-0.05):
         """
         crop hfb between over [tmin tmax].
         Input : MNE raw object
         Return: array
         """
-        A = hfb_db.copy().crop(tmin=tmin, tmax=tmax).get_data()
+        A = hfb.copy().crop(tmin=tmin, tmax=tmax).get_data()
         return A
     
     
-    def crop_stim_hfb(self, hfb_db, stim_id, tmin=-0.5, tmax=-0.05):
+    def crop_stim_hfb(self, hfb, stim_id, tmin=-0.5, tmax=-0.05):
         """
         crop condition specific hfb between [tmin tmax].
         Input : MNE raw object
         Return: array
         """
-        A = hfb_db[stim_id].copy().crop(tmin=tmin, tmax=tmax).get_data()
+        A = hfb[stim_id].copy().crop(tmin=tmin, tmax=tmax).get_data()
         return A
 
-    def multiple_wilcoxon_test(self, A_postim, A_prestim, alternative='two-sided'):
+    def multiple_wilcoxon_test(self, A_postim, A_prestim):
         """
         Wilcoxon test hypothesis of no difference between prestimulus and postimulus amplitude
         Correct for multilple hypothesis test.
@@ -627,11 +633,11 @@ class VisualDetector:
         nchans = A_postim.shape[1]
         pval = [0]*nchans
         tstat = [0]*nchans
-        # Compute inflated stats given non normal distribution
+        # Compute test stats given non normal distribution
         for i in range(0,nchans):
             tstat[i], pval[i] = spstats.wilcoxon(A_postim[:,i], A_prestim[:,i],
                                                  zero_method=self.zero_method, 
-                                                 alternative=alternative) 
+                                                 alternative=self.alternative) 
         # Correct for multiple testing    
         reject, pval_correct = fdrcorrection(pval, alpha=self.alpha)
         w_test = reject, pval_correct, tstat
@@ -672,7 +678,7 @@ class VisualDetector:
         return visual_responsivity
     
     
-    def visual_chans_stats(self, reject, visual_responsivity, hfb_db):
+    def visual_chans_stats(self, reject, visual_responsivity, hfb):
         """
         Return visual channels with their corresponding responsivity
         """
@@ -683,7 +689,7 @@ class VisualDetector:
         
         for i in list(idx):
             if visual_responsivity[i]>0:
-                visual_chan.append(hfb_db.info['ch_names'][i])
+                visual_chan.append(hfb.info['ch_names'][i])
                 effect_size.append(visual_responsivity[i])
             else:
                 continue
@@ -734,19 +740,19 @@ class VisualClassifier(VisualDetector):
         super().__init__(tmin_prestim, tmax_prestim, tmin_postim,
                tmax_postim, alpha, zero_method, alternative)
 
-    def hfb_to_visual_populations(self, hfb_db, dfelec):
+    def hfb_to_visual_populations(self, hfb, dfelec):
         """
         Create dictionary containing all relevant information on visually responsive channels
         """
         # Extract and normalise hfb
-        event_id = hfb_db.event_id
+        event_id = hfb.event_id
         face_id = self.extract_stim_id(event_id, cat = 'Face')
         place_id = self.extract_stim_id(event_id, cat='Place')
         image_id = face_id+place_id
         
         # Detect visual channels
-        visual_chan, visual_responsivity = self.detect(hfb_db)
-        visual_hfb = hfb_db.copy().pick_channels(visual_chan)
+        visual_chan, visual_responsivity = self.detect(hfb)
+        visual_hfb = hfb.copy().pick_channels(visual_chan)
         
         # Compute latency response
         latency_response = self.compute_latency(visual_hfb, image_id, visual_chan)
@@ -758,7 +764,7 @@ class VisualClassifier(VisualDetector):
         group = self.retinotopic(visual_chan, group, latency_response, dfelec)
         
         # Compute peak time
-        peak_time = self.compute_peak_time(hfb_db, visual_chan, tmin=0.05, tmax=1.75)
+        peak_time = self.compute_peak_time(hfb, visual_chan, tmin=0.05, tmax=1.75)
         
         # Create visual_populations dictionary 
         visual_populations = {'chan_name': [], 'group': [], 'latency': [], 
@@ -935,17 +941,17 @@ def hfb_to_category_time_series(hfb, visual_chan, sfreq=250, cat='Rest', tmin_cr
 
 def category_hfb(hfb, visual_chan, cat='Rest', tmin_crop = -0.5, tmax_crop=1.5) :
     """
-    Return category visual time hfb_db cropped in a time interval [tmin_crop tmax_crop]
+    Return category visual time hfb cropped in a time interval [tmin_crop tmax_crop]
     of interest
     """
-    hfb_db = Hfb_db()
+    hfb = hfb()
     # Extract visual HFB
     hfb = hfb.pick(visual_chan)
     # Epoch condition specific HFB
     hfb, events = epoch_condition(hfb, cat=cat, tmin=-0.5, 
                                     tmax=1.75)
-    #hfb = hfb_db.db_transform(hfb) 
-    hfb = hfb_db.log_transform(hfb)
+    #hfb = hfb.db_transform(hfb) 
+    hfb = hfb.log_transform(hfb)
     hfb = hfb.crop(tmin=tmin_crop, tmax=tmax_crop)
     return hfb
 

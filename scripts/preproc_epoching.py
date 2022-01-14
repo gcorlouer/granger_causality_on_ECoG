@@ -11,7 +11,7 @@ and save it as a derivatives
 from src.preprocessing_lib import EcogReader, Epocher
 from src.input_config import args 
 
-#%% Epoch baseline rescale hfb 
+#%% Epoch baseline rescale hfb  for each conditions
 
 conditions = ['Rest', 'Stim','Face', 'Place']
 for subject in args.cohort:
@@ -26,7 +26,7 @@ for subject in args.cohort:
         hfb = reader.read_ecog()
         hfb = epocher.scale_epoch(hfb)
         subject_path = args.derivatives_path.joinpath(subject, 'ieeg')
-        fname = subject + '_hfb_' + condition + '_scaled_raw.fif'
+        fname = subject + '_hfb_' + condition + '_scaled-epo.fif'
         fpath = subject_path.joinpath(fname)
         hfb.save(fpath, overwrite=True)
 

@@ -25,8 +25,8 @@ parser.add_argument("--result_path", type=list, default=result_path)
 parser.add_argument("--cohort", type=list, default=cohort)
 parser.add_argument("--subject", type=str, default='DiAs')
 parser.add_argument("--stage", type=str, default='preprocessed')
-parser.add_argument("--preprocessed_suffix", type=str, default='_hfb_continuous_raw.fif')
-parser.add_argument("--epoch", type=bool, default=False)
+parser.add_argument("--preprocessed_suffix", type=str, default='_hfb_Stim_scaled-epo.fif')
+parser.add_argument("--epoch", type=bool, default=True)
 parser.add_argument("--channels", type=str, default='visual_channels.csv')
 
 # Input parameters:
@@ -34,12 +34,14 @@ parser.add_argument("--channels", type=str, default='visual_channels.csv')
 # bipolar_montage
 # preprocessed
 
-# Preprocessing suffix:
-
-# _bad_chans_removed_raw.fif: Bad channels removed and concatenated lfp
-# '_hfb_continuous_raw.fif' : Continuous hfb
-# '_hfb_db_epo.fif' epoched and db transformed hfb
-# _preprocessed_raw.fif
+# Preprocessing suffixes:
+# Bad chans removed:
+# _bad_chans_removed_raw.fif: 
+# Continuous data:
+# '_hfb_continuous_raw.fif' 
+# Epoched data
+# _hfb_Face_scaled-epo.fif
+# _hfb_Condition_scaled-epo.fif
 
 # Channels info:
 # 'all_bad_channels.csv'
@@ -71,9 +73,9 @@ parser.add_argument("--mode", type=str, default='logratio')
 #%% Visually responsive channels classification parmeters
 
 parser.add_argument("--tmin_prestim", type=float, default=-0.4)
-parser.add_argument("--tmax_prestim", type=float, default=-0.1)
-parser.add_argument("--tmin_postim", type=float, default=0.2)
-parser.add_argument("--tmax_postim", type=float, default=0.5)
+parser.add_argument("--tmax_prestim", type=float, default=-0.05)
+parser.add_argument("--tmin_postim", type=float, default=0.05)
+parser.add_argument("--tmax_postim", type=float, default=0.4)
 parser.add_argument("--alpha", type=float, default=0.05)
 parser.add_argument("--zero_method", type=str, default='pratt')
 parser.add_argument("--alternative", type=str, default='two-sided')

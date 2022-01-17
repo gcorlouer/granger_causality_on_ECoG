@@ -548,7 +548,7 @@ class VisualDetector():
         self.zero_method = zero_method
         self.alternative = alternative
         
-    def detect(self, hfb):
+    def detect_visual_chans(self, hfb):
         """
         Detect visually responsive channels by testing hypothesis of no difference 
         between prestimulus and postimulus HFB amplitude (baseline scaled)
@@ -740,35 +740,36 @@ class VisualClassifier(VisualDetector):
         super().__init__(tmin_prestim, tmax_prestim, tmin_postim,
                tmax_postim, alpha, zero_method, alternative)
 
-    def hfb_to_visual_populations(self, hfb, dfelec):
+    def classify_visual_chans(self, hfb, dfelec):
         """
         Create dictionary containing all relevant information on visually responsive channels
         """
-        # Extract and normalise hfb
+        # Pick event specific id
         event_id = hfb.event_id
         face_id = self.extract_stim_id(event_id, cat = 'Face')
         place_id = self.extract_stim_id(event_id, cat='Place')
         image_id = face_id+place_id
         
         # Detect visual channels
-        visual_chan, visual_responsivity = self.detect(hfb)
+        visual_chan, visual_responsivity = self.detect_visual_chans(hfb)
         visual_hfb = hfb.copy().pick_channels(visual_chan)
         
         # Compute latency response
         latency_response = self.compute_latency(visual_hfb, image_id, visual_chan)
         
         # Classify Face and Place populations
-        group, category_selectivity = self.face_place(visual_hfb, face_id, place_id, visual_chan)
+        group, category_selectivity = self.classify_face_place(visual_hfb, face_id, place_id, visual_chan)
         
         # Classify retinotopic populations
-        group = self.retinotopic(visual_chan, group, latency_response, dfelec)
+        group = self.classify_retinotopic(visual_chan, group, latency_response, dfelec)
         
         # Compute peak time
         peak_time = self.compute_peak_time(hfb, visual_chan, tmin=0.05, tmax=1.75)
         
         # Create visual_populations dictionary 
         visual_populations = {'chan_name': [], 'group': [], 'latency': [], 
-                              'brodman': [], 'DK': [], 'X':[], 'Y':[], 'Z':[]}
+                              'brodman': [], 'DK': [], 'X':[], 'Y':[], 'Z':[],
+                              'hemisphere': []}
         
         visual_populations['chan_name'] = visual_chan
         visual_populations['group'] = group
@@ -783,10 +784,12 @@ class VisualClassifier(VisualDetector):
             visual_populations['X'].extend(dfelec['X'].loc[dfelec['electrode_name']==chan_name_split])
             visual_populations['Y'].extend(dfelec['Y'].loc[dfelec['electrode_name']==chan_name_split])
             visual_populations['Z'].extend(dfelec['Z'].loc[dfelec['electrode_name']==chan_name_split])
+            visual_populations['hemisphere'].extend(dfelec['hemisphere'].loc[dfelec['electrode_name']==chan_name_split])
+
             
         return visual_populations
 
-    def face_place(self, visual_hfb, face_id, place_id, visual_channels):
+    def classify_face_place(self, visual_hfb, face_id, place_id, visual_channels):
         """
         Classify Face selective sites using one sided signed rank wilcoxon
         test. 
@@ -796,27 +799,30 @@ class VisualClassifier(VisualDetector):
         group = ['O']*nchan
         category_selectivity = [0]*len(group)
         A_face = self.crop_stim_hfb(visual_hfb, face_id, tmin=self.tmin_postim, tmax=self.tmax_postim)
-        A_place = self.crop_stim_hfb(visual_hfb, place_id, tmin=self.tmax_postim, tmax=self.tmax_postim)
+        A_place = self.crop_stim_hfb(visual_hfb, place_id, tmin=self.tmin_postim, tmax=self.tmax_postim)
         
-        w_test_plus = self.multiple_wilcoxon_test(A_face, A_place, alternative = 'greater')
-        reject_plus = w_test_plus[0]    
+        w_test_face = self.multiple_wilcoxon_test(A_face, A_place)
+        reject_face = w_test_face[0]    
         
-        #w_test_minus = self.multiple_wilcoxon_test(A_face, A_place, alternative = 'less')
-        #reject_minus = w_test_minus[0]    
+        w_test_place = self.multiple_wilcoxon_test(A_place, A_face)
+        reject_place = w_test_place[0]    
         
         # Significant electrodes located outside of V1 and V2 are Face or Place responsive
         for idx, channel in enumerate(visual_channels):
             A_f = np.ndarray.flatten(A_face[:,idx,:])
             A_p = np.ndarray.flatten(A_place[:,idx,:])
-            if reject_plus[idx]==False :
-                continue
-            else:
+            if reject_face[idx]==True :
                 group[idx] = 'F'
+                category_selectivity[idx] = self.cohen_d(A_f, A_p)
+            elif reject_place[idx]==True:
+                group[idx] = 'P'
+                category_selectivity[idx] = self.cohen_d(A_p, A_f)
+            else:
                 category_selectivity[idx] = self.cohen_d(A_f, A_p)
         return group, category_selectivity
     
     
-    def retinotopic(self, visual_channels, group, latency_response, dfelec):
+    def classify_retinotopic(self, visual_channels, group, latency_response, dfelec):
         """
         Return retinotopic site from V1 and V2 given Brodman atlas.
         """
@@ -830,16 +836,16 @@ class VisualClassifier(VisualDetector):
                     group[i]='R'
         return group
     
-#    def extract_stim_id(self, event_id, cat = 'Face'):
-#        """
-#        Returns event id of specific stimuli category (Face or Place)
-#        """
-#        p = re.compile(cat)
-#        stim_id = []
-#        for key in event_id.keys():
-#            if p.match(key):
-#                stim_id.append(key)
-#        return stim_id
+    def extract_stim_id(self, event_id, cat = 'Face'):
+        """
+        Returns event id of specific stimuli category (Face or Place)
+        """
+        p = re.compile(cat)
+        stim_id = []
+        for key in event_id.keys():
+            if p.match(key):
+                stim_id.append(key)
+        return stim_id
 
     def compute_peak_time(self, hfb, visual_chan, tmin=0.05, tmax=1.75):
         """

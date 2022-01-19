@@ -25,8 +25,8 @@ parser.add_argument("--result_path", type=list, default=result_path)
 parser.add_argument("--cohort", type=list, default=cohort)
 parser.add_argument("--subject", type=str, default='DiAs')
 parser.add_argument("--stage", type=str, default='preprocessed')
-parser.add_argument("--preprocessed_suffix", type=str, default='_hfb_Stim_scaled-epo.fif')
-parser.add_argument("--epoch", type=bool, default=True)
+parser.add_argument("--preprocessed_suffix", type=str, default= '_hfb_continuous_raw.fif'  )
+parser.add_argument("--epoch", type=bool, default=False)
 parser.add_argument("--channels", type=str, default='visual_channels.csv')
 
 # Input parameters:
@@ -62,7 +62,7 @@ parser.add_argument("--phase", type=str, default='minimum')
 parser.add_argument("--fir_window", type=str, default='blackman')
 
 #%% Epoching parameters
-parser.add_argument("--condition", type=str, default='Face') # Majuscule important here
+parser.add_argument("--condition", type=str, default='Stim') # Majuscule important here
 parser.add_argument("--t_prestim", type=float, default=-0.5)
 parser.add_argument("--t_postim", type=float, default=1.75)
 parser.add_argument("--baseline", default=None) # No baseline from MNE

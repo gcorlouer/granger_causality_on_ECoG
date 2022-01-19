@@ -6,9 +6,6 @@ Created on Wed Jan 19 12:23:24 2022
 @author: guime
 """
 
-
-from src.preprocessing_lib import EcogReader, Epocher
-from src.input_config import args
 from pathlib import Path
 
 import seaborn as sns

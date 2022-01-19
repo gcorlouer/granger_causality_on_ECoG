@@ -867,28 +867,6 @@ class VisualClassifier(VisualDetector):
 
 # %% Create category specific time series as input for mvgc toolbox
 
-#def category_ts(hfb, visual_chan, sfreq=250, tmin_crop=0.050, tmax_crop=0.250):
-#    """
-#    Return time series in all conditions ready for mvgc analysis
-#    ----------
-#    Parameters
-#    ----------
-#    visual_chan : list
-#                List of visually responsive channels
-#    """
-#    condition = ['Rest', 'Face', 'Place']
-#    ncat = len(condition)
-#    ts = [0]*ncat
-#    for idx, cat in enumerate(condition):
-#        X, time = hfb_to_category_time_series(hfb, visual_chan, sfreq=sfreq, cat=cat, 
-#                                        tmin_crop=tmin_crop, tmax_crop=tmax_crop)
-#        ts[idx] = X
-#
-#    ts = np.stack(ts)
-#    (ncat, ntrial, nchan, nobs) = ts.shape
-#    ts = np.transpose(ts, (2, 3, 1, 0))
-#    return ts, time
-
 def category_ts(hfb, visual_chan, sfreq=250, tmin_crop=0.050, tmax_crop=0.250):
     """
     Return time series in all conditions ready for mvgc analysis
@@ -924,6 +902,7 @@ def category_lfp(lfp, visual_chan, tmin_crop=-0.5, tmax_crop =1.75, sfreq=200):
     lfp = lfp.pick(visual_chan)
     for idx, cat in enumerate(condition):
         epochs, events = epoch_condition(lfp, cat=cat, tmin=tmin_crop, tmax=tmax_crop)
+        # Note: use decimate instead (cf dowmsampling discussion with Lionel)
         epochs = epochs.resample(sfreq=sfreq)
         time = epochs.times
         sorted_indices = sort_indices(epochs, visual_chan)

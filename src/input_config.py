@@ -83,7 +83,7 @@ parser.add_argument("--alternative", type=str, default='greater')
 
 #%% Create category specific time series
 
-parser.add_argument("--sfreq", type=float, default=500)
+parser.add_argument("--decim", type=float, default=2)
 parser.add_argument("--tmin_crop", type=float, default=-0.5)
 parser.add_argument("--tmax_crop", type=float, default=1.5)
 

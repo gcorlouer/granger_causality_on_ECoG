@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Jan 18 18:50:45 2022
+This script explore visual responsive hfb, compare scaled and unscaled
+as well as log and non log hfb.
 
 @author: guime
 """
 
 from src.preprocessing_lib import EcogReader, Epocher
 from src.input_config import args
-from scipy.stats import sem
 
 import matplotlib.pyplot as plt
-import pandas as pd
 import seaborn as sns
 import numpy as np
 #%%

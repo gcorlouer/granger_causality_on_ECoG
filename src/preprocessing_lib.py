@@ -973,6 +973,47 @@ def prepare_condition_scaled_ts(path, subject='DiAs', stage='preprocessed', matl
     
     return ts
 
+def sort_visual_chan(sorted_indices, hfb):
+    """
+    Order visual hfb channels indices along visual herarchy (Y coordinate)
+    """
+    X = hfb.get_data()
+    X_ordered = np.zeros_like(X)
+    for idx, i in enumerate(sorted_indices):
+            X_ordered[:,idx,:] = X[:,i,:]
+    X = X_ordered
+    return X
+
+
+def sort_indices(hfb, visual_chan):
+    """
+    Order channel indices along visual hierarchy
+    """
+    unsorted_chan = hfb.info['ch_names']
+    
+    sorted_indices = [0]*len(visual_chan)
+    for idx, chan in enumerate(unsorted_chan):
+        sorted_indices[idx] = visual_chan.index(chan)
+    return sorted_indices
+
+def parcellation_to_indices(visual_population, parcellation='group', matlab=False):
+    """
+    Return indices of channels from a given population
+    parcellation: group (default, functional), DK (anatomical)
+    """
+    group = visual_population[parcellation].unique().tolist()
+    group_indices = dict.fromkeys(group)
+    for key in group:
+       group_indices[key] = visual_population.loc[visual_population[parcellation]== key].index.to_list()
+    if matlab == True: # adapt indexing for matlab
+        print("Adapt indexing to matlab format")
+        for key in group:
+            for i in range(len(group_indices[key])):
+                group_indices[key][i] = group_indices[key][i] + 1
+    return group_indices
+
+#%% What follows might be deprecated.
+
 def category_ts(hfb, visual_chan, sfreq=250, tmin_crop=0.050, tmax_crop=0.250):
     """
     Return time series in all conditions ready for mvgc analysis
@@ -1074,44 +1115,7 @@ def category_hfb(hfb, visual_chan, cat='Rest', tmin_crop = -0.5, tmax_crop=1.5) 
 #        events = epochs.events
 #    return epochs, events
 
-def sort_visual_chan(sorted_indices, hfb):
-    """
-    Order visual hfb channels indices along visual herarchy (Y coordinate)
-    """
-    X = hfb.get_data()
-    X_ordered = np.zeros_like(X)
-    for idx, i in enumerate(sorted_indices):
-            X_ordered[:,idx,:] = X[:,i,:]
-    X = X_ordered
-    return X
 
-
-def sort_indices(hfb, visual_chan):
-    """
-    Order channel indices along visual hierarchy
-    """
-    unsorted_chan = hfb.info['ch_names']
-    
-    sorted_indices = [0]*len(visual_chan)
-    for idx, chan in enumerate(unsorted_chan):
-        sorted_indices[idx] = visual_chan.index(chan)
-    return sorted_indices
-
-def parcellation_to_indices(visual_population, parcellation='group', matlab=False):
-    """
-    Return indices of channels from a given population
-    parcellation: group (default, functional), DK (anatomical)
-    """
-    group = visual_population[parcellation].unique().tolist()
-    group_indices = dict.fromkeys(group)
-    for key in group:
-       group_indices[key] = visual_population.loc[visual_population[parcellation]== key].index.to_list()
-    if matlab == True: # adapt indexing for matlab
-        print("Adapt indexing to matlab format")
-        for key in group:
-            for i in range(len(group_indices[key])):
-                group_indices[key][i] = group_indices[key][i] + 1
-    return group_indices
 
 #%% Return population specifc hfb
 

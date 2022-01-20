@@ -14,9 +14,10 @@ from pathlib import Path
 from scipy.io import savemat
 
 import numpy as np
+import pandas as pd
 #%%
 
-conditions = ['Rest', 'Face', 'Place']
+conditions = ['Rest', 'Face', 'Place', 'baseline']
 ts = dict.fromkeys(conditions, [])
 
 for subject in  args.cohort:
@@ -30,14 +31,26 @@ for subject in  args.cohort:
         visual_chans = df_visual['chan_name'].to_list()
         hfb = hfb.pick_channels(visual_chans)
         # Epoch HFA
-        epocher = Epocher(condition=condition, t_prestim=args.t_prestim, t_postim = args.t_postim, 
+        if condition == 'baseline':
+            # Return prestimulus baseline
+            epocher = Epocher(condition='Stim', t_prestim=args.t_prestim, t_postim = args.t_postim, 
                          baseline=None, preload=True, tmin_baseline=args.tmin_baseline, 
                          tmax_baseline=args.tmax_baseline, mode=args.mode)
-        epoch = epocher.log_epoch(hfb)
-        epoch = epoch.copy().crop(tmin = args.tmin_crop, tmax=args.tmax_crop)
-        
-        # Downsample by factor of 2 and check decimation
-        epoch = epoch.copy().decimate(args.decim)
+            epoch = epocher.log_epoch(hfb)
+             # Downsample by factor of 2 and check decimation
+            epoch = epoch.copy().crop(tmin = -0.5, tmax=0)
+            epoch = epoch.copy().decimate(args.decim)
+        else:
+            # Return condition specific epochs
+            epocher = Epocher(condition=condition, t_prestim=args.t_prestim, t_postim = args.t_postim, 
+                             baseline=None, preload=True, tmin_baseline=args.tmin_baseline, 
+                             tmax_baseline=args.tmax_baseline, mode=args.mode)
+            epoch = epocher.log_epoch(hfb)
+            epoch = epoch.copy().crop(tmin = args.tmin_crop, tmax=args.tmax_crop)
+             # Downsample by factor of 2 and check decimation
+            epoch = epoch.copy().decimate(args.decim)
+            time = epoch.times
+    
         # Prerpare time series for MVGC
         X = epoch.copy().get_data()
         (N, n, m) = X.shape
@@ -46,6 +59,9 @@ for subject in  args.cohort:
     # Add category specific channels indices to dictionary
     indices = parcellation_to_indices(df_visual,  parcellation='group', matlab=True) 
     ts['indices']= indices
+    
+    # Add time
+    ts['time'] = time
     
     # Save condition ts as mat file
     result_path = Path('../results')

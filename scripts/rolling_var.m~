@@ -8,13 +8,12 @@ fname = [subject '_condition_ts.mat'];
 fpath = fullfile(datadir, fname);
 time_series = load(fpath);
 
-% Initialise information criterion
+% Initialise model order infor
 moaic = cell(ncdt,1);
 mobic =  cell(ncdt,1);
 mohqc =  cell(ncdt,1);
 molrt =  cell(ncdt,1);
 
-% Initialise spectral radius
 rho = cell(ncdt,1);
 %% 
 for c=1:ncdt
@@ -28,11 +27,7 @@ for c=1:ncdt
     time = time_series.time;
 
     % Number of windows
-    nwin = floor((nobs - mw)/shift +1);
-    moaic{c} = zeros(nwin,1);
-    mobic{c} = zeros(nwin,1);
-    mohqc{c} = zeros(nwin,1);
-    molrt{c} = zeros(nwin,1);
+     nwin = floor((nobs - mw)/shift +1);
     %% VAR model order selection
     % detrend and demean data then estimate VAR model and estimate GC
     for w=1:nwin
@@ -43,7 +38,7 @@ for c=1:ncdt
         % Detrend
         [W,~,~,~] = mvdetrend(W,pdeg,[]);
         % Estimate var model order with multiple information criterion
-        [moaic{c}(w),mobic{c}(w),mohqc{c}(w),molrt{c}(w)] = tsdata_to_varmo(W, ... 
+        [moaic(w,c),mobic(w,c),mohqc(w,c),molrt(w,c)] = tsdata_to_varmo(W, ... 
                     momax,regmode,alpha,pacf,[],verb);
     end
 
@@ -59,7 +54,7 @@ for c=1:ncdt
 
     %% Estimate VAR model.
 
-    rho{c} = zeros(nwin,1);
+    rho = zeros(nwin,c);
     for w=1:nwin
         % window offset
         o = (w-1)*shift; 
@@ -67,7 +62,7 @@ for c=1:ncdt
         W = X(:,o+1:o+mw,:);
         [W,~,~,~] = mvdetrend(W,pdeg,[]);
         VAR = ts_to_var_parameters(W, 'morder', morder, 'regmode', regmode);
-        rho{c}(w) = VAR.info.rho;
+        rho(w,c) = VAR.info.rho;
     end
 end
 %% Plot spectral radius along sliding window

@@ -18,6 +18,8 @@ import pandas as pd
 #%%
 
 conditions = ['Rest', 'Face', 'Place', 'baseline']
+# Original sampling rate
+sfreq = 500
 ts = dict.fromkeys(conditions, [])
 
 for subject in  args.cohort:
@@ -62,6 +64,12 @@ for subject in  args.cohort:
     
     # Add time
     ts['time'] = time
+    
+    # Add subject
+    ts['subject'] = subject
+    
+    # Add sampling frequency
+    ts['sfreq'] = sfreq/args.decim
     
     # Save condition ts as mat file
     result_path = Path('../results')

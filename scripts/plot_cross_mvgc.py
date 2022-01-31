@@ -16,11 +16,11 @@ from pathlib import Path, PurePath
 
 #%%
 
-result_path = Path('~','projects','CIFAR','data', 'results').expanduser()
-fname = 'cross_sliding_mvgc.csv'
+result_path = Path('..','results')
+fname = 'rolling_mvgc.csv'
 fpath = Path.joinpath(result_path, fname)
 df = pd.read_csv(fpath)
-
+df = df.dropna()
 #%% 
 
 pairs = ['R->F', 'F->R']
@@ -36,8 +36,9 @@ f, ax = plt.subplots(ncdt, nsub, sharex=True, sharey=True)
 for s in range(nsub):
     for c in range(ncdt):
         for pair in pairs:
-            baseline = df["Fb"].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c]) 
+            baseline = df["F"].loc[(df["subject"]==cohort[s]) & (df["condition"]=='baseline') 
             & (df["pair"]==pair)].to_numpy()
+            baseline = np.mean(baseline)
             time = df["time"].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c]) 
             & (df["pair"]==pair)].to_numpy()
             F = df['F'].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])

@@ -65,10 +65,11 @@ for s = 1:nsub
         dfc(c,s).MI = MI;
         dfc(c,s).f = f;
         dfc(c,s).sfreq = fs;
-        fname = [sub_id '_pairwise_dfc.mat'];
+        dfc = struct2
+        fname = [sub_id '_pairwise_dfc.csv'];
         fpath = fullfile(datadir, fname);
 
-        save(fpath, 'dfc')
+        writetable(dfc, fpath)
     end
 end
 %% Plot results

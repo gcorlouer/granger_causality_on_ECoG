@@ -1,8 +1,9 @@
-cohort = {'AnRa',  'ArLa',  'BeFe',  'DiAs',  'JuRo'};
-condition = {'rest', 'face', 'place'};
-conditionb = {'rest_baseline', 'face_baseline', 'place_baseline'};
+cohort = {'AnRa',  'ArLa', 'DiAs'};
+condition = {'Rest', 'Face', 'Place', 'baseline'};
+%conditionb = {'baseline'};
 field = {'time',  'condition', 'pair', 'subject','F'};
 dataset = struct;
+mw = 40;
 nb= 10; % Number of window sampled within baseline
 input_parameters;
 nsub = length(cohort);
@@ -11,24 +12,24 @@ ncdt = length(condition);
 
 for s=1:nsub
     % Read data
-    datadir = fullfile('~', 'projects', 'CIFAR', 'data', 'results');
-    sub_id = cohort{s};
-    fname = [sub_id '_condition_ts_visual.mat']; 
+    datadir = fullfile('~', 'projects', 'cifar', 'results');
+    subject = cohort{s};
+    fname = [subject '_condition_ts.mat']; 
     fpath = fullfile(datadir, fname);
     time_series = load(fpath);
     
     % The time series
     for c=1:ncdt 
-        X = time_series.(condition{c}); sub_id = time_series.sub_id; 
+        X = time_series.(condition{c}); subject = time_series.subject; 
         time = time_series.time; fs = double(time_series.sfreq);
 
         % Functional group indices
-        findices = time_series.functional_indices; fn = fieldnames(findices);
+        indices = time_series.indices; fn = fieldnames(indices);
         [n, m, N] = size(X);
 
         % Read baseline data
-        Xb = time_series.(conditionb{c});
-        timeb = time_series.timeb;
+        %Xb = time_series.(conditionb);
+        %timeb = time_series.timeb;
 
         %% Window sample to time
 
@@ -42,13 +43,13 @@ for s=1:nsub
         end
         %% Estimate mvgc
         [F, wtime] = ts_to_sliding_mvgc(X,'time', time, 'shift', shift, ... 
-        'gind', findices,'mw',mw, 'morder', morder, 'regmode', regmode);
+        'gind', indices,'mw',mw, 'morder', morder, 'regmode', regmode);
 
         % Estimate baselibe mvgc
-        [Fb, wtimeb] = ts_to_sliding_mvgc(Xb,'time', time, 'shift', shift, ... 
-        'gind', findices,'mw',mw, 'morder', morder, 'regmode', regmode);
+        %[Fb, wtimeb] = ts_to_sliding_mvgc(Xb,'time', time, 'shift', shift, ... 
+        %'gind', indices,'mw',mw, 'morder', morder, 'regmode', regmode);
         % Return average of baseline mvgc
-        Fb = mean(Fb,3);
+        %Fb = mean(Fb,3);
         %% Create dataset
         ng = length(fn);
         for w=1:nwin
@@ -57,9 +58,9 @@ for s=1:nsub
                     dataset(w,i,j,c,s).time = win_time(w,mw);
                     dataset(w,i,j,c,s).pair =  [fn{j} '->' fn{i}];
                     dataset(w,i,j,c,s).condition = condition{c};
-                    dataset(w,i,j,c,s).subject = sub_id;
+                    dataset(w,i,j,c,s).subject = subject;
                     dataset(w,i,j,c,s).F = F(i,j,w);
-                    dataset(w,i,j,c,s).Fb = Fb(i,j);
+                    %dataset(w,i,j,c,s).Fb = Fb(i,j);
                 end
             end
         end
@@ -71,6 +72,6 @@ dataset = reshape(dataset, lenData, 1);
 %% Save dataset
 
 df = struct2table(dataset);
-fname = 'cross_sliding_mvgc.csv';
+fname = 'rolling_mvgc.csv';
 fpath = fullfile(datadir, fname);
 writetable(df, fpath)

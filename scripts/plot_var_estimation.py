@@ -3,9 +3,6 @@
 """
 Created on Fri Nov 19 14:59:39 2021
 This script plot var estimation for all subjects. 
-
-Note that information about number of observations can be obtained by looking
-at the first time.
 @author: guime
 """
 
@@ -13,12 +10,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from pathlib import Path, PurePath
+from pathlib import Path
 
 #%%
 
-result_path = Path('~','projects','CIFAR','data', 'results').expanduser()
-fname = 'sliding_var_estimation.csv'
+result_path = Path('..','results')
+fname = 'rolling_var_estimation.csv'
 fpath = Path.joinpath(result_path, fname)
 df = pd.read_csv(fpath)
 
@@ -55,16 +52,16 @@ f.suptitle('VAR model oder estimation accross subjects', fontsize=22)
 
 f, ax = plt.subplots(ncdt, nsub, sharex=True, sharey=True)
 
-ypos = np.arange(0.95, 1, 0.01)
+#ypos = np.arange(0.95, 1, 0.01)
 for c in range(ncdt):
     for s in range(nsub):
         time = df["time"].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
         rho = df["rho"].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
         ax[c,s].plot(time, rho, label="Spectral radius")
-        ax[c,s].set_ylim(0.90,1)
+        ax[c,s].set_ylim(0.6,1)
         ax[0,s].set_title(cohort[s], fontsize = 20)
         ax[c,0].set_ylabel(cdt[c], fontsize = 22)
-        ax[c,0].set_yticks(ypos)
+       # ax[c,0].set_yticks(ypos)
         ax[2,s].set_xlabel("Time (s)", fontsize = 22)
         ax[c,s].tick_params(labelsize=20)
             

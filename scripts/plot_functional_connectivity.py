@@ -11,40 +11,33 @@ conditional Granger causality.
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import HFB_process as hf
 
+from preprocessing_lib import EcogReader
 from scipy.io import loadmat
-from config import args
+from input_config import args
 from pathlib import Path, PurePath
 
 
 #%% Read ROI and functional connectivity data
 
-ecog = hf.Ecog(args.cohort_path, subject=args.subject, proc=args.proc, 
-                       stage = args.stage, epoch=args.epoch)
+subject = "DiAs"
+
+reader = EcogReader(args.data_path, subject=subject, stage='preprocessed')
 # Read visual channels 
-df_visual = ecog.read_channels_info(fname=args.channels)
-# Read roi
-roi_idx = hf.read_roi(df_visual, roi=args.roi)
+df_visual = reader.read_channels_info(fname='visual_channels.csv')
+
 # List conditions
-conditions = ['Rest', 'Face', 'Place']
+conditions = ['Rest', 'Face', 'Place', 'baseline']
+
 # Load functional connectivity matrix
-result_path = Path('~','projects', 'CIFAR','data', 'results').expanduser()
-#fname = args.subject + '_FC.mat'
-fname = "simulated_FC.mat"
-functional_connectivity_path = result_path.joinpath(fname)
+result_path = Path('../results')
 
-fc = loadmat(functional_connectivity_path)
+fname = subject + "_pairwise_dfc.mat"
+fc_path = result_path.joinpath(fname)
 
+fc = loadmat(fc_path)
+fc = fc['dfc']
 #%% Plot functional connectivity
 
-hf.plot_functional_connectivity(fc, df_visual, sfreq=args.sfreq, rotation=90, 
-                                tau_x=0.5, tau_y=0.8, font_scale=1.6)
-plt.show()
-#plt.pause(3)
-#plt.close()
+
 #%%
-# Simulated data
-# fname = 'simulated_FC.mat'
-# fpath  = Path('~', 'projects', 'CIFAR','data_fun').expanduser()
-# functional_connectivity_path = fpath.joinpath(fname)

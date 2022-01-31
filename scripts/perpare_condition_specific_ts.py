@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jan 19 18:37:05 2022
-This script prepare condition specific time series for mvgc analysis
+This script prepare condition specific time series for rolling mvgc analysis 
+or pairwise conditional GC, depending on the tmine range during post stimulus
+one considers.
 
 @author: guime
 """

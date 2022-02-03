@@ -7,25 +7,30 @@ Created on Wed Dec 15 13:22:32 2021
 """
 
 
-import mne
-import pandas as pd
-import HFB_process as hf
-import numpy as np
 import matplotlib.pyplot as plt
-import argparse
+import seaborn as sns
 
-from pathlib import Path, PurePath
-from config import args
-from scipy.io import savemat
+from preprocessing_lib import EcogReader
+from input_config import args
 
 #%% 
+chan = ['LTo1-LTo2']
+reader = EcogReader(args.data_path, stage=args.stage,
+                 preprocessed_suffix=args.preprocessed_suffix, preload=True, 
+                 epoch=False)
 
-ecog = hf.Ecog(args.cohort_path, subject=args.subject, proc=args.proc, 
-                           stage = args.stage, epoch=args.epoch)
-
-hfb = ecog.read_dataset()
-
+hfb = reader.read_ecog()
+hfb = hfb.copy().pick(chan)
+hfb = hfb.copy().crop(tmin=500, tmax=506)
 #%%
 #%matplotlib qt
 
-hfb.plot()
+#hfb.plot()
+#%%
+sns.set(font_scale=5)
+time = hfb.times
+X = hfb.copy().get_data()
+X = X[0,:]
+plt.plot(time, X)
+plt.xlabel('Time (s)')
+plt.ylabel('HFA (V)')

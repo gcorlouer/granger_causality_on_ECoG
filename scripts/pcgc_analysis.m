@@ -1,7 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % This script run functional connectivity analysis on time series of one
 % subject. Estimates mutual information, then pairwise conditional 
-% Granger causality (GC), then spectral GC.
+% Granger causality (GC), then spectral GC. Script returns dataset that
+% is going to be plotted in python.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialise parameters
 
@@ -11,7 +12,7 @@ condition = {'Rest', 'Face', 'Place', 'baseline'};
 field = {'time',  'condition', 'pair', 'subject','F'};
 ncdt = length(condition);
 nsub = length(cohort);
-dfc = struct;
+dataset = struct;
 %% Load data
 
 datadir = fullfile('~', 'projects', 'cifar', 'results');
@@ -28,12 +29,6 @@ for s = 1:nsub
 
     % Functional group indices
     indices = time_series.indices; fn = fieldnames(indices);
-
-    % Initialise information criterion
-    moaic = cell(ncdt,1);
-    mobic =  cell(ncdt,1);
-    mohqc =  cell(ncdt,1);
-    molrt =  cell(ncdt,1);
     
     for c=1:ncdt
         % Read conditions specific time series
@@ -41,7 +36,7 @@ for s = 1:nsub
         [n, m, N] = size(X);
 
 
-        %% Detrend and demean
+        %% Detrend
 
         [X,~,~,~] = mvdetrend(X,pdeg,[]);
 
@@ -58,23 +53,45 @@ for s = 1:nsub
 
          f = ts_to_var_spcgc(X, 'regmode',regmode, 'morder',morder,...
                 'fres',fres, 'fs', fs);
-        %% Save results
-        dfc(c,s).condition = condition{c};
-        dfc(c,s).subject = subject;
-        dfc(c,s).F = F;
-        dfc(c,s).MI = MI;
-        dfc(c,s).f = f;
-        dfc(c,s).sfreq = fs;
-        fname = [sub_id '_pairwise_dfc.mat'];
-        fpath = fullfile(datadir, fname);
-
-        save(fpath, 'dfc')
+        %% Build dataset
+        
+        dataset(c,s).condition = condition{c};
+        dataset(c,s).subject = subject;
+        dataset(c,s).F = F;
+        dataset(c,s).MI = MI;
     end
 end
-%% Plot results
-% minF = 0;
-% maxF = max(F,[],'all');
-% for i=1:ncat
-%     subplot(2,2,i)
-%     imshow(imcomplement(mat2gray(F(:,:,i))))
+        %% Build dataset
+%         % Problem: ng, nk, nl vary across subjects!
+%         ng = length(fn);
+%         for i=1:ng
+%             for j=1:ng
+%                 % Indices of individual pairs within groups
+%                 nk = length(indices.(fn{i}));
+%                 nl = length(indices.(fn{j}));
+%                 for k =1:nk
+%                     for l=1:nl
+%                         dataset(k,l,c,s).from = indices.(fn{i})(k);
+%                         dataset(k,l,c,s).to = indices.(fn{j})(l);
+%                         dataset(k,l,c,s).pair = [fn{j} '->' fn{i}];
+%                         dataset(k,l,c,s).condition = condition{c};
+%                         dataset(k,l,c,s).subject = subject;
+%                         dataset(k,l,c,s).F = F(k,l);
+%                         dataset(k,l,c,s).MI = MI(k,l);
+%                     end
+%                 end
+%             end
+%         end
+%     end
 % end
+
+%% Save dataset for plotting in python
+
+%lenData = numel(dataset);
+%dataset = reshape(dataset, lenData, 1);
+
+%df = struct2table(dataset);
+fname = 'pairwise_fc.mat';
+fpath = fullfile(datadir, fname);
+save(fpath, 'dataset')
+%writetable(df, fpath)

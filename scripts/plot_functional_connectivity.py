@@ -13,9 +13,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-from preprocessing_lib import EcogReader, build_dfc
+from src.preprocessing_lib import EcogReader, build_dfc
+from src.input_config import args
 from scipy.io import loadmat
-from input_config import args
 from pathlib import Path
 
 

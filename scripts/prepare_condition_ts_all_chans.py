@@ -1,12 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Fri Feb  4 12:22:41 2022
+
+@author: guime
+"""
+
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Wed Jan 19 18:37:05 2022
 This script prepare condition specific time series for rolling mvgc analysis 
 or pairwise conditional GC, depending on the tmine range during post stimulus
 one considers.
 
-Note we restrict to visually responsive channels here.
+Note that we consider all channels here.
 
 @author: guime
 """
@@ -34,8 +43,6 @@ for subject in  args.cohort:
                          epoch=False)
         hfb = reader.read_ecog()
         df_visual = reader.read_channels_info(fname='visual_channels.csv')
-        visual_chans = df_visual['chan_name'].to_list()
-        hfb = hfb.pick_channels(visual_chans)
         # Epoch HFA
         if condition == 'baseline':
             # Return prestimulus baseline
@@ -77,6 +84,6 @@ for subject in  args.cohort:
     
     # Save condition ts as mat file
     result_path = Path('../results')
-    fname = subject + '_condition_visual_ts.mat'
+    fname = subject + '_condition_ts.mat'
     fpath = result_path.joinpath(fname)
     savemat(fpath, ts)

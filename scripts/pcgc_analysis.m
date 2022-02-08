@@ -48,11 +48,6 @@ for s = 1:nsub
 
          F= ts_to_var_pcgc(X,'morder', morder,...
                 'regmode', regmode,'alpha', alpha,'mhtc', mhtc, 'LR', LR);
-
-        %% Pairwise conditional Spectral GC estimation
-
-         f = ts_to_var_spcgc(X, 'regmode',regmode, 'morder',morder,...
-                'fres',fres, 'fs', fs);
         %% Build dataset
         
         dataset(c,s).condition = condition{c};
@@ -61,37 +56,9 @@ for s = 1:nsub
         dataset(c,s).MI = MI;
     end
 end
-        %% Build dataset
-%         % Problem: ng, nk, nl vary across subjects!
-%         ng = length(fn);
-%         for i=1:ng
-%             for j=1:ng
-%                 % Indices of individual pairs within groups
-%                 nk = length(indices.(fn{i}));
-%                 nl = length(indices.(fn{j}));
-%                 for k =1:nk
-%                     for l=1:nl
-%                         dataset(k,l,c,s).from = indices.(fn{i})(k);
-%                         dataset(k,l,c,s).to = indices.(fn{j})(l);
-%                         dataset(k,l,c,s).pair = [fn{j} '->' fn{i}];
-%                         dataset(k,l,c,s).condition = condition{c};
-%                         dataset(k,l,c,s).subject = subject;
-%                         dataset(k,l,c,s).F = F(k,l);
-%                         dataset(k,l,c,s).MI = MI(k,l);
-%                     end
-%                 end
-%             end
-%         end
-%     end
-% end
 
 %% Save dataset for plotting in python
 
-%lenData = numel(dataset);
-%dataset = reshape(dataset, lenData, 1);
-
-%df = struct2table(dataset);
 fname = 'pairwise_fc.mat';
 fpath = fullfile(datadir, fname);
 save(fpath, 'dataset')
-%writetable(df, fpath)

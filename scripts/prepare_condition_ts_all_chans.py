@@ -15,7 +15,7 @@ This script prepare condition specific time series for rolling mvgc analysis
 or pairwise conditional GC, depending on the tmine range during post stimulus
 one considers.
 
-Note that we consider all channels here.
+Note that we consider all channels here not just visual channs.
 
 @author: guime
 """

@@ -5,25 +5,32 @@
 
 %% Initialise parameters
 % Restrict to n=2 channels for the example
+% Time series parameters
 morder = 3; specrad = 0.92; n=2;
-m = {126, 251}; N = {56, 120};
+% Observations and trials
+m = {1000, 1000}; N = {56, 120};
+% Chose distinct connectivity matrices
 cmatrix1 = [[0 ; 1] [0 ; 0]];
-cmatrix2 = [[0 ; 1] [1 ; 0]];
+cmatrix2 = [[0 ; 1] [0 ; 0]];
 
 cmatrix = {cmatrix1 cmatrix2} ;
 ncomp = length(cmatrix);
-ts{c} = cell(ncomp,1); F = cell(ncomp,1);
+ts = cell(ncomp,1); F = cell(ncomp,1);
 
 %% Simulate VAR in both conditions and compute F
 
 for c=1:ncomp
+    % Simulate time series from connectivity matrices
     cm = cmatrix{c};
     var_coef = var_rand(cm,morder, specrad, []);
     corr_res = corr_rand(n,[]); 
     ts{c} = var_to_tsdata(var_coef,corr_res,m{c},N{c});
+    % Estimate pcgc
     for i=1:N{c}
-        F{c}(:,:,i) = ts_to_var_pcgc(ts{c}(:,:,i),'morder', morder,...
+        X = ts{c}(:,:,i);
+        f = ts_to_var_pcgc(X,'morder', morder,...
                     'regmode', regmode,'alpha', alpha,'mhtc', mhtc, 'LR', LR);
+        F{c}(:,:,i) = f;
     end
 end
 

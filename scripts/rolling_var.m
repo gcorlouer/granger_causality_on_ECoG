@@ -4,7 +4,7 @@ ncdt = 3;
 %% Read data
 
 datadir = fullfile('~', 'projects', 'cifar', 'results');
-fname = [subject '_condition_ts.mat'];
+fname = [subject '_condition_visual_ts.mat'];
 fpath = fullfile(datadir, fname);
 time_series = load(fpath);
 

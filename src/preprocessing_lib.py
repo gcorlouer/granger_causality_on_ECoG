@@ -1025,12 +1025,15 @@ def build_dfc(fc):
     # Flatten array to build dictionarry
     fc_flat = np.ndarray.flatten(fc.T)
     # Initialise dictionary
-    fc_dict = {'subject':[],'condition':[], 'gc':[], 'mi':[], 'visual_idx':[]}
+    fc_dict = {'subject':[],'condition':[], 'gc':[], 'mi':[], 'visual_idx':[], 
+               'sgc': [], 'smi':[]}
     condition = [0]*(ncdt*nsub)
     subject = [0]*(ncdt*nsub)
     gc = [0]*(ncdt*nsub)
     mi = [0]*(ncdt*nsub)
     visual_idx = [0]*(ncdt*nsub)
+    sgc = [0]*(ncdt*nsub)
+    smi = [0]*(ncdt*nsub)
     
     # Build dictionary
     for i in range(ncdt*nsub):
@@ -1038,6 +1041,8 @@ def build_dfc(fc):
         subject[i] = fc_flat[i][1][0]
         gc[i] = fc_flat[i][2]
         mi[i] = fc_flat[i][3]
+        sgc[i] = fc_flat[i][4]
+        smi[i] = fc_flat[i][5]
         reader = EcogReader(data_path, subject=subject[i])
         # Read visual channels for indices
         df_visual = reader.read_channels_info(fname='visual_channels.csv')
@@ -1048,6 +1053,8 @@ def build_dfc(fc):
     fc_dict['gc'] = gc
     fc_dict['mi'] = mi
     fc_dict['visual_idx'] = visual_idx
+    fc_dict['sgc'] = sgc
+    fc_dict['smi'] = smi
     
     # Build dataframe
     dfc = pd.DataFrame.from_dict(fc_dict)

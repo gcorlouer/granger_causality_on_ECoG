@@ -56,17 +56,15 @@ for s = 1:nsub
                 'mhtc', mhtc, 'alpha', alpha);
             single_F(:,:,i)= ts_to_var_pcgc(X(:,:,i),'morder', morder,...
                 'regmode', regmode,'alpha', alpha,'mhtc', mhtc, 'LR', LR);
-            % Remove bias
-            nx=1; ny=1; nz = n-nx-ny;
-            bias = mvgc_bias('LR',nx,ny,nz,morder,m,N);
-            single_F(:,:,i) = single_F(:,:,i) - bias;
+            m
+            bias = mvgc_bias('LR',nx,ny,nz,p,m,N)
         end
         %% Build dataset
         
         dataset(c,s).condition = condition{c};
         dataset(c,s).subject = subject;
         dataset(c,s).F = F;
-        dataset(c,s).MI = MI;   
+        dataset(c,s).MI = MI;
         dataset(c,s).single_F = single_F;
         dataset(c,s).single_MI = single_MI;
     end

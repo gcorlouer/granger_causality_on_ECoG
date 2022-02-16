@@ -18,7 +18,7 @@ from scipy.stats import ranksums
 from pathlib import Path
 from statsmodels.stats.multitest import fdrcorrection
 
-
+#TODO: take same number of sample as baseline
 #%%%
 
 
@@ -44,8 +44,8 @@ dfc = build_dfc(fc)
 
 #%% Compute z score between conditions
 
-
-comparisons = [('Rest','Face'), ('Rest', 'Place'), ('Rest','Face')]
+baseline = 'baseline'
+comparisons = [(baseline,'Face'), (baseline, 'Place'), ('Place','Face')]
 subject = 'DiAs'
 gc1 = dfc['sgc'].loc[(dfc['subject']==subject) & (dfc['condition']=='baseline')]
 gc1 = gc1.iloc[0]

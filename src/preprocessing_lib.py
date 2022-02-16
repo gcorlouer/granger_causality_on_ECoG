@@ -1039,12 +1039,16 @@ def build_dfc(fc):
     for i in range(ncdt*nsub):
         condition[i] = fc_flat[i][0][0]
         subject[i] = fc_flat[i][1][0]
+        # Multitrial gc
         gc[i] = fc_flat[i][2]
+        # Multitrial MI
         mi[i] = fc_flat[i][3]
+        # Sample GC
         sgc[i] = fc_flat[i][4]
+        # Sample MI
         smi[i] = fc_flat[i][5]
         reader = EcogReader(data_path, subject=subject[i])
-        # Read visual channels for indices
+        # Read visual channels to track visual channels indices
         df_visual = reader.read_channels_info(fname='visual_channels.csv')
         visual_idx[i] = parcellation_to_indices(df_visual,  parcellation='group', matlab=False)
     

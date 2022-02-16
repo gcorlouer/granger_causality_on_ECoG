@@ -5,7 +5,7 @@
 if ~exist('sub_id', 'var') sub_id = 'DiAs'; end
 
 % Detrending
-if ~exist('pdeg', 'var')    pdeg = 1; end % detrending degree
+if ~exist('pdeg', 'var')    pdeg = 2; end % detrending degree
 % vector of polynomial evaluation points (default: evenly spaced)
 if ~exist('x', 'var')       x = []; end 
 % normalise (temporal) variance of each variable to 1 (default: false)

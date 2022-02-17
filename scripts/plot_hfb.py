@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Dec 15 13:22:32 2021
-
+In this script we plot the high frequency narrow and broad envelope.
 @author: guime
 """
 
@@ -10,8 +9,8 @@ Created on Wed Dec 15 13:22:32 2021
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from preprocessing_lib import EcogReader
-from input_config import args
+from src.preprocessing_lib import EcogReader
+from src.input_config import args
 
 #%% 
 chan = ['LTo1-LTo2']
@@ -24,6 +23,7 @@ hfb = hfb.copy().pick(chan)
 hfb = hfb.copy().crop(tmin=500, tmax=506)
 #%%
 #%matplotlib qt
+
 
 #hfb.plot()
 #%%

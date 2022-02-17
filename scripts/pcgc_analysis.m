@@ -69,6 +69,7 @@ for s = 1:nsub
         dataset(c,s).MI = MI;   
         dataset(c,s).single_F = single_F;
         dataset(c,s).single_MI = single_MI;
+        dataset(c,s).bias = bias;
     end
 end
 

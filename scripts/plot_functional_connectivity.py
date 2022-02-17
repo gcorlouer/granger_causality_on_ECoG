@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr  7 14:31:12 2021
 This script plot functional connectivity i.e. Mutual information and pairwise
 conditional Granger causality.
 @author: guime

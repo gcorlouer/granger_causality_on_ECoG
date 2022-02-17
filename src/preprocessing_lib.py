@@ -1026,7 +1026,7 @@ def build_dfc(fc):
     fc_flat = np.ndarray.flatten(fc.T)
     # Initialise dictionary
     fc_dict = {'subject':[],'condition':[], 'gc':[], 'mi':[], 'visual_idx':[], 
-               'sgc': [], 'smi':[]}
+               'sgc': [], 'smi':[], 'bias':[]}
     condition = [0]*(ncdt*nsub)
     subject = [0]*(ncdt*nsub)
     gc = [0]*(ncdt*nsub)
@@ -1034,7 +1034,7 @@ def build_dfc(fc):
     visual_idx = [0]*(ncdt*nsub)
     sgc = [0]*(ncdt*nsub)
     smi = [0]*(ncdt*nsub)
-    
+    bias = [0]*(ncdt*nsub)
     # Build dictionary
     for i in range(ncdt*nsub):
         condition[i] = fc_flat[i][0][0]
@@ -1048,6 +1048,8 @@ def build_dfc(fc):
         # Sample MI
         smi[i] = fc_flat[i][5]
         reader = EcogReader(data_path, subject=subject[i])
+        # Bias
+        bias[i] = fc_flat[i][6]
         # Read visual channels to track visual channels indices
         df_visual = reader.read_channels_info(fname='visual_channels.csv')
         visual_idx[i] = parcellation_to_indices(df_visual,  parcellation='group', matlab=False)
@@ -1059,6 +1061,7 @@ def build_dfc(fc):
     fc_dict['visual_idx'] = visual_idx
     fc_dict['sgc'] = sgc
     fc_dict['smi'] = smi
+    fc_dict['bias'] = bias
     
     # Build dataframe
     dfc = pd.DataFrame.from_dict(fc_dict)

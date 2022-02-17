@@ -140,6 +140,32 @@ z = round(z,2)
 pval = round(pval,3)
 plt.title(f'Dias pairwise GC across all pairs, z score={z}, p={pval}')
 
+#%% Plot distrib of pcmi accross all pairs
+nbins = 20
+icomp = 0 
+# Prepare gc in two distinct conditions
+mi1 = dfc['smi'].loc[(dfc['subject']==subject) & (dfc['condition']==comparisons[icomp][0])]
+mi1 = mi1.iloc[0]
+mi2 =  dfc['smi'].loc[(dfc['subject']==subject) & (dfc['condition']==comparisons[icomp][1])]
+mi2 = mi2.iloc[0]
+
+sns.set_theme()
+sns.set(font_scale=2)  # crazy big
+
+mi1 = np.ndarray.flatten(mi1)
+mi2 = np.ndarray.flatten(mi2)
+
+
+plt.hist(mi1, bins = nbins, density=True, label='Baseline', 
+          alpha=alpha, log=True)
+plt.hist(mi2, bins=nbins, density=True, label='Face', 
+          alpha=alpha, log=True)
+plt.legend()
+
+z, pval = ranksums(mi1, mi2, alternative='less')
+z = round(z,2)
+pval = round(pval,3)
+plt.title(f'Dias pairwise MI across all pairs, z score={z}, p={pval}')
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #
 #

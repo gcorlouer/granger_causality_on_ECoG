@@ -24,7 +24,7 @@ def test_classify_visual_chans():
                               tmax_prestim=args.tmax_prestim, 
                               tmin_postim=args.tmin_postim,
                tmax_postim=args.tmax_postim, alpha=args.alpha, 
-               zero_method=args.zero_method, alternative=args.alternative)
+               alternative=args.alternative)
     visual_populations = classifier.classify_visual_chans(hfb, dfelec)
     return visual_populations
 

@@ -15,7 +15,7 @@ import seaborn as sns
 #%% Make condition specific dictionary
 #%matplotlib qt
 cohort = ['AnRa',  'AnRi',  'ArLa',  'BeFe',  'DiAs',  'FaWa',  'JuRo', 'NeLa', 'SoGi']
-subject =  'SoGi'
+subject =  'DiAs'
 preprocessed_suffix = '_hfb_Stim_scaled-epo.fif'
 # Read visual chans
 reader = EcogReader(args.data_path, subject=subject, stage=args.stage,

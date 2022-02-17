@@ -22,8 +22,7 @@ for subject in args.cohort:
     classifier = VisualClassifier(tmin_prestim=args.tmin_prestim, 
                               tmax_prestim=args.tmax_prestim, 
                               tmin_postim=args.tmin_postim,
-               tmax_postim=args.tmax_postim, alpha=args.alpha, 
-               zero_method=args.zero_method, alternative=args.alternative)
+               tmax_postim=args.tmax_postim, alpha=args.alpha, alternative=args.alternative)
     visual_populations = classifier.classify_visual_chans(hfb, dfelec)
     
     # Save visually responsive populations into csv file

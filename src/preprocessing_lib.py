@@ -584,9 +584,9 @@ class VisualDetector():
         # Postimulus amplitude
         A_postim = self.crop_hfb(hfb, tmin=self.tmin_postim, tmax=self.tmax_postim)
         # Test no difference betwee pre and post stimulus amplitude
-        reject, pval_correct, tstat = self.multiple_wilcoxon_test(A_postim, A_prestim)
+        reject, pval_correct, z = self.multiple_wilcoxon_test(A_postim, A_prestim)
         # Compute visual responsivity 
-        visual_responsivity = self.compute_visual_responsivity(A_postim, A_prestim)
+        visual_responsivity = z
         # Return visually responsive channels
         visual_chan, effect_size = self.visual_chans_stats(reject, visual_responsivity, hfb)
         return visual_chan, effect_size
@@ -633,15 +633,14 @@ class VisualDetector():
         # Iniitialise inflated p values
         nchans = A_postim.shape[1]
         pval = [0]*nchans
-        tstat = [0]*nchans
+        z = [0]*nchans
         # Compute test stats given non normal distribution
         for i in range(0,nchans):
-            tstat[i], pval[i] = spstats.wilcoxon(A_postim[:,i], A_prestim[:,i],
-                                                 zero_method=self.zero_method, 
+            z[i], pval[i] = spstats.ranksums(A_postim[:,i], A_prestim[:,i], 
                                                  alternative=self.alternative) 
         # Correct for multiple testing    
         reject, pval_correct = fdrcorrection(pval, alpha=self.alpha)
-        w_test = reject, pval_correct, tstat
+        w_test = reject, pval_correct, z
         return w_test
 
     def cohen_d(self, x, y):
@@ -713,8 +712,7 @@ class VisualDetector():
         
         for i in range(len(visual_channels)):
             for t in range(np.size(A_postim,2)):
-                tstat[t] = spstats.wilcoxon(A_postim[:,i,t], A_baseline[:,i],
-                                            zero_method=self.zero_method, 
+                tstat[t] = spstats.ranksums(A_postim[:,i,t], A_baseline[:,i],
                                             alternative='greater')
                 pval[t] = tstat[t][1]
                 

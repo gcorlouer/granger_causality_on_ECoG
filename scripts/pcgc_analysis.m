@@ -42,12 +42,25 @@ for s = 1:nsub
 
         %% Pairwise conditional MI estimation
 
-        [MI, ~] = ts_to_MI(X, 'q', q, 'mhtc', mhtc, 'alpha', alpha);
-
+        [MI, sigMI] = ts_to_MI(X, 'q', q, 'mhtc', mhtc, 'alpha', alpha);
+        sigMI(isnan(sigMI)) = 0;
         %% Pairwise conditional GC estimation
-
-         F= ts_to_var_pcgc(X,'morder', morder,...
-                'regmode', regmode,'alpha', alpha,'mhtc', mhtc, 'LR', LR);
+        % VAR model estimation
+        VAR = ts_to_var_parameters(X, 'morder', morder, 'regmode', regmode);
+        V = VAR.V;
+        A = VAR.A;
+        disp(VAR.info)
+        % Pairwise conditional GC estimation
+        % Single regression
+        F = var_to_pwcgc(A,V);
+        F(isnan(F))=0;
+        % Compute significance against null distribution
+        nx = 1; ny=1;nz = n-nx-ny; p=morder;
+        % Dual regression
+        stat = var_to_pwcgc_tstat(X,V,morder,regmode,tstat);
+        pval = mvgc_pval(stat,tstat,nx,ny,nz,p,m,N);
+        [sigF, pcrit] = significance(pval,alpha,mhtc,[]);
+        sigF(isnan(sigF))=0;
         %% Estimate single trial distributions
         single_MI = zeros(n,n,N);
         single_F = zeros(n,n,N);
@@ -62,13 +75,14 @@ for s = 1:nsub
             single_F(:,:,i) = single_F(:,:,i) - bias;
         end
         %% Build dataset
-        
-        dataset(c,s).condition = condition{c};
         dataset(c,s).subject = subject;
+        dataset(c,s).condition = condition{c};
+        dataset(c,s).MI = MI; 
+        dataset(c,s).sigMI = sigMI;
         dataset(c,s).F = F;
-        dataset(c,s).MI = MI;   
-        dataset(c,s).single_F = single_F;
+        dataset(c,s).sigF = sigF;
         dataset(c,s).single_MI = single_MI;
+        dataset(c,s).single_F = single_F;
         dataset(c,s).bias = bias;
     end
 end

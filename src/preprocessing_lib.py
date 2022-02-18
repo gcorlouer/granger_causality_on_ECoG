@@ -1017,48 +1017,57 @@ def build_dfc(fc):
     """
     Build functional connectivity dictionary from pcgc .mat file output 
     """
-    data_path = Path('../data')
     # Shape of functional connectivity dataset.
     (ncdt, nsub) = fc.shape
     # Flatten array to build dictionarry
     fc_flat = np.ndarray.flatten(fc.T)
     # Initialise dictionary
-    fc_dict = {'subject':[],'condition':[], 'gc':[], 'mi':[], 'visual_idx':[], 
-               'sgc': [], 'smi':[], 'bias':[]}
-    condition = [0]*(ncdt*nsub)
+    fc_dict = {'subject':[],'condition':[],  'visual_idx':[],'mi':[], 'sig_mi':[],
+               'gc':[], 'sig_gc':[], 'smi':[], 'sgc': [], 'bias':[]}
     subject = [0]*(ncdt*nsub)
-    gc = [0]*(ncdt*nsub)
-    mi = [0]*(ncdt*nsub)
+    condition = [0]*(ncdt*nsub)
     visual_idx = [0]*(ncdt*nsub)
+    mi = [0]*(ncdt*nsub)
+    sig_mi = [0]*(ncdt*nsub)
+    gc = [0]*(ncdt*nsub)
+    sig_gc = [0]*(ncdt*nsub)
     sgc = [0]*(ncdt*nsub)
     smi = [0]*(ncdt*nsub)
     bias = [0]*(ncdt*nsub)
     # Build dictionary
     for i in range(ncdt*nsub):
-        condition[i] = fc_flat[i][0][0]
-        subject[i] = fc_flat[i][1][0]
-        # Multitrial gc
-        gc[i] = fc_flat[i][2]
-        # Multitrial MI
-        mi[i] = fc_flat[i][3]
-        # Sample GC
-        sgc[i] = fc_flat[i][4]
-        # Sample MI
-        smi[i] = fc_flat[i][5]
-        reader = EcogReader(data_path, subject=subject[i])
-        # Bias
-        bias[i] = fc_flat[i][6]
+        subject[i] = fc_flat[i][0][0]
+        condition[i] = fc_flat[i][1][0]
         # Read visual channels to track visual channels indices
+        data_path = Path('../data')
+        reader = EcogReader(data_path, subject=subject[i])
         df_visual = reader.read_channels_info(fname='visual_channels.csv')
         visual_idx[i] = parcellation_to_indices(df_visual,  parcellation='group', matlab=False)
+        # Multitrial MI
+        mi[i] = fc_flat[i][2]
+        # MI significance against null
+        sig_mi = fc_flat[i][3]
+        # Multitrial gc
+        gc[i] = fc_flat[i][4]
+        # GC significance against null
+        sig_gc[i] = fc_flat[i][5]
+        # Sample MI
+        smi[i] = fc_flat[i][6]
+        # Sample GC
+        sgc[i] = fc_flat[i][7]
+        # Bias
+        bias[i] = fc_flat[i][8]
+        
     
     fc_dict['subject'] =subject
     fc_dict['condition'] = condition
-    fc_dict['gc'] = gc
-    fc_dict['mi'] = mi
     fc_dict['visual_idx'] = visual_idx
-    fc_dict['sgc'] = sgc
+    fc_dict['mi'] = mi
+    fc_dict['sig_mi'] = sig_mi
+    fc_dict['gc'] = gc
+    fc_dict['sig_gc'] = sig_gc
     fc_dict['smi'] = smi
+    fc_dict['sgc'] = sgc 
     fc_dict['bias'] = bias
     
     # Build dataframe
@@ -1193,67 +1202,63 @@ def ts_to_population_hfb(ts, visual_populations, parcellation='group'):
 
 #%% Plot functional connectivity
 
-def plot_functional_connectivity(fc, df_visual, sfreq=100,
+def plot_pfc_null(fc, df_visual, s=2, sfreq=250,
                                  rotation=90, tau_x=0.5, tau_y=0.8, 
                                  font_scale=1.6):
     """
-    This function plot mutual information and transfer entropy matrices 
-    as heatmaps
-    
+    This function plot pairwise mutual information and transfer entropy matrices 
+    as heatmaps against the null distribution for a single subject
+    s: Subject index
     tau_x: translattion parameter for x coordinate of statistical significance
     tau_y: translattion parameter for y coordinate of statistical significance
     rotation: rotation of xticks and yticks labels
     te_max : maximum value for TE scale
     mi_max: maximum value for MI scale
     """
-    # Granger causality matrix
-    f = fc['F']
-    sig_gc = fc['sig_GC']
-    # Mutual information matrix
-    mi = fc['MI']
-    mi_max = np.amax(mi)
-    sig_mi = fc['sig_MI']
-    # Conditions
-    conditions = ['Rest', 'Face', 'Place']
-    n_cdt = len(conditions)
-    # Convert to transfer entropy
-    te = np.zeros_like(f)
-    for icat in range(n_cdt):
-        te[:,:,icat] = GC_to_TE(f[:,:,icat], sfreq=sfreq)
-    te_max = np.amax(te)
-    # Plot TE and MI as heatmap
-    sns.set(font_scale=1.6)
-    fig, ax = plt.subplots(3,2, figsize=(15,15))
-    for icat in range(n_cdt):
-        populations = df_visual['group']
-        g = sns.heatmap(mi[:,:,icat], vmin=0, vmax=mi_max, xticklabels=populations,
-                        yticklabels=populations, cmap='YlOrBr', ax=ax[icat,0])
+    (ncdt, nub) = fc.shape
+    fig, ax = plt.subplots(ncdt,2, figsize=(15,15))
+    populations = df_visual['group'].to_list()
+    for c in range(ncdt):
+        condition =  fc[c,s]['condition'][0]
+        # Granger causality matrix
+        f = fc[c,s]['F']
+        sig_gc = fc[c,s]['sigF']
+        # Mutual information matrix
+        mi = fc[c,s]['MI']
+        sig_mi = fc[c,s]['sigMI']        
+        # Plot MI as heatmap
+        sns.set(font_scale=1.6)
+        g = sns.heatmap(mi, xticklabels=populations,
+                        yticklabels=populations, cmap='YlOrBr', ax=ax[c,0])
         g.set_yticklabels(g.get_yticklabels(), rotation = rotation)
         # Position xticks on top of heatmap
-        ax[icat, 0].xaxis.tick_top()
+        ax[c, 0].xaxis.tick_top()
         ax[0,0].set_title('Mutual information (bit)')
-        ax[icat, 0].set_ylabel(conditions[icat])
-        g = sns.heatmap(te[:,:,icat], vmin=0, vmax=te_max, xticklabels=populations,
-                        yticklabels=populations, cmap='YlOrBr', ax=ax[icat,1])
+        ax[c, 0].set_ylabel(condition)
+        # Plot GC as heatmap
+        g = sns.heatmap(f, xticklabels=populations,
+                        yticklabels=populations, cmap='YlOrBr', ax=ax[c,1])
         g.set_yticklabels(g.get_yticklabels(), rotation = rotation)
-        ax[icat, 1].xaxis.tick_top()
-        ax[icat, 1].set_ylabel('Target')
+        # Position xticks on top of heatmap
+        ax[c, 1].xaxis.tick_top()
+        ax[c, 1].set_ylabel('Target')
         ax[0,1].set_title('Transfer entropy (bit/s)')
         # Plot statistical significant entries
         for y in range(f.shape[0]):
             for x in range(f.shape[1]):
-                if sig_mi[y,x,icat] == 1:
-                    ax[icat,0].text(x + tau_x, y + tau_y, '*',
+                if sig_mi[y,x] == 1:
+                    ax[c,0].text(x + tau_x, y + tau_y, '*',
                              horizontalalignment='center', verticalalignment='center',
                              color='k')
                 else:
                     continue
-                if sig_gc[y,x,icat] == 1:
-                    ax[icat,1].text(x + tau_x, y + tau_y, '*',
+                if sig_gc[y,x] == 1:
+                    ax[c,1].text(x + tau_x, y + tau_y, '*',
                              horizontalalignment='center', verticalalignment='center',
                              color='k')
                 else:
                     continue
+
 
 def GC_to_TE(f, sfreq=250):
     """

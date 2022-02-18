@@ -18,6 +18,8 @@ import pandas as pd
 from statsmodels.stats.multitest import fdrcorrection
 from scipy import stats
 from pathlib import Path
+from mne.stats import fdr_correction
+
 
 #%% Create Ecog class to read data
 #TODO : decompose read_ecog in 2 function: one for source and another for 
@@ -1011,6 +1013,114 @@ def parcellation_to_indices(visual_population, parcellation='group', matlab=Fals
                 group_indices[key][i] = group_indices[key][i] + 1
     return group_indices
 
+#%% Functional connectivity
+
+# Plot multitrial pairwise functional  functional connectivity 
+
+def plot_pfc_null(fc, df_visual, s=2, sfreq=250,
+                                 rotation=90, tau_x=0.5, tau_y=0.8, 
+                                 font_scale=1.6):
+    """
+    This function plot pairwise mutual information and transfer entropy matrices 
+    as heatmaps against the null distribution for a single subject
+    s: Subject index
+    tau_x: translattion parameter for x coordinate of statistical significance
+    tau_y: translattion parameter for y coordinate of statistical significance
+    rotation: rotation of xticks and yticks labels
+    te_max : maximum value for TE scale
+    mi_max: maximum value for MI scale
+    """
+    (ncdt, nub) = fc.shape
+    fig, ax = plt.subplots(ncdt,2, figsize=(15,15))
+    populations = df_visual['group'].to_list()
+    for c in range(ncdt):
+        condition =  fc[c,s]['condition'][0]
+        # Granger causality matrix
+        f = fc[c,s]['F']
+        sig_gc = fc[c,s]['sigF']
+        # Mutual information matrix
+        mi = fc[c,s]['MI']
+        sig_mi = fc[c,s]['sigMI']        
+        # Plot MI as heatmap
+        sns.set(font_scale=1.6)
+        g = sns.heatmap(mi, xticklabels=populations,
+                        yticklabels=populations, cmap='YlOrBr', ax=ax[c,0])
+        g.set_yticklabels(g.get_yticklabels(), rotation = rotation)
+        # Position xticks on top of heatmap
+        ax[c, 0].xaxis.tick_top()
+        ax[0,0].set_title('Mutual information (bit)')
+        ax[c, 0].set_ylabel(condition)
+        # Plot GC as heatmap
+        g = sns.heatmap(f, xticklabels=populations,
+                        yticklabels=populations, cmap='YlOrBr', ax=ax[c,1])
+        g.set_yticklabels(g.get_yticklabels(), rotation = rotation)
+        # Position xticks on top of heatmap
+        ax[c, 1].xaxis.tick_top()
+        ax[c, 1].set_ylabel('Target')
+        ax[0,1].set_title('Transfer entropy (bit/s)')
+        # Plot statistical significant entries
+        for y in range(f.shape[0]):
+            for x in range(f.shape[1]):
+                if sig_mi[y,x] == 1:
+                    ax[c,0].text(x + tau_x, y + tau_y, '*',
+                             horizontalalignment='center', verticalalignment='center',
+                             color='k')
+                else:
+                    continue
+                if sig_gc[y,x] == 1:
+                    ax[c,1].text(x + tau_x, y + tau_y, '*',
+                             horizontalalignment='center', verticalalignment='center',
+                             color='k')
+                else:
+                    continue
+
+# Compute z score and statistics for single trial pairwise fc distribution
+
+def single_pfc_stat(fc, cohort, subject ='DiAs', single='single_F', 
+                    alternative='two-sided'):
+    """
+    Compare functional connectivity (GC or MI) during baseline w.r.t a specific
+    condition such as Face or Place presentation.
+    
+    Parameters:
+    single= 'single_F' or 'single_MI'
+    cohort = ['AnRa',  'ArLa', 'DiAs']
+    """
+    # Index conditions
+    cdt = {'Rest':0, 'Face':1, 'Place':2, 'baseline':3}
+    # Make subject dictionary
+    keys = cohort
+    sub_dict = dict.fromkeys(keys)
+    # Index subjects
+    for idx, sub in enumerate(cohort):
+        sub_dict[sub] = idx
+    # Comparisons performed for FC
+    comparisons = [(cdt['baseline'],cdt['Face']), (cdt['baseline'], cdt['Place']), 
+                   (cdt['Place'], cdt['Face'])]
+    ncomp = len(comparisons)
+    # Subject index of interest
+    s = sub_dict[subject]
+    # FGet shape of functional connectivity matrix 
+    f = fc[0,s][single]
+    (n,n,N) = f.shape
+    # Initialise statistics
+    z = np.zeros((n,n,ncomp))
+    pval =  np.zeros((n,n,ncomp))
+    # Compare fc during baseline and one condition
+    for icomp in range(ncomp):
+        cb = comparisons[icomp][0]
+        c = comparisons[icomp][1]
+        # Baseline functional connectivity
+        fb = fc[cb,s][single]
+        # Condition-specific functional connectivity
+        f = fc[c,s][single]
+        # Compute z score and pvalues
+        for i in range(n):
+            for j in range(n):
+                z[i,j, icomp], pval[i,j,icomp] = spstats.ranksums(f[i,j,:], fb[i,j,:], 
+                 alternative=alternative)
+    rejected, pval_corrected = fdr_correction(pval,alpha=0.05)
+    return z, rejected, pval
 #%% Functional connectivity functions
 
 def build_dfc(fc):
@@ -1202,62 +1312,6 @@ def ts_to_population_hfb(ts, visual_populations, parcellation='group'):
 
 #%% Plot functional connectivity
 
-def plot_pfc_null(fc, df_visual, s=2, sfreq=250,
-                                 rotation=90, tau_x=0.5, tau_y=0.8, 
-                                 font_scale=1.6):
-    """
-    This function plot pairwise mutual information and transfer entropy matrices 
-    as heatmaps against the null distribution for a single subject
-    s: Subject index
-    tau_x: translattion parameter for x coordinate of statistical significance
-    tau_y: translattion parameter for y coordinate of statistical significance
-    rotation: rotation of xticks and yticks labels
-    te_max : maximum value for TE scale
-    mi_max: maximum value for MI scale
-    """
-    (ncdt, nub) = fc.shape
-    fig, ax = plt.subplots(ncdt,2, figsize=(15,15))
-    populations = df_visual['group'].to_list()
-    for c in range(ncdt):
-        condition =  fc[c,s]['condition'][0]
-        # Granger causality matrix
-        f = fc[c,s]['F']
-        sig_gc = fc[c,s]['sigF']
-        # Mutual information matrix
-        mi = fc[c,s]['MI']
-        sig_mi = fc[c,s]['sigMI']        
-        # Plot MI as heatmap
-        sns.set(font_scale=1.6)
-        g = sns.heatmap(mi, xticklabels=populations,
-                        yticklabels=populations, cmap='YlOrBr', ax=ax[c,0])
-        g.set_yticklabels(g.get_yticklabels(), rotation = rotation)
-        # Position xticks on top of heatmap
-        ax[c, 0].xaxis.tick_top()
-        ax[0,0].set_title('Mutual information (bit)')
-        ax[c, 0].set_ylabel(condition)
-        # Plot GC as heatmap
-        g = sns.heatmap(f, xticklabels=populations,
-                        yticklabels=populations, cmap='YlOrBr', ax=ax[c,1])
-        g.set_yticklabels(g.get_yticklabels(), rotation = rotation)
-        # Position xticks on top of heatmap
-        ax[c, 1].xaxis.tick_top()
-        ax[c, 1].set_ylabel('Target')
-        ax[0,1].set_title('Transfer entropy (bit/s)')
-        # Plot statistical significant entries
-        for y in range(f.shape[0]):
-            for x in range(f.shape[1]):
-                if sig_mi[y,x] == 1:
-                    ax[c,0].text(x + tau_x, y + tau_y, '*',
-                             horizontalalignment='center', verticalalignment='center',
-                             color='k')
-                else:
-                    continue
-                if sig_gc[y,x] == 1:
-                    ax[c,1].text(x + tau_x, y + tau_y, '*',
-                             horizontalalignment='center', verticalalignment='center',
-                             color='k')
-                else:
-                    continue
 
 
 def GC_to_TE(f, sfreq=250):

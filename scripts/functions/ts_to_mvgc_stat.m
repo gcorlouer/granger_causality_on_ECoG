@@ -48,7 +48,7 @@ for i=1:ng
         end
         % Compute corrected pvalue and significance
         pval(i,j) = mvgc_pval(F(i,j),tstat,nx,ny,nz,morder,m,N);
-        [sigF(i,j), pcrit] = significance(pval(i,j),alpha,mhtc,[]);
     end
 end
+[sigF, pcrit] = significance(pval,alpha,mhtc,[]);
 end

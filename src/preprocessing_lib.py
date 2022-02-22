@@ -1013,7 +1013,7 @@ def parcellation_to_indices(visual_population, parcellation='group', matlab=Fals
                 group_indices[key][i] = group_indices[key][i] + 1
     return group_indices
 
-#%% Functional connectivity
+#%% Pairwise functional connectivity
 
 # Plot multitrial pairwise functional  functional connectivity 
 
@@ -1030,7 +1030,7 @@ def plot_pfc_null(fc, df_visual, s=2, sfreq=250,
     te_max : maximum value for TE scale
     mi_max: maximum value for MI scale
     """
-    (ncdt, nub) = fc.shape
+    (ncdt, nsub) = fc.shape
     fig, ax = plt.subplots(ncdt,2, figsize=(15,15))
     populations = df_visual['group'].to_list()
     for c in range(ncdt):
@@ -1076,8 +1076,8 @@ def plot_pfc_null(fc, df_visual, s=2, sfreq=250,
 
 # Compute z score and statistics for single trial pairwise fc distribution
 
-def single_pfc_stat(fc, cohort, subject ='DiAs', single='single_F', 
-                    alternative='two-sided'):
+def single_pfc_stat(fc, cohort, subject ='DiAs', baseline= 'baseline', 
+                    single='single_F', alternative='two-sided'):
     """
     Compare functional connectivity (GC or MI) during baseline w.r.t a specific
     condition such as Face or Place presentation.
@@ -1085,6 +1085,7 @@ def single_pfc_stat(fc, cohort, subject ='DiAs', single='single_F',
     Parameters:
     single= 'single_F' or 'single_MI'
     cohort = ['AnRa',  'ArLa', 'DiAs']
+    baseline = 'baseline' or 'Rest' 
     """
     # Index conditions
     cdt = {'Rest':0, 'Face':1, 'Place':2, 'baseline':3}
@@ -1095,8 +1096,8 @@ def single_pfc_stat(fc, cohort, subject ='DiAs', single='single_F',
     for idx, sub in enumerate(cohort):
         sub_dict[sub] = idx
     # Comparisons performed for FC
-    comparisons = [(cdt['baseline'],cdt['Face']), (cdt['baseline'], cdt['Place']), 
-                   (cdt['Place'], cdt['Face'])]
+    comparisons = [(cdt[baseline],cdt['Face']), (cdt[baseline], cdt['Place']), 
+                   (cdt[baseline], cdt['Face'])]
     ncomp = len(comparisons)
     # Subject index of interest
     s = sub_dict[subject]
@@ -1121,7 +1122,13 @@ def single_pfc_stat(fc, cohort, subject ='DiAs', single='single_F',
                  alternative=alternative)
     rejected, pval_corrected = fdr_correction(pval,alpha=0.05)
     return z, rejected, pval
-#%% Functional connectivity functions
+
+#%% Groupwise functional connectivity functions
+
+
+
+#%% Deprecated
+#Functional connectivity functions
 
 def build_dfc(fc):
     """

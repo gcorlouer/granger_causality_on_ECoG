@@ -43,8 +43,9 @@ for s = 1:nsub
 
         %% Pairwise conditional MI estimation
 
-        [MI, sigMI] = ts_to_MI(X, 'q', q, 'mhtc', mhtc, 'alpha', alpha);
+        [MI, sigMI, pvalI] = ts_to_MI(X, 'q', q, 'mhtc', mhtc, 'alpha', alpha);
         sigMI(isnan(sigMI)) = 0;
+        
         %% Pairwise conditional GC estimation
         % VAR model estimation
         VAR = ts_to_var_parameters(X, 'morder', morder, 'regmode', regmode);
@@ -60,7 +61,7 @@ for s = 1:nsub
         % Dual regression
         stat = var_to_pwcgc_tstat(X,V,morder,regmode,tstat);
         pval = mvgc_pval(stat,tstat,nx,ny,nz,p,m,N);
-        [sigF, pcrit] = significance(pval,alpha,mhtc,[]);
+        [sigF, pvalF] = significance(pval,alpha,mhtc,[]);
         sigF(isnan(sigF))=0;
         %% Estimate single trial distributions
         single_MI = zeros(n,n,N);
@@ -80,11 +81,12 @@ for s = 1:nsub
         dataset(c,s).condition = condition{c};
         dataset(c,s).MI = MI; 
         dataset(c,s).sigMI = sigMI;
+        dataset(c,s).pvalI = pvalI;
+        dataset(c,s).single_MI = single_MI;
         dataset(c,s).F = F;
         dataset(c,s).sigF = sigF;
-        dataset(c,s).single_MI = single_MI;
+        dataset(c,s).pvalF = pvalF;
         dataset(c,s).single_F = single_F;
-        dataset(c,s).bias = bias;
     end
 end
 

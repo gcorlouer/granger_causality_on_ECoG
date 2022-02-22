@@ -31,6 +31,13 @@ for s = 1:nsub
 
         [X,~,~,~] = mvdetrend(X,pdeg,[]);
         
+        % Multitrial groupwise Mutual information
+        [MI, sigMI, pvalI] = ts_to_mvmi(X,  'gind', indices, ...
+            'alpha', alpha, 'mhtc',mhtc);
+        
+        % Single trial Mutual information
+        single_MI = ts_to_single_mvmi(X, 'gind', indices);
+        
         % VAR estimation
         VAR = ts_to_var_parameters(X, 'morder', morder, 'regmode', regmode);
         V = VAR.V;
@@ -38,18 +45,24 @@ for s = 1:nsub
         disp(VAR.info)
         
         % MVGC multitrial stat estimation
-        [F, sigF, pcrit] = ts_to_mvgc_stat(X, 'gind', indices, 'morder',morder,...
+        [F, sigF, pvalF] = ts_to_mvgc_stat(X, 'gind', indices, 'morder',morder,...
         'regmode',regmode,'tstat', tstat,'alpha', alpha, 'mhtc',mhtc);
+    
         % Single trial MVGC
-        singleF = ts_to_single_mvgvc(X, 'gind', indices, 'morder',morder,...
+        single_F = ts_to_single_mvgvc(X, 'gind', indices, 'morder',morder,...
         'regmode',regmode);
+    
         %% Build dataset
         dataset(c,s).subject = subject;
         dataset(c,s).condition = condition{c};
+        dataset(c,s).MI = MI; 
+        dataset(c,s).sigMI = sigMI;
+        dataset(c,s).pvalI = pvalI;
+        dataset(c,s).single_MI = single_MI;
         dataset(c,s).F = F;
         dataset(c,s).sigF = sigF;
-        dataset(c,s).pcrit = pcrit;
-        dataset(c,s).singleF = singleF;
+        dataset(c,s).pvalF = pvalF;
+        dataset(c,s).single_F = single_F;
     end
 end
 %% Save dataset for plotting in python

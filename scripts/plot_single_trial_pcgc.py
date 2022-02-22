@@ -35,10 +35,10 @@ fc = fc['dataset']
 
 
 #%% Plot z score and  signigicance
-
-subject = 'ArLa'
+#%matplotlib qt
+subject = 'DiAs'
 z, sig, pval = single_pfc_stat(fc, cohort, subject =subject, single='single_F', 
-                    alternative='two-sided')
+                    baseline='Rest', alternative='two-sided')
 
 
 reader = EcogReader(args.data_path, subject=subject)

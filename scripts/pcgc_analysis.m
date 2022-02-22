@@ -1,8 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % This script run functional connectivity analysis on time series of one
 % subject. Estimates mutual information, then pairwise conditional 
-% Granger causality (GC), then spectral GC. Script returns dataset that
-% is going to be plotted in python.
+% Granger causality (GC) on multitrial and
+% single trial. The script returns a dataset that is going to be anlayse 
+% and plotted in python.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialise parameters
 

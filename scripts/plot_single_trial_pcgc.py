@@ -36,12 +36,12 @@ fc = fc['dataset']
 
 #%% Plot z score and  signigicance
 
-
-z, sig, pval = single_pfc_stat(fc, cohort, subject ='DiAs', single='single_F', 
+subject = 'ArLa'
+z, sig, pval = single_pfc_stat(fc, cohort, subject =subject, single='single_F', 
                     alternative='two-sided')
 
 
-reader = EcogReader(args.data_path, subject='DiAs')
+reader = EcogReader(args.data_path, subject=subject)
 # Read visual channels 
 df_visual = reader.read_channels_info(fname='visual_channels.csv')
 populations = df_visual['group']

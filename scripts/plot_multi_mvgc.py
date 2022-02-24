@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-from src.preprocessing_lib import EcogReader, plot_pmvgc_null
+from src.preprocessing_lib import EcogReader, plot_multi_fc, parcellation_to_indices
 from src.input_config import args
 from scipy.io import loadmat
 from pathlib import Path
@@ -31,37 +31,14 @@ mvgc = loadmat(fpath)
 mvgc = mvgc['dataset']
 
 #%%
+# Read visual channels 
+(subject,s) = ('DiAs',2)
+reader = EcogReader(args.data_path, subject=subject)
+df_visual = reader.read_channels_info(fname='visual_channels.csv')
+populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
 
-(ncdt, nsub) = mvgc.shape
-    fig, ax = plt.subplots(ncdt,2, figsize=(15,15))
-    populations = df_visual['group'].to_list()
-    for c in range(ncdt):
-        condition =  mvgc[c,s]['condition'][0]
-        # Granger causality matrix
-        f = mvgc[c,s]['F']
-        sig_gc = mvgc[c,s]['sigF']
-        # Plot GC as heatmap
-        g = sns.heatmap(f, xticklabels=populations,
-                        yticklabels=populations, cmap='YlOrBr', ax=ax[c,1])
-        g.set_yticklabels(g.get_yticklabels(), rotation = rotation)
-        # Position xticks on top of heatmap
-        ax[c, 1].xaxis.tick_top()
-        ax[c, 1].set_ylabel('Target')
-        ax[0,1].set_title('Transfer entropy (bit/s)')
-        # Plot statistical significant entries
-        for y in range(f.shape[0]):
-            for x in range(f.shape[1]):
-                if sig_mi[y,x] == 1:
-                    ax[c,0].text(x + tau_x, y + tau_y, '*',
-                             horizontalalignment='center', verticalalignment='center',
-                             color='k')
-                else:
-                    continue
-                if sig_gc[y,x] == 1:
-                    ax[c,1].text(x + tau_x, y + tau_y, '*',
-                             horizontalalignment='center', verticalalignment='center',
-                             color='k')
-                else:
-                    continue
+plot_multi_fc(mvgc, populations, s=s, sfreq=250,
+                                 rotation=90, tau_x=0.5, tau_y=0.8, 
+                                 font_scale=1.6)
 
 

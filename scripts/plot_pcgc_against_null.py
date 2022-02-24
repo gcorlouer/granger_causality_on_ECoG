@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-from src.preprocessing_lib import EcogReader, plot_pfc_null
+from src.preprocessing_lib import EcogReader, parcellation_to_indices, plot_multi_fc
 from src.input_config import args
 from scipy.io import loadmat
 from pathlib import Path
@@ -36,9 +36,11 @@ fc = fc['dataset']
 #%% Plot mulittrial GC
 (subject,s) = ('DiAs',2)
 reader = EcogReader(args.data_path, subject=subject)
+
 # Read visual channels 
 df_visual = reader.read_channels_info(fname='visual_channels.csv')
-plot_pfc_null(fc, df_visual, s=s)      
+populations = df_visual['group']
+plot_multi_fc(fc, populations, s=s)      
 
 
 

@@ -1017,7 +1017,7 @@ def parcellation_to_indices(visual_population, parcellation='group', matlab=Fals
 
 # Plot multitrial pairwise functional  functional connectivity 
 
-def plot_pfc_null(fc, df_visual, s=2, sfreq=250,
+def plot_multi_fc(fc, populations, s=2, sfreq=250,
                                  rotation=90, tau_x=0.5, tau_y=0.8, 
                                  font_scale=1.6):
     """
@@ -1032,7 +1032,6 @@ def plot_pfc_null(fc, df_visual, s=2, sfreq=250,
     """
     (ncdt, nsub) = fc.shape
     fig, ax = plt.subplots(ncdt,2, figsize=(15,15))
-    populations = df_visual['group'].to_list()
     for c in range(ncdt):
         condition =  fc[c,s]['condition'][0]
         # Granger causality matrix

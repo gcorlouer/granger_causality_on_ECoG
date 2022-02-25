@@ -10,9 +10,11 @@ import mne
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+import pandas as pd
 
-from src.preprocessing_lib import EcogReader, Epocher
+from src.preprocessing_lib import EcogReader, Epocher, prepare_condition_scaled_ts
 from pathlib import Path
+from scipy.stats import sem, linregress
 
 
 #%% Style parameters
@@ -108,10 +110,12 @@ def plot_narrow_broadband(args, fpath, fname = 'DiAs_narrow_broadband_stim.pdf',
 
 # Plot log vs non log trials
     
-def plot_log_trial(args, fpath, fname = 'DiAs_log_trial.eps', 
+def plot_log_trial(args, fpath, fname = 'DiAs_log_trial.pdf', 
                           chan = ['LTo1-LTo2'], itrial=2, nbins=50):
-    
-    #
+    """
+    This function plot log trial vs non log trial and their respective 
+    distribution
+    """
     reader = EcogReader(args.data_path, stage=args.stage,
                  preprocessed_suffix=args.preprocessed_suffix, preload=True, 
                  epoch=False)
@@ -168,44 +172,213 @@ def plot_log_trial(args, fpath, fname = 'DiAs_log_trial.eps',
     # Save figure
     fpath = fpath.joinpath(fname)
     plt.savefig(fpath)
+#%% Visual channel detection plots
+
+def plot_visual_trial(args, fpath, fname = 'DiAs_visual_trial.pdf', 
+                          chan = ['LTo1-LTo2'], itrial=2, nbins=50):
+    """
+    Plot visually responsive trial and pre/postim distribution
+    """
+    reader = EcogReader(args.data_path, stage=args.stage,
+                 preprocessed_suffix=args.preprocessed_suffix, preload=True, 
+                 epoch=False)
+
+    # Read visually responsive channels
+    df= reader.read_channels_info(fname='visual_channels.csv')
+    latency = df['latency'].loc[df['chan_name']==chan[0]].tolist()
+    latency = latency[0]*1e-3
+    
+    hfa = reader.read_ecog()
+    # Epoch HFA
+    epocher = Epocher(condition='Face', t_prestim=args.t_prestim, t_postim = args.t_postim, 
+                                 baseline=None, preload=True, tmin_baseline=args.tmin_baseline, 
+                                 tmax_baseline=args.tmax_baseline, mode=args.mode)
+    epoch = epocher.log_epoch(hfa)
+    # Downsample by factor of 2 
+    epoch = epoch.copy().decimate(args.decim)
+    time = epoch.times
+    # Get trial data
+    epoch = epoch.copy().pick(chan)
+    X = epoch.copy().get_data()
+    trial = X[itrial,0, :]
+    # Get evoked data
+    evok = np.mean(X, axis=0)
+    evok = evok[0,:]
+    sm = sem(X, axis=0)
+    sm = sm[0,:]
+    up_ci = evok + 1.96*sm
+    down_ci = evok - 1.96*sm
+    # Get histogram of prestimulus
+    prestim = epoch.copy().crop(tmin=args.tmin_prestim, tmax=args.tmax_prestim)
+    prestim = prestim.get_data()
+    prestim = np.ndarray.flatten(prestim)
+    amin = np.amin(prestim)
+    baseline = np.mean(prestim)
+    # Get histogram of postimulus
+    postim = epoch.copy().crop(tmin=args.tmin_postim, tmax=args.tmax_postim)
+    postim = postim.get_data()
+    postim = np.ndarray.flatten(postim)
+    amax = np.amax(postim)
+    # Plot trial and pre.postim distribution
+    f, ax = plt.subplots(2,2,)
+    # Plot representative trial
+    ax[0,0].plot(time, trial, color='b')
+    ax[0,0].set_xlabel('Time (s)')
+    ax[0,0].set_ylabel('Log HFA')
+    ax[0,0].axvline(x=0, color='k')
+    ax[0,0].axvline(x=latency, color='r', label='latency response')
+    ax[0,0].axhline(y=baseline, color='k')
+    ax[0,0].set_title('a)',loc='left')
+    ax[0,0].legend()
+    # Plot evoked response
+    ax[1,0].plot(time, evok, color='b')
+    ax[1,0].fill_between(time, down_ci, up_ci, alpha=0.6)
+    ax[1,0].set_xlabel('Time (s)')
+    ax[1,0].set_ylabel('Log HFA')
+    ax[1,0].axvline(x=0, color='k')
+    ax[1,0].axvline(x=latency, color='r', label='latency response')
+    ax[1,0].axhline(y=baseline, color='k')
+    ax[1,0].set_title('b)',loc='left')
+    ax[1,0].legend()
+    # Plot postimulus histogram
+    sns.histplot(postim, stat = 'probability', bins=nbins, kde=True, ax=ax[0,1])
+    ax[0,1].set_xlabel('Postimulus Amplitude')
+    ax[0,1].set_ylabel('Probability')
+    ax[0,1].set_xlim(left=amin, right=amax)
+    ax[0,1].set_title('c)',loc='left')
+    # Plot prestimulus histogram
+    sns.histplot(prestim, stat = 'probability', bins=nbins, kde=True, ax=ax[1,1])
+    ax[1,1].set_xlabel('Prestimulus Amplitude')
+    ax[1,1].set_ylabel('Probability')
+    ax[1,1].set_xlim(left=amin, right=amax)
+    ax[1,1].set_title('d)',loc='left')
+    plt.tight_layout()
+    # Save figure
+    fpath = fpath.joinpath(fname)
+    plt.savefig(fpath)
+    
+
+#%% Visual channels detection plots
+
+def plot_visual_vs_non_visual(args, fpath, fname='visual_vs_non_visual.pdf'):
+    # Read visual chans
+    for i, subject in enumerate(args.cohort):
+        reader = EcogReader(args.data_path, subject=subject, stage=args.stage,
+                         preprocessed_suffix=args.preprocessed_suffix, epoch=args.epoch)
+        df_visual= reader.read_channels_info(fname='visual_channels.csv')
+        visual_chans = df_visual['chan_name'].to_list()
+        # Read hfb
+        hfb = reader.read_ecog()
+        hfb_visual = hfb.copy().pick_channels(visual_chans)
+        hfb_nv = hfb.copy().drop_channels(visual_chans)
+        baseline = hfb_visual.copy().crop(tmin=-0.5, tmax=0).get_data()
+        baseline = np.average(baseline)
+        # Plot event related potential of visual channels
+        evok_visual = hfb_visual.average()
+        # Plot event related potential of non visual channels
+        evok_nv = hfb_nv.average()
+        time = evok_visual.times
+        X = evok_visual.get_data()
+        mX = np.mean(X,0)
+        Y = evok_nv.get_data()
+        mY = np.mean(Y,0)
+        # Plot visual vs non visual
+        plt.subplot(3,3, i+1)
+        plt.plot(time, mX, label='visual', color='b')
+        plt.plot(time, mY, label='non visual', color = 'r')
+        plt.axhline(y=baseline, color='k')
+        plt.axvline(x=0, color='k')
+        plt.xlabel('Time (s)')
+        plt.ylabel(f'HFA {subject}')
+        plt.tight_layout()
+        #plt.legend(loc='lower left', bbox_to_anchor=(1.02, 1.02))
+        # Save figure
+        save_path = fpath.joinpath(fname)
+        plt.savefig(save_path)
+        
+def plot_linreg(reg, save_path, figname = 'visual_hierarchy.pdf'):
+    """
+    Plot linear regression between latency, Y and visual responsivity for
+    visual channel hierarchy
+    
+    reg = [('Y','latency'), ('Y','visual_responsivity'),('latency', 'visual_responsivity'),
+           ('Y','category_selectivity')]
+    
+    Regressors/regressands
+    """
+    result_path = Path('../results')
+    fname = 'all_visual_channels.csv'
+    fpath = result_path.joinpath(fname)
+    df = pd.read_csv(fpath)
+    # Remove outlier
+    outlier = 'LTm5-LTm6'
+    df = df[df['chan_name']!=outlier]
+    for i, pair in enumerate(reg):
+        x = df[pair[0]].to_numpy()
+        y = df[pair[1]].to_numpy()
+        xlabel = pair[0]
+        ylabel = pair[1]
+        plt.subplot(2,2,i+1)
+        stats = linregress(x, y)
+        xmin = np.amin(x)
+        xmax = np.amax(x)
+        ax = np.arange(xmin, xmax)
+        ay = stats.slope*ax + stats.intercept
+        plt.plot(ax, ay, color='r')
+        plt.scatter(x,y, color='b')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.annotate(f'r2={round(stats.rvalue,2)}\n p={round(stats.pvalue,3)}', 
+                       xy = (0.75, 0.75), xycoords='axes fraction', fontsize = 8)
+        plt.tight_layout()
+        fpath = save_path.joinpath(figname)
+        plt.savefig(fpath)
+
+#%% Visual channels classification plots
+
+def plot_condition_ts(args, fpath, subject='DiAs', figname='_condition_ts.pdf'):
+    # Prepare condition ts
+    ts = prepare_condition_scaled_ts(args.data_path, subject=subject, 
+                                     stage='preprocessed', matlab = False,
+                     preprocessed_suffix='_hfb_continuous_raw.fif', decim=2,
+                     epoch=False, t_prestim=-0.5, t_postim=1.75, tmin_baseline = -0.5,
+                     tmax_baseline = 0, tmin_crop=-0.5, tmax_crop=1.75)
+    # Prepare inputs for plotting
+    conditions = ['Rest','Face','Place']
+    populations = ts['indices'].keys()
+    time = ts['time']
+    baseline = ts['baseline']
+    baseline = np.average(baseline)
+    # Plot condition ts
+    f, ax = plt.subplots(3,1, sharex=True, sharey=True)
+    for i, cdt in enumerate(conditions):
+        for pop in populations:
+            # Condition specific neural population
+            X = ts[cdt]
+            pop_idx = ts['indices'][pop]
+            X = X[pop_idx,:,:]
+            X = np.average(X, axis = 0)
+            # Compute evoked response
+            evok = np.average(X, axis=1)
+            # Compute confidence interval
+            smX = sem(X,axis=1)
+            up_ci = evok + 1.96*smX
+            down_ci = evok - 1.96*smX
+            # Plot condition-specific evoked HFA
+            ax[i].plot(time, evok, label=pop)
+            ax[i].fill_between(time, down_ci, up_ci, alpha=0.6)
+            ax[i].axvline(x=0, color ='k')
+            ax[i].axhline(y=baseline, color='k')
+            ax[i].set_ylabel(f'{cdt} (dB)')
+            ax[0].legend()
+    ax[2].set_xlabel('time (s)')
+    plt.tight_layout()
+    fname = subject + figname
+    fpath = fpath.joinpath(fname)
+    plt.savefig(fpath)
+
+
+
 #%%
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

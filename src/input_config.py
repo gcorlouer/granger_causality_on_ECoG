@@ -25,7 +25,7 @@ parser.add_argument("--result_path", type=list, default=result_path)
 parser.add_argument("--cohort", type=list, default=cohort)
 parser.add_argument("--subject", type=str, default='DiAs')
 parser.add_argument("--stage", type=str, default='preprocessed')
-parser.add_argument("--preprocessed_suffix", type=str, default= '_hfb_continuous_raw.fif')
+parser.add_argument("--preprocessed_suffix", type=str, default= '_hfb_Stim_scaled-epo.fif')
 parser.add_argument("--epoch", type=bool, default=True)
 parser.add_argument("--channels", type=str, default='visual_channels.csv')
 

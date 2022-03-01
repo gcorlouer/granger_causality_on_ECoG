@@ -46,8 +46,7 @@ for c in range(ncdt):
             
 handles, labels = ax[c,s].get_legend_handles_labels()
 f.legend(handles, labels, loc='upper right')
-f.suptitle('VAR model oder estimation accross subjects', fontsize=22)
-
+plt.tight_layout()
 #%% Plot Spectral radius
 
 f, ax = plt.subplots(ncdt, nsub, sharex=True, sharey=True)
@@ -68,5 +67,7 @@ for c in range(ncdt):
 handles, labels = ax[c,s].get_legend_handles_labels()
 f.legend(handles, labels, loc='upper right')
 f.suptitle('Rolling spectral radius accross subjects', fontsize=22)
+
+
 
 

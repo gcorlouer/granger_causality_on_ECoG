@@ -7,8 +7,12 @@ In this script we test function from plotting library
 """
 
 from src.input_config import args
-from src.plotting_lib import plot_visual_vs_non_visual, plot_condition_ts
+from src.plotting_lib import plot_rolling_specrad, plot_rolling_var
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
 
 home = Path.home()
 fpath = home.joinpath('thesis','overleaf_project','figures')
@@ -45,3 +49,67 @@ plot_linreg(reg, save_path, figname = 'visual_hierarchy.pdf')
 #%%
 
 plot_condition_ts(args, fpath, subject='DiAs')
+
+#%% Plot var
+
+result_path = Path('..','results')
+fname = 'rolling_var_estimation.csv'
+fpath = Path.joinpath(result_path, fname)
+df = pd.read_csv(fpath)
+
+fpath = home.joinpath('thesis','overleaf_project','figures')
+
+plot_rolling_var(df, fpath, ncdt =3, momax=10, figname='rolling_var.pdf')
+
+
+
+
+#%% Plot Spectral radius
+
+# Read input
+result_path = Path('..','results')
+fname = 'rolling_var_estimation.csv'
+fpath = Path.joinpath(result_path, fname)
+df = pd.read_csv(fpath)
+fpath = home.joinpath('thesis','overleaf_project','figures')
+
+plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.pdf')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

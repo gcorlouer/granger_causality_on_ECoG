@@ -20,7 +20,7 @@ from scipy.stats import sem, linregress
 #%% Style parameters
 
 plt.style.use('ggplot')
-fig_width = 16  # figure width in cm
+fig_width = 17  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
@@ -379,6 +379,67 @@ def plot_condition_ts(args, fpath, subject='DiAs', figname='_condition_ts.pdf'):
 
 
 
-#%%
+#%% VAR model estimation
+    
+def plot_rolling_var(df, fpath, ncdt =3, momax=10, figname='rolling_var.pdf'):
+    """
+    This function plots results of rolling VAR estimation
+    """
+    cohort = list(df["subject"].unique())
+    nsub = len(cohort)
+    ic = ["aic", "bic", "hqc", "lrt"]
+    cdt = list(df["condition"].unique())
+    ticks = [0, 0.8]
+    # Plot rolling var
+    f, ax = plt.subplots(ncdt, nsub, sharex=True, sharey=True)
+    for c in range(ncdt):
+        for s in range(nsub):
+            for i in ic:
+                time = df["time"].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
+                morder = df[i].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
+                ax[c,s].plot(time, morder, label=i)
+                ax[c,s].set_ylim(0,momax)
+                ax[0,s].set_title(cohort[s])
+                ax[c,0].set_ylabel(cdt[c])
+                ax[2,s].set_xlabel("Time (s)")
+                ax[2,s].set_xticks(ticks)
+                        
+    # legend situated upper right                
+    handles, labels = ax[c,s].get_legend_handles_labels()
+    f.legend(handles, labels, loc='upper right')
+    plt.tight_layout()
+    # Save figure
+    fpath = fpath.joinpath(figname)
+    plt.savefig(fpath)
 
+def plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.pdf'):
+    """
+    Plot spectral radius along rolling window accross all subjects
+    """
+    cohort = list(df["subject"].unique())
+    nsub = len(cohort)
+    cdt = list(df["condition"].unique())
+    ticks = [0, 0.8]
+    # Plot rolling spectral radius
+    f, ax = plt.subplots(ncdt, nsub, sharex=True, sharey=True)
+    for c in range(ncdt):
+        for s in range(nsub):
+            time = df["time"].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
+            rho = df["rho"].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
+            ax[c,s].plot(time, rho, label="Spectral radius")
+            ax[c,s].set_ylim(0.6,1)
+            ax[0,s].set_title(cohort[s])
+            ax[c,0].set_ylabel(cdt[c])
+            ax[2,s].set_xlabel("Time (s)")
+            ax[2,s].set_xticks(ticks)
+    # Legend            
+    handles, labels = ax[c,s].get_legend_handles_labels()
+    f.legend(handles, labels, loc='upper right')
+    plt.tight_layout()
+    # Save figure
+    fpath = fpath.joinpath(figname)
+    plt.savefig(fpath)
+
+
+plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.pdf')
 

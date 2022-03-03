@@ -14,7 +14,9 @@ import pandas as pd
 
 from src.preprocessing_lib import EcogReader, Epocher, prepare_condition_scaled_ts
 from pathlib import Path
-from scipy.stats import sem, linregress
+from scipy.stats import sem, linregress, ranksums
+from mne.stats import fdr_correction
+
 
 
 #%% Style parameters
@@ -441,5 +443,185 @@ def plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.
     plt.savefig(fpath)
 
 
-plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.pdf')
+#%% Plot mvgc results full stimuli
+
+def sort_populations(populations, order= {'R':0,'O':1,'F':2}):
+    """
+    Sort visually responsive population along specific order
+    Return sorted indices to permute GC/MI axis along wanted order
+    """
+    L = populations
+    pop_order = [(i, idx, order[i]) for idx, i in enumerate(L)]
+    L_sort = sorted(pop_order, key= lambda pop_order: pop_order[2])
+    L_pair = [(L_sort[i][0], L_sort[i][1]) for i in range(len(L_sort))]
+    pop_sort = [L_pair[i][0] for i in range(len(L_pair))]
+    idx_sort = [L_pair[i][1] for i in range(len(L_pair))]
+    return idx_sort, pop_sort
+
+
+def plot_multi_fc(fc, populations, fpath, s=2, sfreq=250,
+                                 rotation=90, tau_x=0.5, tau_y=0.8):
+    """
+    This function plot pairwise mutual information and transfer entropy matrices 
+    as heatmaps against the null distribution for a single subject
+    s: Subject index
+    tau_x: translattion parameter for x coordinate of statistical significance
+    tau_y: translattion parameter for y coordinate of statistical significance
+    rotation: rotation of xticks and yticks labels
+    te_max : maximum value for TE scale
+    mi_max: maximum value for MI scale
+    """
+    idx_sort, populations = sort_populations(populations)
+    (ncdt, nsub) = fc.shape
+    fig, ax = plt.subplots(ncdt-1,2)
+    for c in range(ncdt-1): # Consider resting state as baseline
+        condition =  fc[c,s]['condition'][0]
+        # Granger causality matrix
+        f = fc[c,s]['F']
+        sig_gc = fc[c,s]['sigF']
+        # Mutual information matrix
+        mi = fc[c,s]['MI']
+        sig_mi = fc[c,s]['sigMI']     
+        # Permutes axes along wanted order
+        f = f[idx_sort,:]
+        f = f[:, idx_sort]
+        mi = mi[idx_sort,:]
+        mi = mi[:, idx_sort]
+        sig_gc = sig_gc[idx_sort,:]
+        sig_gc = sig_gc[:,idx_sort]
+        sig_mi = sig_mi[idx_sort,:]
+        sig_mi = sig_mi[:,idx_sort]
+        # Make ticks label
+        pop_ticks = [0]*len(populations)
+        pop_ticks[0] = populations[0]
+        for i in range(1,len(populations)):
+            if populations[i] == populations[i-1]:
+                pop_ticks[i]='-'
+            else:
+                pop_ticks[i]=populations[i]
+        # Plot MI as heatmap
+        g = sns.heatmap(mi, xticklabels=pop_ticks,
+                        yticklabels=pop_ticks, cmap='YlOrBr', ax=ax[c,0])
+        g.set_yticklabels(g.get_yticklabels(), rotation = rotation)
+        # Position xticks on top of heatmap
+        ax[c, 0].xaxis.tick_top()
+        ax[0,0].set_title('Mutual information (bit)')
+        ax[c, 0].set_ylabel(condition)
+        # Plot GC as heatmap
+        g = sns.heatmap(f, xticklabels=pop_ticks,
+                        yticklabels=pop_ticks, cmap='YlOrBr', ax=ax[c,1])
+        g.set_yticklabels(g.get_yticklabels(), rotation = rotation)
+        # Position xticks on top of heatmap
+        ax[c, 1].xaxis.tick_top()
+        ax[c, 1].set_ylabel('Target')
+        ax[0,1].set_title('Transfer entropy (bit/s)')
+        # Plot statistical significant entries
+        for y in range(f.shape[0]):
+            for x in range(f.shape[1]):
+                if sig_mi[y,x] == 1:
+                    ax[c,0].text(x + tau_x, y + tau_y, '*',
+                             horizontalalignment='center', verticalalignment='center',
+                             color='k')
+                else:
+                    continue
+                if sig_gc[y,x] == 1:
+                    ax[c,1].text(x + tau_x, y + tau_y, '*',
+                             horizontalalignment='center', verticalalignment='center',
+                             color='k')
+                else:
+                    continue
+        plt.tight_layout()
+        plt.savefig(fpath)
+
+
+#%% Plot single trial GC results
+
+# Compute z score of single distirbution
+def single_pfc_stat(fc, cohort, subject ='DiAs', baseline= 'baseline', 
+                    single='single_F', alternative='two-sided'):
+    """
+    Compare functional connectivity (GC or MI) during baseline w.r.t a specific
+    condition such as Face or Place presentation.
+    
+    Parameters:
+    single= 'single_F' or 'single_MI'
+    cohort = ['AnRa',  'ArLa', 'DiAs']
+    baseline = 'baseline' or 'Rest' 
+    """
+    # Index conditions
+    cdt = {'Rest':0, 'Face':1, 'Place':2, 'baseline':3}
+    # Make subject dictionary
+    keys = cohort
+    sub_dict = dict.fromkeys(keys)
+    # Index subjects
+    for idx, sub in enumerate(cohort):
+        sub_dict[sub] = idx
+    # Comparisons performed for FC
+    comparisons = [(cdt[baseline],cdt['Face']), (cdt[baseline], cdt['Place']), 
+                   (cdt[baseline], cdt['Face'])]
+    ncomp = len(comparisons)
+    # Subject index of interest
+    s = sub_dict[subject]
+    # FGet shape of functional connectivity matrix 
+    f = fc[0,s][single]
+    (n,n,N) = f.shape
+    # Initialise statistics
+    z = np.zeros((n,n,ncomp))
+    pval =  np.zeros((n,n,ncomp))
+    # Compare fc during baseline and one condition
+    for icomp in range(ncomp):
+        cb = comparisons[icomp][0]
+        c = comparisons[icomp][1]
+        # Baseline functional connectivity
+        fb = fc[cb,s][single]
+        # Condition-specific functional connectivity
+        f = fc[c,s][single]
+        # Compute z score and pvalues
+        for i in range(n):
+            for j in range(n):
+                z[i,j, icomp], pval[i,j,icomp] = ranksums(f[i,j,:], fb[i,j,:], 
+                 alternative=alternative)
+    rejected, pval_corrected = fdr_correction(pval,alpha=0.05)
+    sig = rejected
+    return z, sig, pval
+
+
+
+def plot_single_trial(z, sig, populations):
+    """
+    """
+    (n,n,ncomp) = z.shape
+    f, ax = plt.subplots(ncomp,2)
+    zmax = np.amax(z)
+    zmin = np.amin(z)
+    for icomp in range(ncomp):
+        g = sns.heatmap(z[:,:,icomp], vmin=zmin, vmax=zmax, xticklabels=populations,
+                            yticklabels=populations, cmap='YlOrBr', ax=ax[icomp,0])
+        g.set_yticklabels(g.get_yticklabels(), rotation = 90)
+        # Position xticks on top of heatmap
+        ax[icomp, 0].xaxis.tick_top()
+        ax[icomp, 0].set_ylabel('Target')
+        ax[0,0].set_title(' Z score')
+        g = sns.heatmap(sig[:,:,icomp], xticklabels=populations,
+                            yticklabels=populations, cmap='YlOrBr', ax=ax[icomp,1])
+        g.set_yticklabels(g.get_yticklabels(), rotation = 90)
+        # Position xticks on top of heatmap
+        ax[icomp, 1].xaxis.tick_top()
+        ax[0,1].set_title('Significance')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -36,7 +36,7 @@ fc = fc['dataset']
 
 #%% Plot z score and  signigicance
 #%matplotlib qt
-subject = 'DiAs'
+subject = 'ArLa'
 z, sig, pval = single_pfc_stat(fc, cohort, subject =subject, single='single_F', 
                     baseline='Rest', alternative='two-sided')
 
@@ -64,7 +64,7 @@ for icomp in range(ncomp):
     # Position xticks on top of heatmap
     ax[icomp, 1].xaxis.tick_top()
     ax[0,1].set_title('Significance')
-
+    plt.tight_layout()
 
 
 

@@ -7,12 +7,15 @@ In this script we test function from plotting library
 """
 
 from src.input_config import args
-from src.plotting_lib import plot_rolling_specrad, plot_rolling_var
+from src.preprocessing_lib import EcogReader, parcellation_to_indices
+from src.plotting_lib import plot_rolling_specrad, plot_multi_fc, sort_populations
 from pathlib import Path
+from scipy.io import loadmat
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import seaborn as sns
 
 home = Path.home()
 fpath = home.joinpath('thesis','overleaf_project','figures')
@@ -76,25 +79,53 @@ fpath = home.joinpath('thesis','overleaf_project','figures')
 plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.pdf')
 
 
+#%% Plot multitrial pcGC
+# List conditions
+conditions = ['Rest', 'Face', 'Place', 'baseline']
+cohort = ['AnRa',  'ArLa', 'DiAs'];
+# Load functional connectivity matrix
+result_path = Path('../results')
 
+fname = 'pairwise_fc.mat'
+fc_path = result_path.joinpath(fname)
+fc = loadmat(fc_path)
+fc = fc['dataset']
+# Read visual channels 
+(subject,s) = ('DiAs',2)
+reader = EcogReader(args.data_path, subject=subject)
+df_visual = reader.read_channels_info(fname='visual_channels.csv')
+populations = df_visual['group'].tolist()
+#populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
+fpath = home.joinpath('thesis','overleaf_project','figures')
+figname = subject + '_multi_pcgc.pdf'
+fpath = fpath.joinpath(figname)
+plot_multi_fc(fc, populations, fpath,  s=2)
 
+#%% Plot multitrial groupwise GC
 
+# List conditions
+conditions = ['Rest', 'Face', 'Place', 'baseline']
+cohort = ['AnRa',  'ArLa', 'DiAs'];
+# Load functional connectivity matrix
+result_path = Path('../results')
 
+fname = 'mvgc.mat'
+fc_path = result_path.joinpath(fname)
+fc = loadmat(fc_path)
+fc = fc['dataset']
+# Read visual channels 
+(subject,s) = ('DiAs',2)
+reader = EcogReader(args.data_path, subject=subject)
+df_visual = reader.read_channels_info(fname='visual_channels.csv')
+populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
+populations = list(populations.keys())
+#populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
+fpath = home.joinpath('thesis','overleaf_project','figures')
+figname = subject + '_multi_mvgc.pdf'
+fpath = fpath.joinpath(figname)
+plot_multi_fc(fc, populations, fpath,  s=2)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#%% Plot single trial distribution
 
 
 

@@ -1,4 +1,4 @@
-function [F, sigF, pcrit] = ts_to_mvgc_stat(X, args)
+function gGC = ts_to_dual_mvgc(X, args)
 %%%%
 % Computes mvgc between all populations of a time series. This function 
 % also returns causal density for diagonal terms
@@ -21,7 +21,7 @@ mhtc = args.mhtc;
 % Get arrays dimensions
 ng = length(gi); % Number of groups
 [n,m,N]=size(X);
-F = zeros(ng, ng); pval = zeros(ng, ng); sigF = zeros(ng, ng);
+F = zeros(ng, ng); pval = zeros(ng, ng); sig = zeros(ng, ng);
 bias = zeros(ng, ng);
 
 % Estimate VAR model
@@ -50,5 +50,7 @@ for i=1:ng
         pval(i,j) = mvgc_pval(F(i,j),tstat,nx,ny,nz,morder,m,N);
     end
 end
-[sigF, pcrit] = significance(pval,alpha,mhtc,[]);
+[sig, pcrit] = significance(pval,alpha,mhtc,[]);
+
+gGC.gc = F; gGC.sig = sig; gGC.pval = pval; gGC.pcrit = pcrit;
 end

@@ -43,8 +43,7 @@ for s = 1:nsub
 
         %% Pairwise conditional MI estimation
 
-        [MI, sigMI, pvalI] = ts_to_MI(X, 'q', q, 'mhtc', mhtc, 'alpha', alpha);
-        sigMI(isnan(sigMI)) = 0;
+        pMI = ts_to_MI(X, 'q', q, 'mhtc', mhtc, 'alpha', alpha);
         
         %% Pairwise conditional GC estimation
         % VAR model estimation
@@ -79,9 +78,7 @@ for s = 1:nsub
         %% Build dataset
         dataset(c,s).subject = subject;
         dataset(c,s).condition = condition{c};
-        dataset(c,s).MI = MI; 
-        dataset(c,s).sigMI = sigMI;
-        dataset(c,s).pvalI = pvalI;
+        dataset(c,s).pMI = pMI; 
         dataset(c,s).single_MI = single_MI;
         dataset(c,s).F = F;
         dataset(c,s).sigF = sigF;

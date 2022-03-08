@@ -1,4 +1,4 @@
-function [MI, sig, pcrit] = ts_to_MI(X, varargin)
+function pMI = ts_to_MI(X, varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Estimate mutual information MI from covariance matrix at a given lag
 % Works best with normally distributed time series
@@ -31,7 +31,8 @@ nobs = m * N;
 [MI,pval] = cov_to_pwcmi(V,nobs);
 MI(isnan(MI)) = 0;
 % Return LR test statistics
-% pval = stats.LR.pval;
 [sig, pcrit] = significance(pval,alpha,mhtc);
+sig(isnan(sig))=0;
 
+pMI.mi = MI; pMI.sig = sig;pMI.pval = pval; pMI.pcrit = pcrit;
 end

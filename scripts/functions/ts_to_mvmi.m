@@ -1,4 +1,4 @@
-function [I, sigI, pcrit] = ts_to_mvmi(X, args)
+function gMI = ts_to_mvmi(X, args)
 %%%%
 % Computes groupwise MI between all populations of a time series. 
 %%%%
@@ -49,5 +49,6 @@ for i=1:ng
     end
 end
 % Compute significance against null and correct for multiple hypotheses.
-[sigI, pcrit] = significance(pval,alpha,mhtc,[]);
+[sig, pcrit] = significance(pval,alpha,mhtc,[]);
+gMI.mi = I; gMI.sig = sig; gMI.pval = pval; gMI.pcrit = pcrit;
 end

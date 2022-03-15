@@ -13,6 +13,8 @@ import seaborn as sns
 import pandas as pd
 
 from src.preprocessing_lib import EcogReader, Epocher, prepare_condition_scaled_ts
+from src.preprocessing_lib import parcellation_to_indices
+
 from pathlib import Path
 from scipy.stats import sem, linregress, ranksums
 from mne.stats import fdr_correction
@@ -443,7 +445,7 @@ def plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.
     plt.savefig(fpath)
 
 
-#%% Plot mvgc results full stimuli
+#%% Plot multitrial results
 
 def sort_populations(populations, order= {'R':0,'O':1,'F':2}):
     """
@@ -459,7 +461,7 @@ def sort_populations(populations, order= {'R':0,'O':1,'F':2}):
     return idx_sort, pop_sort
 
 
-def plot_multi_fc(fc, populations, fpath, s=2, sfreq=250,
+def plot_multi_fc(fc, df_visual, fpath, mode='pair', s=2, sfreq=250,
                                  rotation=90, tau_x=0.5, tau_y=0.8):
     """
     This function plot pairwise mutual information and transfer entropy matrices 
@@ -471,17 +473,29 @@ def plot_multi_fc(fc, populations, fpath, s=2, sfreq=250,
     te_max : maximum value for TE scale
     mi_max: maximum value for MI scale
     """
+    # Pairwise FC
+    if mode == 'pair':
+        F = 'pGC'
+        I = 'pMI'
+        populations = df_visual['group'].tolist()
+    # Groupwise FC
+    else:
+        F = 'gGC'
+        I = 'gMI'
+        populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
+        populations = list(populations.keys())
+    # Sort populations along R,O,F
     idx_sort, populations = sort_populations(populations)
     (ncdt, nsub) = fc.shape
     fig, ax = plt.subplots(ncdt-1,2)
     for c in range(ncdt-1): # Consider resting state as baseline
         condition =  fc[c,s]['condition'][0]
         # Granger causality matrix
-        f = fc[c,s]['F']
-        sig_gc = fc[c,s]['sigF']
+        f = fc[c,s][F]['gc'][0][0]
+        sig_gc = fc[c,s][F]['sig'][0][0]
         # Mutual information matrix
-        mi = fc[c,s]['MI']
-        sig_mi = fc[c,s]['sigMI']     
+        mi = fc[c,s][I]['mi'][0][0]
+        sig_mi = fc[c,s][I]['sig'][0][0]     
         # Permutes axes along wanted order
         f = f[idx_sort,:]
         f = f[:, idx_sort]

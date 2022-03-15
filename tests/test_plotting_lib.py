@@ -78,6 +78,26 @@ fpath = home.joinpath('thesis','overleaf_project','figures')
 
 plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.pdf')
 
+#%% Plot multitrial pcGC
+
+# List conditions
+conditions = ['Rest', 'Face', 'Place', 'baseline']
+cohort = ['AnRa',  'ArLa', 'DiAs'];
+# Load functional connectivity matrix
+result_path = Path('../results')
+fname = 'multi_trial_fc.mat'
+fc_path = result_path.joinpath(fname)
+fc = loadmat(fc_path)
+fc = fc['dataset']
+# Read visual channels 
+(subject,s) = ('DiAs',2)
+reader = EcogReader(args.data_path, subject=subject)
+df_visual = reader.read_channels_info(fname='visual_channels.csv')
+# 
+fpath = home.joinpath('thesis','overleaf_project','figures')
+figname = subject + '_multi_pcgc.pdf'
+fpath = fpath.joinpath(figname)
+plot_multi_fc(fc, df_visual, fpath, mode='group', s=2)
 
 #%% Plot multitrial pcGC
 # List conditions
@@ -95,7 +115,7 @@ fc = fc['dataset']
 reader = EcogReader(args.data_path, subject=subject)
 df_visual = reader.read_channels_info(fname='visual_channels.csv')
 populations = df_visual['group'].tolist()
-#populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
+populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
 fpath = home.joinpath('thesis','overleaf_project','figures')
 figname = subject + '_multi_pcgc.pdf'
 fpath = fpath.joinpath(figname)

@@ -1,51 +1,96 @@
 % Rolling multitrial pairwise and groupwise gc against the null. 
+%% Input parameters
 input_parameters;
-cohort = {'AnRa',  'ArLa', 'DiAs'};
-condition = {'Rest', 'Face', 'Place', 'baseline'};
-field = {'time',  'condition', 'pair', 'subject','F'};
 ncdt = length(condition);
 nsub = length(cohort);
 dataset = struct;
-subject = 'DiAs';
-datadir = fullfile('~', 'projects', 'cifar', 'results');
-suffix  = '_condition_visual_ts.mat';
-
-%% Read input time series and metadata
-% Read condition specific time series
-gc_input = read_cdt_time_series();
-% Functional group indices
-indices = gc_input.indices; fn = fieldnames(gc_input);
-% Read conditions specific time series
-X = gc_input.(condition{c});
-[n, m, N] = size(X);
-
-%% Detrend
-[X,~,~,~] = mvdetrend(X,pdeg,[]);
 
 %% Rolling window
-
-for w = 1:nwin
-    o = (w-1)*nsobs;      % window offset
-	W = X(:,o+1:o+nwobs,:);% the window
+% loop over subjects
+for s=1:nsub
+    subject = cohort{s};
+    % Loop over conditions
     for c=1:ncdt
-        % Compute pairwise MI
-        [pMI, sigMI, pvalI]  = ts_to_MI(W, 'q', q, ...
-                'mhtc', mhtc, 'alpha', alpha);
-        % Pairwise GC, dual regression
-        pF = ts_to_dual_pgc(X, 'morder',morder, '''mhtc', mhtc, 'alpha', alpha)
-        % Goup MI
-        
-        
-        % Group GC
-        [gF, sigF, pvalF] = ts_to_mvgc_stat(W, 'gind', indices, 'morder',morder,...
-        'regmode',regmode,'tstat', tstat,'alpha', alpha, 'mhtc',mhtc);
-        % Compute groupwise GC
+        % Read condition specific time series
+        gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
+            'condition',condition{c}, 'suffix', suffix);
+        % Read conditions specific time series
+        X = gc_input.X; time = gc_input.time; 
+        [n, m, N] = size(X);
+        % Window sample to time
+        fs = gc_input.sfreq;
+        nwin = floor((m - mw)/shift +1);
+        win_size = mw/fs;
+        time_offset = shift/fs;
+        win_time = zeros(nwin,mw);
+        % Initialise pairwise and grouwise FC arrays 
+        % Pairwise MI
+        pmi = zeros(n,n,nwin); sig_pmi = zeros(n,n,nwin); 
+        pval_pmi = zeros(n,n,nwin); pcrit_pmi = zeros(nwin,1);
+        % Pairwise GC
+        pgc = zeros(n,n,nwin); sig_pgc = zeros(n,n,nwin); 
+        pval_pgc = zeros(n,n,nwin); pcrit_pgc = zeros(nwin,1);
+        % Groupwise MI
+        gmi = zeros(n,n,nwin); sig_gmi = zeros(n,n,nwin); 
+        pval_gmi = zeros(n,n,nwin); pcrit_gmi = zeros(nwin,1);
+        % Groupwise GC
+        ggc = zeros(n,n,nwin); sig_ggc = zeros(n,n,nwin); 
+        pval_ggc = zeros(n,n,nwin); pcrit_ggc = zeros(nwin,1);
+        % Loop over window
+        for w=1:nwin
+            o = (w-1)*shift; 
+            win_time(w,:) = time(o+1:o+mw);
+        end
+        for w=1:nwin
+            o = (w-1)*shift; 
+            W = X(:,o+1:o+mw,:);% the window     
+            % Compute pairwise MI       
+            win_pMI  = ts_to_MI(W, 'q', q, ...
+                    'mhtc', mhtc, 'alpha', alpha);
+            % Pairwise GC, dual regression
+            win_pGC = ts_to_dual_pgc(W, 'morder',morder, 'regmode', regmode, ...
+                'tstat',tstat,'mhtc', mhtc, 'alpha', alpha);
+            % Functional visual channels indices
+            indices = gc_input.indices;
+            % Groupwise MI
+            win_gMI = ts_to_mvmi(W, 'gind', indices, ...
+                        'alpha', alpha, 'mhtc',mhtc);
+            % Groupwise GC
+            win_gGC = ts_to_dual_mvgc(W, 'gind', indices, 'morder',morder,...
+                    'regmode',regmode,'tstat', tstat,'alpha', alpha, 'mhtc',mhtc);
+            % Compute FC arrays
+            % pMI
+            pmi(:,:,w) = win_pMI.mi; sig_pmi(:,:,w) = win_pMI.sig; 
+            pval_pmi(:,:,w)= win_pMI.pval; pcrit_pmi(w) = win_pMI.pcrit;
+            % pGC
+            pgc(:,:,w) = win_pGC.gc; sig_pgc(:,:,w) = win_pGC.sig; 
+            pval_pgc(:,:,w)= win_pGC.pval; pcrit_pgc(w) = win_pGC.pcrit;
+            % gMI
+            gmi(:,:,w) = win_gMI.mi; sig_gmi(:,:,w) = win_gMI.sig; 
+            pval_gmi(:,:,w)= win_gMI.pval; pcrit_gmi(w) = win_gMI.pcrit;
+            % gGC
+            ggc(:,:,w) = win_gGC.gc; sig_ggc(:,:,w) = win_gGC.sig; 
+            pval_ggc(:,:,w)= win_gGC.pval; pcrit_ggc(w) = win_gGC.pcrit;
+        end
+        pMI.mi = pmi; pMI.sig = sig_pmi;pMI.pval = pval_pmi; pMI.pcrit = pcrit_pmi;
+        pGC.gc = pgc; pGC.sig = sig_pgc;pGC.pval = pval_pgc; pGC.pcrit = pcrit_pgc;
+        gMI = gmi; gMI.sig = sig_gmi;pMI.pval = pval_pgc; pMI.pcrit = pcrit_pgc;
+        % Save dataset
+        dataset(c,s).subject = subject;
+        dataset(c,s).condition = condition{c};
+        dataset(c,s).time = win_time(w,mw);
+        dataset(c,s).pMI = pMI;
+        dataset(c,s).pGC = pGC;
+        dataset(c,s).gMI = gMI;
+        dataset(c,s).gGC = gGC;
     end
 end
 
-%%
+%% Save dataset for plotting in python
 
-
+fname = 'rolling_multi_trial_fc.mat';
+fpath = fullfile(datadir, fname);
+save(fpath, 'dataset')
 
 
 

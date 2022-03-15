@@ -149,14 +149,82 @@ plot_multi_fc(fc, populations, fpath,  s=2)
 
 
 
+#%% Plot rolling window on multitrial
 
+# List conditions
+conditions = ['Rest', 'Face', 'Place']
+cohort = ['AnRa',  'ArLa', 'DiAs'];
+# Load functional connectivity matrix
+result_path = Path('../results')
 
+fname = 'rolling_multi_trial_fc.mat'
+fc_path = result_path.joinpath(fname)
+fc = loadmat(fc_path)
+fc = fc['dataset']
 
+# Plot group gc
 
+nsub = len(cohort)
+ncdt = len(conditions)
 
+f, ax = plt.subplots(ncdt, nsub)
+for s in range(nsub):
+    for c in range(ncdt):
+        indices = fc[c,s]['indices']
+        group = list(indices.dtype.fields.keys())
+        baseline = fc[3,s]['gGC']['gc'][0][0]
+        baseline = np.average(baseline)
+        gc = fc[c,s]['gGC']['gc'][0][0]
+        gc = gc/baseline
+        sig = fc[c,s]['gGC']['sig'][0][0]
+        gc_sig =  np.amin(gc[sig==1])
+        time = fc[c,s]['time']
+        iF = group.index('F')
+        iR = group.index('R')
+        ax[c,s].plot(time, gc[iF, iR], label = 'R to F')
+        ax[c,s].plot(time, gc[iR, iF], label = 'F to R')
+        ax[c,s].axvline(x=0, color = 'k')
+        ax[c,s].axhline(y=1, color = 'k')
+        ax[c,s].axhline(y=gc_sig, color = 'r')
+        ax[c,s].set_ylim(bottom=0, top=6.5)
+        
+plt.legend()
+plt.tight_layout()
 
+#%% Plot significance
 
+# List conditions
+conditions = ['Rest', 'Face', 'Place']
+cohort = ['AnRa',  'ArLa', 'DiAs'];
+# Load functional connectivity matrix
+result_path = Path('../results')
 
+fname = 'rolling_multi_trial_fc.mat'
+fc_path = result_path.joinpath(fname)
+fc = loadmat(fc_path)
+fc = fc['dataset']
+
+# Plot group gc
+
+nsub = len(cohort)
+ncdt = len(conditions)
+
+f, ax = plt.subplots(ncdt, nsub)
+for s in range(nsub):
+    for c in range(ncdt):
+        indices = fc[c,s]['indices']
+        group = list(indices.dtype.fields.keys())
+        sig = fc[c,s]['gGC']['sig'][0][0]
+        time = fc[c,s]['time']
+        iF = group.index('F')
+        iR = group.index('R')
+        ax[c,s].plot(time, sig[iF, iR], label = 'R to F')
+        ax[c,s].plot(time, sig[iR, iF], label = 'F to R')
+        ax[c,s].axvline(x=0, color = 'k')
+        ax[c,s].set_ylim(bottom=0, top=2)
+        
+plt.legend()
+plt.tight_layout()
 
 
 

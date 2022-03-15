@@ -76,12 +76,13 @@ for s=1:nsub
         % Save FC in structure
         pMI.mi = pmi; pMI.sig = sig_pmi; pMI.pval = pval_pmi; pMI.pcrit = pcrit_pmi;
         pGC.gc = pgc; pGC.sig = sig_pgc; pGC.pval = pval_pgc; pGC.pcrit = pcrit_pgc;
-        gMI.gmi = gmi; gMI.sig = sig_gmi; gMI.pval = pval_gmi; gMI.pcrit = pcrit_gmi;
-        gGC.ggc = ggc; gGC.sig = sig_ggc; gGC.pval = pval_ggc; gGC.pcrit = pcrit_ggc;
+        gMI.mi = gmi; gMI.sig = sig_gmi; gMI.pval = pval_gmi; gMI.pcrit = pcrit_gmi;
+        gGC.gc = ggc; gGC.sig = sig_ggc; gGC.pval = pval_ggc; gGC.pcrit = pcrit_ggc;
         % Save dataset
         dataset(c,s).subject = subject;
         dataset(c,s).condition = condition{c};
-        dataset(c,s).time = win_time(nwin,mw);
+        dataset(c,s).time = win_time(:,mw);
+        dataset(c,s).indices = indices;
         dataset(c,s).pMI = pMI;
         dataset(c,s).pGC = pGC;
         dataset(c,s).gMI = gMI;

@@ -18,6 +18,9 @@ nx = 1; ny=1; nz = n-nx-ny; p=morder;
 F = var_to_pwcgc_tstat(X,[],morder,regmode,tstat);
 pval = mvgc_pval(F,tstat,nx,ny,nz,p,m,N);
 [sig, pcrit] = significance(pval,alpha,mhtc,[]);
+% Compute F crit
+% d = morder*nx*ny;
+% F_crit = icdf('chi2',1-pcrit,d);
 % Return pairwise GC and statitics
-pF.gc = F; pF.sig = sig; pF.pval = pval; pF.pcrit = pcrit;
+pF.gc = F; pF.sig = sig; pF.pval = pval; pF.pcrit = pcrit; 
 end

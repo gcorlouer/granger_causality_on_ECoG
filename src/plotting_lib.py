@@ -624,8 +624,64 @@ def plot_single_trial(z, sig, populations):
         ax[0,1].set_title('Significance')
 
 
+#%% Plot rolling multitrial rolling window analysis
+        
+def plot_multitrial_rolling_fc(fc, figpath,interaction='gGC' ,fc_type='gc'):
+    """
+    This function plot groupwise multitrial mi/gc along rolling windows
+    Parameters
+    figpath: path to save figure plot 
+    interaction: groupwise GC or MI, gGC or gMI 
+    fc_type: type of functional connectivity: gc or mi 
+    """ 
+    cohort = ['AnRa',  'ArLa', 'DiAs'];
+    conditions = ['Rest', 'Face', 'Place']
+    (ncdt, nsub) = fc.shape
+    f, ax = plt.subplots(3, nsub)
+    # Loop over subjects and conditions
+    for s in range(nsub):
+        for c in range(3):
+            indices = fc[c,s]['indices']
+            # Return group of functional population in the right order
+            group = list(indices.dtype.fields.keys())
+            # Compute baseline to scale gc
+            baseline = fc[3,s][interaction][fc_type][0][0]
+            baseline = np.average(baseline)
+            # Return gc/mi
+            gc = fc[c,s][interaction][fc_type][0][0]
+            # Scale by baseline
+            gc = gc/baseline
+            # Compute significance threshold
+            sig = fc[c,s][interaction]['sig'][0][0]
+            gc_sig =  np.amin(gc[sig==1])
+            # Return time from rolling window
+            time = fc[c,s]['time']
+            # Pick retinotopic and face channels groups
+            iF = group.index('F')
+            iR = group.index('R')
+            # Plot fc from retinotopic to face channels
+            ax[c,s].plot(time, gc[iF, iR], label = 'R to F')
+            # Plot fc from face to retinotopic channels
+            ax[c,s].plot(time, gc[iR, iF], label = 'F to R')
+            # Stimulus presentation
+            ax[c,s].axvline(x=0, color = 'k')
+            # Baseline line
+            ax[c,s].axhline(y=1, color = 'k')
+            ax[c,s].axhline(y=gc_sig, color = 'r')
+            ax[c,s].set_ylim(bottom=0, top=6.5)
+            # Set titles
+            ax[-1,s].set_xlabel("Time (s)")
+            ax[c,0].set_ylabel(f"{interaction} {conditions[c]}")
+            ax[0,s].set_title(f"{cohort[s]}")
+    # legend situated upper right                
+    handles, labels = ax[c,s].get_legend_handles_labels()
+    f.legend(handles, labels, loc='upper right')        
+    plt.tight_layout()
+    # Save figure
+    plt.savefig(figpath)
 
 
+#%% Plot rolling window single trial fc
 
 
 

@@ -22,5 +22,5 @@ pval = mvgc_pval(F,tstat,nx,ny,nz,p,m,N);
 % d = morder*nx*ny;
 % F_crit = icdf('chi2',1-pcrit,d);
 % Return pairwise GC and statitics
-pF.gc = F; pF.sig = sig; pF.pval = pval; pF.pcrit = pcrit; 
+pF.f = F; pF.sig = sig; pF.pval = pval; pF.pcrit = pcrit; 
 end

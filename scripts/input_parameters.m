@@ -3,7 +3,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Input data
 if ~exist('sub_id', 'var'), subject = 'DiAs'; end
-if ~exist('cohort','var'), cohort = {'AnRa',  'ArLa', 'DiAs'}; end
+if ~exist('cohort','var'), cohort = {'AnRa', 'ArLa', 'DiAs'}; end
 if ~exist('condition', 'var'), condition = {'Rest', 'Face', 'Place', 'baseline'}; end
 if ~exist('field', 'var'), field = {'time',  'condition', 'pair', 'subject','F'}; end
 if ~exist('datadir', 'var'), datadir = fullfile('~', 'projects', 'cifar', 'results'); end

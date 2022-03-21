@@ -34,5 +34,5 @@ MI(isnan(MI)) = 0;
 [sig, pcrit] = significance(pval,alpha,mhtc);
 sig(isnan(sig))=0;
 
-pMI.mi = MI; pMI.sig = sig;pMI.pval = pval; pMI.pcrit = pcrit;
+pMI.f = MI; pMI.sig = sig;pMI.pval = pval; pMI.pcrit = pcrit;
 end

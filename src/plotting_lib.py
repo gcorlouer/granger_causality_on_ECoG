@@ -444,10 +444,9 @@ def plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.
     fpath = fpath.joinpath(figname)
     plt.savefig(fpath)
 
-
-#%% Plot multitrial results
-
-def sort_populations(populations, order= {'R':0,'O':1,'F':2}):
+#%% Plot full stimulut duration
+    
+def sort_populations(populations, order= {'R':0,'F':1}):
     """
     Sort visually responsive population along specific order
     Return sorted indices to permute GC/MI axis along wanted order
@@ -459,6 +458,109 @@ def sort_populations(populations, order= {'R':0,'O':1,'F':2}):
     pop_sort = [L_pair[i][0] for i in range(len(L_pair))]
     idx_sort = [L_pair[i][1] for i in range(len(L_pair))]
     return idx_sort, pop_sort
+
+
+def full_stim_multi_pfc(fc, cohort, args, vmin=-2, vmax=3, F='pGC', sfreq=250,
+                                 rotation=90, tau_x=0.5, tau_y=0.8):
+    """
+    This function plot multitrial GC and MI during full stimulus presentation
+    """
+    (ncdt, nsub) = fc.shape
+    fig, ax = plt.subplots(ncdt-1, nsub)
+    # Loop over subects
+    for subject in cohort:
+        s = cohort.index(subject)
+        reader = EcogReader(args.data_path, subject=subject)
+        df_visual = reader.read_channels_info(fname='visual_channels.csv')
+        # Find retinotopic and face channels indices 
+        R_idx = df_visual.index[df_visual['group']=='R'].tolist()
+        F_idx = df_visual.index[df_visual['group']=='F'].tolist()
+        RF_idx = np.array(R_idx + F_idx)
+        for c in range(ncdt-1): # Consider resting state as baseline
+            condition =  fc[c,s]['condition'][0]
+            # Functional connectivity matrix
+            baseline = fc[3,s][F]['f'][0][0]
+            f = fc[c,s][F]['f'][0][0]
+            f = f/baseline
+            f = np.log(f)
+            # Significance
+            sig = fc[c,s][F]['sig'][0][0]
+            #f = np.log(f)
+            # Pick array of R and F pairs
+            f = f[RF_idx, :] 
+            f = f[:, RF_idx]
+            # Make ticks label
+            group = df_visual['group']
+            populations = [group[i] for i in RF_idx]
+            # Plot F as heatmap
+            g = sns.heatmap(f, xticklabels=populations, vmin=vmin, vmax=vmax,
+                            yticklabels=populations, cmap='bwr', ax=ax[c,s])
+            g.set_yticklabels(g.get_yticklabels(), rotation = 90)
+            # Position xticks on top of heatmap
+            ax[c,s].xaxis.tick_top()
+            ax[c,0].set_ylabel(condition)
+            
+            # Position xticks on top of heatmap
+            ax[c, 1].xaxis.tick_top()
+            ax[0,s].set_title(f'{F} subject {s}')
+            # Plot statistical significant entries
+            for y in range(f.shape[0]):
+                for x in range(f.shape[1]):
+                    if sig[y,x] == 1:
+                        ax[c,s].text(x + tau_x, y + tau_y, '*',
+                                 horizontalalignment='center', verticalalignment='center',
+                                 color='k')
+                    else:
+                        continue                 
+            plt.tight_layout()
+
+def full_stim_multi_gfc(fc, cohort, args, vmin=-2, vmax=3, F='gGC', sfreq=250,
+                                 rotation=90, tau_x=0.5, tau_y=0.8):
+    """
+    This function plot multitrial group GC and MI during full stimulus presentation
+    """
+    (ncdt, nsub) = fc.shape
+    fig, ax = plt.subplots(ncdt-1, nsub)
+    # Loop over subects
+    for subject in cohort:
+        s = cohort.index(subject)
+        reader = EcogReader(args.data_path, subject=subject)
+        df_visual = reader.read_channels_info(fname='visual_channels.csv')
+        # Find retinotopic and face channels indices 
+        populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
+        populations = list(populations.keys())
+        for c in range(ncdt-1): # Consider resting state as baseline
+            condition =  fc[c,s]['condition'][0]
+            # Functional connectivity matrix
+            baseline = fc[3,s][F]['f'][0][0]
+            f = fc[c,s][F]['f'][0][0]
+            f = f/baseline
+            f = np.log(f)
+            # Significance
+            sig = fc[c,s][F]['sig'][0][0]            
+            # Plot F as heatmap
+            g = sns.heatmap(f, xticklabels=populations, vmin=vmin, vmax=vmax,
+                            yticklabels=populations, cmap='bwr', ax=ax[c,s])
+            g.set_yticklabels(g.get_yticklabels(), rotation = 90)
+            # Position xticks on top of heatmap
+            ax[c,s].xaxis.tick_top()
+            ax[c,0].set_ylabel(condition)
+            
+            # Position xticks on top of heatmap
+            ax[c, 1].xaxis.tick_top()
+            ax[0,s].set_title(f'{F} subject {s}')
+            # Plot statistical significant entries
+            for y in range(f.shape[0]):
+                for x in range(f.shape[1]):
+                    if sig[y,x] == 1:
+                        ax[c,s].text(x + tau_x, y + tau_y, '*',
+                                 horizontalalignment='center', verticalalignment='center',
+                                 color='k')
+                    else:
+                        continue                 
+            plt.tight_layout()
+
+#%% Plot multitrial results comparing MI and GC
 
 
 def plot_multi_fc(fc, df_visual, fpath, mode='pair', s=2, sfreq=250,
@@ -546,7 +648,6 @@ def plot_multi_fc(fc, df_visual, fpath, mode='pair', s=2, sfreq=250,
                     continue
         plt.tight_layout()
         plt.savefig(fpath)
-
 
 #%% Plot single trial GC results
 

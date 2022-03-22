@@ -444,7 +444,7 @@ def plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.
     fpath = fpath.joinpath(figname)
     plt.savefig(fpath)
 
-#%% Plot full stimulut duration
+#%% Plot full stimulus duration
     
 def sort_populations(populations, order= {'R':0,'F':1}):
     """
@@ -560,106 +560,17 @@ def full_stim_multi_gfc(fc, cohort, args, vmin=-2, vmax=3, F='gGC', sfreq=250,
                         continue                 
             plt.tight_layout()
 
-#%% Plot multitrial results comparing MI and GC
-
-
-def plot_multi_fc(fc, df_visual, fpath, mode='pair', s=2, sfreq=250,
-                                 rotation=90, tau_x=0.5, tau_y=0.8):
-    """
-    This function plot pairwise mutual information and transfer entropy matrices 
-    as heatmaps against the null distribution for a single subject
-    s: Subject index
-    tau_x: translattion parameter for x coordinate of statistical significance
-    tau_y: translattion parameter for y coordinate of statistical significance
-    rotation: rotation of xticks and yticks labels
-    te_max : maximum value for TE scale
-    mi_max: maximum value for MI scale
-    """
-    # Pairwise FC
-    if mode == 'pair':
-        F = 'pGC'
-        I = 'pMI'
-        populations = df_visual['group'].tolist()
-    # Groupwise FC
-    else:
-        F = 'gGC'
-        I = 'gMI'
-        populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
-        populations = list(populations.keys())
-    # Sort populations along R,O,F
-    idx_sort, populations = sort_populations(populations)
-    (ncdt, nsub) = fc.shape
-    fig, ax = plt.subplots(ncdt-1,2)
-    for c in range(ncdt-1): # Consider resting state as baseline
-        condition =  fc[c,s]['condition'][0]
-        # Granger causality matrix
-        f = fc[c,s][F]['gc'][0][0]
-        sig_gc = fc[c,s][F]['sig'][0][0]
-        # Mutual information matrix
-        mi = fc[c,s][I]['mi'][0][0]
-        sig_mi = fc[c,s][I]['sig'][0][0]     
-        # Permutes axes along wanted order
-        f = f[idx_sort,:]
-        f = f[:, idx_sort]
-        mi = mi[idx_sort,:]
-        mi = mi[:, idx_sort]
-        sig_gc = sig_gc[idx_sort,:]
-        sig_gc = sig_gc[:,idx_sort]
-        sig_mi = sig_mi[idx_sort,:]
-        sig_mi = sig_mi[:,idx_sort]
-        # Make ticks label
-        pop_ticks = [0]*len(populations)
-        pop_ticks[0] = populations[0]
-        for i in range(1,len(populations)):
-            if populations[i] == populations[i-1]:
-                pop_ticks[i]='-'
-            else:
-                pop_ticks[i]=populations[i]
-        # Plot MI as heatmap
-        g = sns.heatmap(mi, xticklabels=pop_ticks,
-                        yticklabels=pop_ticks, cmap='YlOrBr', ax=ax[c,0])
-        g.set_yticklabels(g.get_yticklabels(), rotation = rotation)
-        # Position xticks on top of heatmap
-        ax[c, 0].xaxis.tick_top()
-        ax[0,0].set_title('Mutual information (bit)')
-        ax[c, 0].set_ylabel(condition)
-        # Plot GC as heatmap
-        g = sns.heatmap(f, xticklabels=pop_ticks,
-                        yticklabels=pop_ticks, cmap='YlOrBr', ax=ax[c,1])
-        g.set_yticklabels(g.get_yticklabels(), rotation = rotation)
-        # Position xticks on top of heatmap
-        ax[c, 1].xaxis.tick_top()
-        ax[c, 1].set_ylabel('Target')
-        ax[0,1].set_title('Transfer entropy (bit/s)')
-        # Plot statistical significant entries
-        for y in range(f.shape[0]):
-            for x in range(f.shape[1]):
-                if sig_mi[y,x] == 1:
-                    ax[c,0].text(x + tau_x, y + tau_y, '*',
-                             horizontalalignment='center', verticalalignment='center',
-                             color='k')
-                else:
-                    continue
-                if sig_gc[y,x] == 1:
-                    ax[c,1].text(x + tau_x, y + tau_y, '*',
-                             horizontalalignment='center', verticalalignment='center',
-                             color='k')
-                else:
-                    continue
-        plt.tight_layout()
-        plt.savefig(fpath)
-
 #%% Plot single trial GC results
 
 # Compute z score of single distirbution
-def single_pfc_stat(fc, cohort, subject ='DiAs', baseline= 'baseline', 
-                    single='single_F', alternative='two-sided'):
+def single_fc_stat(fc, cohort, subject ='DiAs',F='pGC', baseline= 'Rest', 
+                    alternative='two-sided'):
     """
-    Compare functional connectivity (GC or MI) during baseline w.r.t a specific
+    Compare functional connectivity (GC or MI) z score during baseline w.r.t a specific
     condition such as Face or Place presentation.
     
     Parameters:
-    single= 'single_F' or 'single_MI'
+    F= 'pGC', 'pMI', 'gGC', 'gMI'
     cohort = ['AnRa',  'ArLa', 'DiAs']
     baseline = 'baseline' or 'Rest' 
     """
@@ -671,14 +582,14 @@ def single_pfc_stat(fc, cohort, subject ='DiAs', baseline= 'baseline',
     # Index subjects
     for idx, sub in enumerate(cohort):
         sub_dict[sub] = idx
-    # Comparisons performed for FC
+    # Comparisons
     comparisons = [(cdt[baseline],cdt['Face']), (cdt[baseline], cdt['Place']), 
-                   (cdt[baseline], cdt['Face'])]
+                   (cdt['Place'], cdt['Face'])]
     ncomp = len(comparisons)
     # Subject index of interest
     s = sub_dict[subject]
-    # FGet shape of functional connectivity matrix 
-    f = fc[0,s][single]
+    # Get shape of functional connectivity matrix 
+    f = fc[0,s][F]
     (n,n,N) = f.shape
     # Initialise statistics
     z = np.zeros((n,n,ncomp))
@@ -688,9 +599,9 @@ def single_pfc_stat(fc, cohort, subject ='DiAs', baseline= 'baseline',
         cb = comparisons[icomp][0]
         c = comparisons[icomp][1]
         # Baseline functional connectivity
-        fb = fc[cb,s][single]
+        fb = fc[cb,s][F]
         # Condition-specific functional connectivity
-        f = fc[c,s][single]
+        f = fc[c,s][F]
         # Compute z score and pvalues
         for i in range(n):
             for j in range(n):
@@ -702,27 +613,125 @@ def single_pfc_stat(fc, cohort, subject ='DiAs', baseline= 'baseline',
 
 
 
-def plot_single_trial(z, sig, populations):
+def plot_single_trial_pfc(fc, cohort, args, F='pGC', baseline= 'Rest', 
+                    alternative='two-sided', vmin=-10, vmax=10, rotation=90, 
+                    tau_x=0.5, tau_y=0.8):
     """
+    Plot single trial distribution results
     """
-    (n,n,ncomp) = z.shape
-    f, ax = plt.subplots(ncomp,2)
-    zmax = np.amax(z)
-    zmin = np.amin(z)
-    for icomp in range(ncomp):
-        g = sns.heatmap(z[:,:,icomp], vmin=zmin, vmax=zmax, xticklabels=populations,
-                            yticklabels=populations, cmap='YlOrBr', ax=ax[icomp,0])
-        g.set_yticklabels(g.get_yticklabels(), rotation = 90)
-        # Position xticks on top of heatmap
-        ax[icomp, 0].xaxis.tick_top()
-        ax[icomp, 0].set_ylabel('Target')
-        ax[0,0].set_title(' Z score')
-        g = sns.heatmap(sig[:,:,icomp], xticklabels=populations,
-                            yticklabels=populations, cmap='YlOrBr', ax=ax[icomp,1])
-        g.set_yticklabels(g.get_yticklabels(), rotation = 90)
-        # Position xticks on top of heatmap
+    # Compute z score, significance and pvalue of single trial distribution
+    # Loop over subjects
+    nsub = len(cohort)
+    # Comparisons
+    comparisons = [(baseline,'Face'), (baseline, 'Place'), 
+                   ('Place', 'Face')]
+    ncomp = len(comparisons)
+    # Initialise figure 
+    fig, ax = plt.subplots(ncomp,nsub)
+    # Loop over subjects
+    for s in range(nsub):
+        subject = cohort[s]
+        z, sig, pval = single_fc_stat(fc, cohort, subject =subject,F=F, 
+                                   baseline= baseline, alternative=alternative)
+        (n,n,ncomp) = z.shape
+        # Find retinotopic and face channels indices 
+        reader = EcogReader(args.data_path, subject=subject)
+        df_visual = reader.read_channels_info(fname='visual_channels.csv')
+        R_idx = df_visual.index[df_visual['group']=='R'].tolist()
+        F_idx = df_visual.index[df_visual['group']=='F'].tolist()
+        RF_idx = np.array(R_idx + F_idx)
+        # Permute visual channel axis to go from R to F
+        z = z[RF_idx, :,:] 
+        z = z[:, RF_idx,:]
+        # Make ticks label
+        group = df_visual['group']
+        populations = [group[i] for i in RF_idx]
+        # Loop over comparisons
+        for icomp in range(ncomp):
+            g = sns.heatmap(z[:,:,icomp], vmin=vmin, vmax=vmax, xticklabels=populations,
+                                yticklabels=populations, cmap='bwr', ax=ax[icomp,s])
+            g.set_yticklabels(g.get_yticklabels(), rotation = 90)
+            # Position xticks on top of heatmap
+            comp = comparisons[icomp]
+            ax[icomp, 0].xaxis.tick_top()
+            ax[icomp, 0].set_ylabel(f'{comp[0]}/{comp[1]}')        
+            # Position xticks on top of heatmap
+            ax[icomp,s].xaxis.tick_top()
+            # title
+            ax[0,s].set_title(f'Subject {s}')
+            # Plot statistical significant entries
+            for y in range(z.shape[0]):
+                for x in range(z.shape[1]):
+                    if sig[y,x,icomp] == 1:
+                        ax[icomp,s].text(x + tau_x, y + tau_y, '*',
+                                 horizontalalignment='center', verticalalignment='center',
+                                 color='k')
+                    else:
+                        continue                 
+        plt.tight_layout()
         ax[icomp, 1].xaxis.tick_top()
-        ax[0,1].set_title('Significance')
+        
+
+def plot_single_trial_gfc(fc, cohort, args, F='gGC', baseline= 'Rest', 
+                    alternative='two-sided', vmin=-3, vmax=3, rotation=90, 
+                    tau_x=0.5, tau_y=0.8):
+    """
+    Plot single trial distribution results
+    """
+    # Compute z score, significance and pvalue of single trial distribution
+    # Loop over subjects
+    nsub = len(cohort)
+    # Comparisons
+    comparisons = [(baseline,'Face'), (baseline, 'Place'), 
+                   ('Place', 'Face')]
+    ncomp = len(comparisons)
+    # Initialise figure 
+    fig, ax = plt.subplots(ncomp,nsub)
+    # Loop over subjects
+    for s in range(nsub):
+        subject = cohort[s]
+        z, sig, pval = single_fc_stat(fc, cohort, subject =subject,F=F, 
+                                   baseline= baseline, alternative=alternative)
+        (n,n,ncomp) = z.shape
+        
+        # Find retinotopic, other and face channels indices 
+        reader = EcogReader(args.data_path, subject=subject)
+        df_visual = reader.read_channels_info(fname='visual_channels.csv')
+        populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
+        populations = list(populations.keys())
+        R_idx = populations.index('R')
+        O_idx = populations.index('O')
+        F_idx = populations.index('F')
+        sort_idx = [R_idx, O_idx, F_idx]
+        # Pick array of R and F pairs
+        z = z[sort_idx, :,:] 
+        z = z[:, sort_idx,:]
+        # Build xticks label
+        ticks_label = [populations[i] for i in sort_idx]
+        # Loop over comparisons
+        for icomp in range(ncomp):
+            g = sns.heatmap(z[:,:,icomp], vmin=vmin, vmax=vmax, xticklabels=ticks_label,
+                                yticklabels=ticks_label, cmap='bwr', ax=ax[icomp,s])
+            g.set_yticklabels(g.get_yticklabels(), rotation = 90)
+            # Position xticks on top of heatmap
+            comp = comparisons[icomp]
+            ax[icomp, 0].xaxis.tick_top()
+            ax[icomp, 0].set_ylabel(f'{comp[0]}/{comp[1]}')        
+            # Position xticks on top of heatmap
+            ax[icomp,s].xaxis.tick_top()
+            # title
+            ax[0,s].set_title(f'Subject {s}')
+            # Plot statistical significant entries
+            for y in range(z.shape[0]):
+                for x in range(z.shape[1]):
+                    if sig[y,x,icomp] == 1:
+                        ax[icomp,s].text(x + tau_x, y + tau_y, '*',
+                                 horizontalalignment='center', verticalalignment='center',
+                                 color='k')
+                    else:
+                        continue                 
+        plt.tight_layout()
+        ax[icomp, 1].xaxis.tick_top()
 
 
 #%% Plot rolling multitrial rolling window analysis

@@ -20,10 +20,10 @@ for s=1:nsub
         % Pairwise GC single distribution
         pGC = ts_to_single_pGC(X,'morder', morder,...
                 'regmode', regmode,'alpha', alpha,'mhtc', mhtc, 'tstat', tstat);
-        
+        % Functional visual channels indices
+        indices = gc_input.indices;
         % Groupwise Mutual information single distribution
         gMI = ts_to_single_mvmi(X, 'gind', indices);
-
         % Groupwise MVGC single distribution
         gGC = ts_to_single_mvgvc(X, 'gind', indices, 'morder',morder,...
                 'regmode',regmode);

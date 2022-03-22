@@ -11,6 +11,7 @@ multitrial GC and single trial GC
 from src.input_config import args
 from src.preprocessing_lib import EcogReader, parcellation_to_indices
 from src.plotting_lib import full_stim_multi_pfc, full_stim_multi_gfc
+from src.plotting_lib import plot_single_trial_pfc, plot_single_trial_gfc
 from pathlib import Path
 from scipy.io import loadmat
 
@@ -56,6 +57,48 @@ full_stim_multi_gfc(fc, cohort, args, F='gGC', vmin=-2,vmax=2,  sfreq=250,
 
 full_stim_multi_gfc(fc, cohort, args, F='gMI', vmin=-2,vmax=2,  sfreq=250,
                                  rotation=90, tau_x=0.5, tau_y=0.8)
+
+
+#%% Plot single trial pGC
+
+# Take input data
+fname = 'single_trial_fc.mat'
+fc_path = result_path.joinpath(fname)
+fc = loadmat(fc_path)
+fc = fc['dataset']
+cohort = ['AnRa', 'ArLa', 'DiAs']
+# Plot single trial fc
+plot_single_trial_pfc(fc, cohort, args, F='pGC', baseline= 'Rest', 
+                    alternative='greater', vmin=-2, vmax=2, rotation=90, 
+                    tau_x=0.5, tau_y=0.8)
+#%% Plot single trial gGC
+
+# Take input data
+fname = 'single_trial_fc.mat'
+fc_path = result_path.joinpath(fname)
+fc = loadmat(fc_path)
+fc = fc['dataset']
+cohort = ['AnRa', 'ArLa', 'DiAs']
+# Plot single trial fc
+plot_single_trial_gfc(fc, cohort, args, F='gGC', baseline= 'Rest', 
+                    alternative='greater', vmin=-2, vmax=2, rotation=90, 
+                    tau_x=0.5, tau_y=0.8)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

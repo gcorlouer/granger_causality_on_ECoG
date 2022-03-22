@@ -1,4 +1,4 @@
-function pGC = ts_to_single_pGC(X, args)
+function F = ts_to_single_pGC(X, args)
 
 arguments
     X double;
@@ -9,16 +9,11 @@ arguments
     args.alpha double = 0.05;
 end
 
-morder = args.morder; regmode = args.regmode; tstat = args.tstat; 
-alpha = args.alpha; mhtc = args.mhtc;
+morder = args.morder; regmode = args.regmode;
 
 % Initialise variables
-[n,m,N] = size(X);
-pval = zeros(n,n,N);
+[n,~,N] = size(X);
 F = zeros(n,n,N);
-sig = zeros(n,n,N);
-pval = zeros(n,n,N);
-pcrit = zeros(N,1);
 for i=1:N
     trial = X(:,:,i);
     VAR = ts_to_var_parameters(trial, 'morder', morder, 'regmode', regmode);
@@ -29,13 +24,4 @@ for i=1:N
     % Single regression
     F(:,:,i) = var_to_pwcgc(A,V);
     F(isnan(F))=0;
-    % Dual regression (return number of significant pairs along rolling
-    % window
-    nx = 1; ny=1;nz = n-nx-ny; p=morder;
-    stat = var_to_pwcgc_tstat(X,V,morder,regmode,tstat);
-    pval(:,:,i) = mvgc_pval(stat,tstat,nx,ny,nz,p,m,N);
-    [sig(:,:,i), pcrit(i)] = significance(pval(:,:,i),alpha,mhtc,[]);
-    sig(isnan(sig))=0;
 end
-
-pGC.gc = F; pGC.sig = sig; pGC.pval = pval; pGC.pcrit = pcrit;

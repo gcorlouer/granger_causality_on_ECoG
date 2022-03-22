@@ -1,4 +1,4 @@
-function pMI = ts_to_single_pMI(X, args)
+function MI = ts_to_single_pMI(X, args)
 
 arguments
     X double;
@@ -22,10 +22,5 @@ for i=1:N
     % Given Gaussianity, compute mutual information
     [MI(:,:,i),pval(:,:,i)] = cov_to_pwcmi(V(:,:,i),m);
     MI(isnan(MI)) = 0;
-    % Return LR test statistics
-    [sig(:,:,i), pcrit(i)] = significance(pval(:,:,i),alpha,mhtc);
-    sig(isnan(sig))=0;
 end
-
-pMI.mi = MI; pMI.sig = sig; pMI.pval = pval; pMI.pcrit = pcrit; 
 end 

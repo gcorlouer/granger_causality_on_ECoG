@@ -4,7 +4,6 @@ field = {'subject', 'condition', 'time', 'aic', 'bic', 'hqc', 'lrt', 'rho'};
 value = {};
 nsub = length(cohort);
 dataset = struct;
-mw = 20;
 
 for i=1:nsub
     subject = cohort{i};

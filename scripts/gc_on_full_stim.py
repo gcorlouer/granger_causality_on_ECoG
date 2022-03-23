@@ -24,64 +24,63 @@ import seaborn as sns
 
 home = Path.home()
 figpath = home.joinpath('thesis','overleaf_project','figures')
+result_path = Path('../results')
 # List conditions
 conditions = ['Rest', 'Face', 'Place', 'baseline']
+cohort = ['AnRa', 'ArLa', 'DiAs']
 nsub = len(args.cohort)
 #%% Plot multitrial pair FC
 # Load functional connectivity matrix
-result_path = Path('../results')
 fname = 'multi_trial_fc.mat'
 fc_path = result_path.joinpath(fname)
 fc = loadmat(fc_path)
 fc = fc['dataset']
-vmin = 0
+vmin = -2.5
 #vmax = [11, 15, 12]
 (ncdt, nsub) = fc.shape
-cohort = ['AnRa', 'ArLa', 'DiAs']
 
-full_stim_multi_pfc(fc, cohort, args, F='pGC',vmin=-3,vmax=3, sfreq=250,
+full_stim_multi_pfc(fc, cohort, args, F='pGC',vmin=vmin,vmax=-vmin, sfreq=250,
                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
 
 #%% Plot multitrial pair MI
 
-full_stim_multi_pfc(fc, cohort, args, F='pMI', vmin=-6,vmax=6,  sfreq=250,
+full_stim_multi_pfc(fc, cohort, args, F='pMI', vmin=vmin,vmax=-vmin,  sfreq=250,
                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
 #%% Plot multitrial groupwise GC
-
-full_stim_multi_gfc(fc, cohort, args, F='gGC', vmin=-2,vmax=2,  sfreq=250,
+vmin = 3
+full_stim_multi_gfc(fc, cohort, args, F='gGC', vmin=vmin,vmax=-vmin,  sfreq=250,
                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
 #%% Plot  multitrial groupwise MI
-
-full_stim_multi_gfc(fc, cohort, args, F='gMI', vmin=-2,vmax=2,  sfreq=250,
+vmin = 4
+full_stim_multi_gfc(fc, cohort, args, F='gMI', vmin=vmin,vmax=-vmin,  sfreq=250,
                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
 
-#%% Plot single trial pGC
+#%% Plot single trial pFC
 
 # Take input data
 fname = 'single_trial_fc.mat'
 fc_path = result_path.joinpath(fname)
 fc = loadmat(fc_path)
 fc = fc['dataset']
-cohort = ['AnRa', 'ArLa', 'DiAs']
 # Plot single trial fc
 plot_single_trial_pfc(fc, cohort, args, F='pGC', baseline= 'Rest', 
-                    alternative='greater', vmin=-2, vmax=2, rotation=90, 
+                    alternative='greater', vmin=-3, vmax=3, rotation=90, 
                     tau_x=0.5, tau_y=0.8)
-#%% Plot single trial gGC
+#%% Plot single trial gFC
 
 # Take input data
 fname = 'single_trial_fc.mat'
 fc_path = result_path.joinpath(fname)
 fc = loadmat(fc_path)
 fc = fc['dataset']
-cohort = ['AnRa', 'ArLa', 'DiAs']
+vmax = 4
 # Plot single trial fc
 plot_single_trial_gfc(fc, cohort, args, F='gGC', baseline= 'Rest', 
-                    alternative='greater', vmin=-2, vmax=2, rotation=90, 
+                    alternative='greater', vmin=-vmax, vmax=vmax, rotation=90, 
                     tau_x=0.5, tau_y=0.8)
 
 

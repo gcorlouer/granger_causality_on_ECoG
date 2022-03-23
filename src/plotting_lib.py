@@ -385,15 +385,15 @@ def plot_condition_ts(args, fpath, subject='DiAs', figname='_condition_ts.pdf'):
 
 #%% VAR model estimation
     
-def plot_rolling_var(df, fpath, ncdt =3, momax=10, figname='rolling_var.pdf'):
+def plot_rolling_var(df, fpath, momax=10, figname='rolling_var.pdf'):
     """
     This function plots results of rolling VAR estimation
     """
-    cohort = list(df["subject"].unique())
+    cohort = ['AnRa', 'ArLa', 'DiAs']
     nsub = len(cohort)
     ic = ["aic", "bic", "hqc", "lrt"]
     cdt = list(df["condition"].unique())
-    ticks = [0, 0.8]
+    ncdt = len(cdt)
     # Plot rolling var
     f, ax = plt.subplots(ncdt, nsub, sharex=True, sharey=True)
     for c in range(ncdt):
@@ -403,10 +403,10 @@ def plot_rolling_var(df, fpath, ncdt =3, momax=10, figname='rolling_var.pdf'):
                 morder = df[i].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
                 ax[c,s].plot(time, morder, label=i)
                 ax[c,s].set_ylim(0,momax)
-                ax[0,s].set_title(cohort[s])
+                ax[0,s].set_title(f"Subject {s}")
                 ax[c,0].set_ylabel(cdt[c])
                 ax[2,s].set_xlabel("Time (s)")
-                ax[2,s].set_xticks(ticks)
+                #ax[2,s].set_xticks(ticks)
                         
     # legend situated upper right                
     handles, labels = ax[c,s].get_legend_handles_labels()
@@ -420,10 +420,10 @@ def plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.
     """
     Plot spectral radius along rolling window accross all subjects
     """
-    cohort = list(df["subject"].unique())
+    cohort = ['AnRa', 'ArLa', 'DiAs']
     nsub = len(cohort)
     cdt = list(df["condition"].unique())
-    ticks = [0, 0.8]
+    yticks = [0.6, 0.7, 0.8, 0.9, 1]
     # Plot rolling spectral radius
     f, ax = plt.subplots(ncdt, nsub, sharex=True, sharey=True)
     for c in range(ncdt):
@@ -432,10 +432,10 @@ def plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.
             rho = df["rho"].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
             ax[c,s].plot(time, rho, label="Spectral radius")
             ax[c,s].set_ylim(0.6,1)
-            ax[0,s].set_title(cohort[s])
+            ax[0,s].set_title(f"Subject {s}")
             ax[c,0].set_ylabel(cdt[c])
             ax[2,s].set_xlabel("Time (s)")
-            ax[2,s].set_xticks(ticks)
+            ax[c,s].set_yticks(yticks)
     # Legend            
     handles, labels = ax[c,s].get_legend_handles_labels()
     f.legend(handles, labels, loc='upper right')
@@ -479,16 +479,17 @@ def full_stim_multi_pfc(fc, cohort, args, vmin=-2, vmax=3, F='pGC', sfreq=250,
         for c in range(ncdt-1): # Consider resting state as baseline
             condition =  fc[c,s]['condition'][0]
             # Functional connectivity matrix
-            baseline = fc[3,s][F]['f'][0][0]
+            baseline = fc[0,s][F]['f'][0][0]
             f = fc[c,s][F]['f'][0][0]
             f = f/baseline
             f = np.log(f)
             # Significance
             sig = fc[c,s][F]['sig'][0][0]
-            #f = np.log(f)
             # Pick array of R and F pairs
             f = f[RF_idx, :] 
             f = f[:, RF_idx]
+            sig = sig[RF_idx, :] 
+            sig = sig[:, RF_idx]
             # Make ticks label
             group = df_visual['group']
             populations = [group[i] for i in RF_idx]
@@ -529,18 +530,29 @@ def full_stim_multi_gfc(fc, cohort, args, vmin=-2, vmax=3, F='gGC', sfreq=250,
         # Find retinotopic and face channels indices 
         populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
         populations = list(populations.keys())
+        R_idx = populations.index('R')
+        O_idx = populations.index('O')
+        F_idx = populations.index('F')
+        sort_idx = [R_idx, O_idx, F_idx]
         for c in range(ncdt-1): # Consider resting state as baseline
             condition =  fc[c,s]['condition'][0]
             # Functional connectivity matrix
-            baseline = fc[3,s][F]['f'][0][0]
+            baseline = fc[0,s][F]['f'][0][0]
             f = fc[c,s][F]['f'][0][0]
             f = f/baseline
             f = np.log(f)
             # Significance
-            sig = fc[c,s][F]['sig'][0][0]            
+            sig = fc[c,s][F]['sig'][0][0]
+            # Pick array of R and F pairs
+            f = f[sort_idx, :] 
+            f = f[:, sort_idx]
+            sig = sig[sort_idx, :] 
+            sig = sig[:, sort_idx]
+            # Build xticks label
+            ticks_label = [populations[i] for i in sort_idx]            
             # Plot F as heatmap
-            g = sns.heatmap(f, xticklabels=populations, vmin=vmin, vmax=vmax,
-                            yticklabels=populations, cmap='bwr', ax=ax[c,s])
+            g = sns.heatmap(f, xticklabels=ticks_label, vmin=vmin, vmax=vmax,
+                            yticklabels=ticks_label, cmap='bwr', ax=ax[c,s])
             g.set_yticklabels(g.get_yticklabels(), rotation = 90)
             # Position xticks on top of heatmap
             ax[c,s].xaxis.tick_top()
@@ -643,6 +655,8 @@ def plot_single_trial_pfc(fc, cohort, args, F='pGC', baseline= 'Rest',
         # Permute visual channel axis to go from R to F
         z = z[RF_idx, :,:] 
         z = z[:, RF_idx,:]
+        sig = sig[RF_idx, :,:]
+        sig = sig[:, RF_idx,:]
         # Make ticks label
         group = df_visual['group']
         populations = [group[i] for i in RF_idx]
@@ -706,6 +720,8 @@ def plot_single_trial_gfc(fc, cohort, args, F='gGC', baseline= 'Rest',
         # Pick array of R and F pairs
         z = z[sort_idx, :,:] 
         z = z[:, sort_idx,:]
+        sig = sig[sort_idx, :,:]
+        sig = sig[:, sort_idx,:]
         # Build xticks label
         ticks_label = [populations[i] for i in sort_idx]
         # Loop over comparisons
@@ -736,18 +752,18 @@ def plot_single_trial_gfc(fc, cohort, args, F='gGC', baseline= 'Rest',
 
 #%% Plot rolling multitrial rolling window analysis
         
-def plot_multitrial_rolling_fc(fc, figpath,interaction='gGC' ,fc_type='gc'):
+def plot_multitrial_rolling_fc(fc, figpath, top, F='gGC'):
     """
     This function plot groupwise multitrial mi/gc along rolling windows
     Parameters
     figpath: path to save figure plot 
-    interaction: groupwise GC or MI, gGC or gMI 
+    F: groupwise GC or MI, gGC or gMI 
     fc_type: type of functional connectivity: gc or mi 
     """ 
-    cohort = ['AnRa',  'ArLa', 'DiAs'];
     conditions = ['Rest', 'Face', 'Place']
     (ncdt, nsub) = fc.shape
-    f, ax = plt.subplots(3, nsub)
+    fmax = np.zeros((ncdt, nsub))
+    fig, ax = plt.subplots(3, nsub)
     # Loop over subjects and conditions
     for s in range(nsub):
         for c in range(3):
@@ -755,37 +771,40 @@ def plot_multitrial_rolling_fc(fc, figpath,interaction='gGC' ,fc_type='gc'):
             # Return group of functional population in the right order
             group = list(indices.dtype.fields.keys())
             # Compute baseline to scale gc
-            baseline = fc[3,s][interaction][fc_type][0][0]
+            baseline = fc[0,s][F]['f'][0][0]
             baseline = np.average(baseline)
             # Return gc/mi
-            gc = fc[c,s][interaction][fc_type][0][0]
+            f = fc[c,s][F]['f'][0][0]
             # Scale by baseline
-            gc = gc/baseline
+            f = f/baseline
+            #f = np.log(f)
             # Compute significance threshold
-            sig = fc[c,s][interaction]['sig'][0][0]
-            gc_sig =  np.amin(gc[sig==1])
+            sig = fc[c,s][F]['sig'][0][0]
+            f_sig =  np.amin(f[sig==1])
+            fmax[c,s] = np.amax(f)
             # Return time from rolling window
             time = fc[c,s]['time']
             # Pick retinotopic and face channels groups
             iF = group.index('F')
             iR = group.index('R')
             # Plot fc from retinotopic to face channels
-            ax[c,s].plot(time, gc[iF, iR], label = 'R to F')
+            ax[c,s].plot(time, f[iF, iR], label = 'R to F')
             # Plot fc from face to retinotopic channels
-            ax[c,s].plot(time, gc[iR, iF], label = 'F to R')
+            ax[c,s].plot(time, f[iR, iF], label = 'F to R')
             # Stimulus presentation
             ax[c,s].axvline(x=0, color = 'k')
             # Baseline line
             ax[c,s].axhline(y=1, color = 'k')
-            ax[c,s].axhline(y=gc_sig, color = 'r')
-            ax[c,s].set_ylim(bottom=0, top=6.5)
+            # Significance line
+            ax[c,s].axhline(y=f_sig, color = 'g', label='sig')
+            ax[c,s].set_ylim(bottom=0, top=10)
             # Set titles
             ax[-1,s].set_xlabel("Time (s)")
-            ax[c,0].set_ylabel(f"{interaction} {conditions[c]}")
-            ax[0,s].set_title(f"{cohort[s]}")
+            ax[c,0].set_ylabel(f"{F} {conditions[c]}")
+            ax[0,s].set_title(f"Subject {s}")
     # legend situated upper right                
     handles, labels = ax[c,s].get_legend_handles_labels()
-    f.legend(handles, labels, loc='upper right')        
+    fig.legend(handles, labels, loc='upper right')        
     plt.tight_layout()
     # Save figure
     plt.savefig(figpath)

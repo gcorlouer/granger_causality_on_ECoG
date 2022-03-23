@@ -85,7 +85,7 @@ for i, subject in enumerate(cohort):
     n = len(df.loc[(df['group']=='P') & (df['subject_id']==subject)])
     nP[i] = n
 
-visual_channels['subject'] = cohort
+visual_channels['subject'] = [i for i in range(len(cohort))]
 visual_channels['nR'] = nR
 visual_channels['nF'] = nF
 visual_channels['nO'] = nO

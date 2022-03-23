@@ -2,7 +2,7 @@
 % Initialise parameters for GC analysis
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Input data
-if ~exist('sub_id', 'var'), subject = 'DiAs'; end
+if ~exist('subject', 'var'), subject = 'DiAs'; end
 if ~exist('cohort','var'), cohort = {'AnRa', 'ArLa', 'DiAs'}; end
 if ~exist('condition', 'var'), condition = {'Rest', 'Face', 'Place', 'baseline'}; end
 if ~exist('field', 'var'), field = {'time',  'condition', 'pair', 'subject','F'}; end
@@ -29,7 +29,7 @@ if ~exist('plotm', 'var'), plotm = []; end
 if ~exist('verb', 'var'), verb = 0; end
 
 % Rolling window
-if ~exist('mw', 'var'), mw = 20; end % number of observations in window
+if ~exist('mw', 'var'), mw = 80; end % number of observations in window
 if ~exist('shift', 'var'), shift = 10; end % window shift
 
 

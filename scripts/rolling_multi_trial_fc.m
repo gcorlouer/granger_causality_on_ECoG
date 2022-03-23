@@ -61,23 +61,23 @@ for s=1:nsub
                     'regmode',regmode,'tstat', tstat,'alpha', alpha, 'mhtc',mhtc);
             % Compute FC arrays
             % pMI
-            pmi(:,:,w) = win_pMI.mi; sig_pmi(:,:,w) = win_pMI.sig; 
+            pmi(:,:,w) = win_pMI.f; sig_pmi(:,:,w) = win_pMI.sig; 
             pval_pmi(:,:,w)= win_pMI.pval; pcrit_pmi(w) = win_pMI.pcrit;
             % pGC
-            pgc(:,:,w) = win_pGC.gc; sig_pgc(:,:,w) = win_pGC.sig; 
+            pgc(:,:,w) = win_pGC.f; sig_pgc(:,:,w) = win_pGC.sig; 
             pval_pgc(:,:,w)= win_pGC.pval; pcrit_pgc(w) = win_pGC.pcrit;
             % gMI
-            gmi(:,:,w) = win_gMI.mi; sig_gmi(:,:,w) = win_gMI.sig; 
+            gmi(:,:,w) = win_gMI.f; sig_gmi(:,:,w) = win_gMI.sig; 
             pval_gmi(:,:,w)= win_gMI.pval; pcrit_gmi(w) = win_gMI.pcrit;
             % gGC
-            ggc(:,:,w) = win_gGC.gc; sig_ggc(:,:,w) = win_gGC.sig; 
+            ggc(:,:,w) = win_gGC.f; sig_ggc(:,:,w) = win_gGC.sig; 
             pval_ggc(:,:,w)= win_gGC.pval; pcrit_ggc(w) = win_gGC.pcrit;
         end
         % Save FC in structure
-        pMI.mi = pmi; pMI.sig = sig_pmi; pMI.pval = pval_pmi; pMI.pcrit = pcrit_pmi;
-        pGC.gc = pgc; pGC.sig = sig_pgc; pGC.pval = pval_pgc; pGC.pcrit = pcrit_pgc;
-        gMI.mi = gmi; gMI.sig = sig_gmi; gMI.pval = pval_gmi; gMI.pcrit = pcrit_gmi;
-        gGC.gc = ggc; gGC.sig = sig_ggc; gGC.pval = pval_ggc; gGC.pcrit = pcrit_ggc;
+        pMI.f = pmi; pMI.sig = sig_pmi; pMI.pval = pval_pmi; pMI.pcrit = pcrit_pmi;
+        pGC.f = pgc; pGC.sig = sig_pgc; pGC.pval = pval_pgc; pGC.pcrit = pcrit_pgc;
+        gMI.f = gmi; gMI.sig = sig_gmi; gMI.pval = pval_gmi; gMI.pcrit = pcrit_gmi;
+        gGC.f = ggc; gGC.sig = sig_ggc; gGC.pval = pval_ggc; gGC.pcrit = pcrit_ggc;
         % Save dataset
         dataset(c,s).subject = subject;
         dataset(c,s).condition = condition{c};

@@ -8,7 +8,7 @@ In this script we test function from plotting library
 
 from src.input_config import args
 from src.preprocessing_lib import EcogReader, parcellation_to_indices
-from src.plotting_lib import plot_multitrial_rolling_fc
+from src.plotting_lib import plot_rolling_var, plot_rolling_specrad
 from pathlib import Path
 from scipy.io import loadmat
 
@@ -62,7 +62,7 @@ df = pd.read_csv(fpath)
 
 fpath = home.joinpath('thesis','overleaf_project','figures')
 
-plot_rolling_var(df, fpath, ncdt =3, momax=10, figname='rolling_var.pdf')
+plot_rolling_var(df, fpath, momax=10, figname='rolling_var.pdf')
 
 
 

@@ -50,5 +50,5 @@ for i=1:ng
 end
 % Compute significance against null and correct for multiple hypotheses.
 [sig, pcrit] = significance(pval,alpha,mhtc,[]);
-gMI.f = I; gMI.sig = sig; gMI.pval = pval; gMI.pcrit = pcrit;
+gMI.F = I; gMI.sig = sig; gMI.pval = pval; gMI.pcrit = pcrit;
 end

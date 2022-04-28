@@ -51,5 +51,5 @@ for i=1:ng
     end
 end
 [sig, pcrit] = significance(pval,alpha,mhtc,[]);
-gGC.f = F; gGC.sig = sig; gGC.pval = pval; gGC.pcrit = pcrit; 
+gGC.F = F; gGC.sig = sig; gGC.pval = pval; gGC.pcrit = pcrit; 
 end

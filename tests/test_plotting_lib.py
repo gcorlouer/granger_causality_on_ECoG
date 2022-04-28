@@ -8,7 +8,7 @@ In this script we test function from plotting library
 
 from src.input_config import args
 from src.preprocessing_lib import EcogReader, parcellation_to_indices
-from src.plotting_lib import plot_rolling_var, plot_rolling_specrad
+from src.plotting_lib import plot_narrow_broadband, plot_log_trial
 from pathlib import Path
 from scipy.io import loadmat
 

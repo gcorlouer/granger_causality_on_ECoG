@@ -479,8 +479,8 @@ def full_stim_multi_pfc(fc, cohort, args, vmin=-2, vmax=3, F='pGC', sfreq=250,
         for c in range(ncdt-1): # Consider resting state as baseline
             condition =  fc[c,s]['condition'][0]
             # Functional connectivity matrix
-            baseline = fc[0,s][F]['f'][0][0]
-            f = fc[c,s][F]['f'][0][0]
+            baseline = fc[0,s][F]['F'][0][0]
+            f = fc[c,s][F]['F'][0][0]
             f = f/baseline
             f = np.log(f)
             # Significance
@@ -537,8 +537,8 @@ def full_stim_multi_gfc(fc, cohort, args, vmin=-2, vmax=3, F='gGC', sfreq=250,
         for c in range(ncdt-1): # Consider resting state as baseline
             condition =  fc[c,s]['condition'][0]
             # Functional connectivity matrix
-            baseline = fc[0,s][F]['f'][0][0]
-            f = fc[c,s][F]['f'][0][0]
+            baseline = fc[0,s][F]['F'][0][0]
+            f = fc[c,s][F]['F'][0][0]
             f = f/baseline
             f = np.log(f)
             # Significance
@@ -623,6 +623,51 @@ def single_fc_stat(fc, cohort, subject ='DiAs',F='pGC', baseline= 'Rest',
     sig = rejected
     return z, sig, pval
 
+def info_flow_stat(fc, cohort, args, subject ='DiAs',F='gGC', baseline= 'Rest', 
+                    alternative='two-sided'):
+    """
+    Compare functional connectivity (GC or MI) z score during baseline w.r.t a specific
+    condition such as Face or Place presentation.
+    
+    Parameters:
+    F= 'pGC', 'pMI', 'gGC', 'gMI'
+    cohort = ['AnRa',  'ArLa', 'DiAs']
+    baseline = 'baseline' or 'Rest' 
+    """
+    # Index conditions
+    cdt = {'Rest':0, 'Face':1, 'Place':2, 'baseline':3}
+    ncdt = len(cdt)
+    # Make subject dictionary
+    keys = cohort
+    sub_dict = dict.fromkeys(keys)
+    # Index subjects
+    for idx, sub in enumerate(cohort):
+        sub_dict[sub] = idx
+    # Subject index of interest
+    s = sub_dict[subject]
+    # Get shape of functional connectivity matrix 
+    f = fc[0,s][F]
+    (n,n,N) = f.shape
+    # Initialise statistics
+    z = np.zeros((ncdt,1))
+    pval =  np.zeros((ncdt,1))
+    reader = EcogReader(args.data_path, subject=subject)
+    # Get R and F index
+    df_visual = reader.read_channels_info(fname='visual_channels.csv')
+    populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
+    populations = list(populations.keys())
+    iR = populations.index('R')
+    iF = populations.index('F')
+    # Compare fc during baseline and one condition
+    for c in range(ncdt):
+        # Condition-specific functional connectivity
+        f = fc[c,s][F]
+        # Compute z score and pvalues of bottum up minus top down
+        z[c], pval[c] = ranksums(f[iF,iR,:], f[iR,iF,:], 
+                 alternative=alternative)
+    rejected, pval_corrected = fdr_correction(pval,alpha=0.05)
+    sig = rejected
+    return z, sig, pval
 
 
 def plot_single_trial_pfc(fc, cohort, args, F='pGC', baseline= 'Rest', 

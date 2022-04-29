@@ -1,3 +1,4 @@
+%% Estimate VAR model on multitrial data
 input_parameters;
 conditions = {'Rest' 'Face' 'Place'};
 ncdt = 3;

@@ -14,12 +14,6 @@ for s=1:nsub
         % Read conditions specific time series
         X = gc_input.X;
         [n , m, N] = size(X);
-%         % Pairwise MI single distribution
-%         pMI = ts_to_single_pMI(X, 'q', q, ...
-%                 'mhtc', mhtc, 'alpha', alpha);
-%         % Pairwise GC single distribution
-%         pGC = ts_to_single_pGC(X,'morder', morder,...
-%                 'regmode', regmode,'alpha', alpha,'mhtc', mhtc, 'tstat', tstat);
         % Functional visual channels indices
         indices = gc_input.indices;
         % Groupwise Mutual information single distribution

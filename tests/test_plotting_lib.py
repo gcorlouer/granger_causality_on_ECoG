@@ -30,7 +30,7 @@ plot_narrow_broadband(args, fpath, fname=fname, chan = ['LTo1-LTo2'], tmin=500, 
 fname = 'DiAs_log_trial.pdf'
 home = Path.home()
 fpath = home.joinpath('thesis','overleaf_project','figures')
-plot_log_trial(args, fpath, fname = fname, 
+
                           chan = ['LTo1-LTo2'], itrial=2, nbins=50)
 #%% Plot visual trial
 fname = 'DiAs_visual_trial.pdf'

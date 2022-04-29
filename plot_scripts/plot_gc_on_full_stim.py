@@ -59,17 +59,6 @@ full_stim_multi_gfc(fc, cohort, args, F='gMI', vmin=vmin,vmax=-vmin,  sfreq=250,
                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
 
-#%% Plot single trial pFC
-
-# Take input data
-fname = 'single_trial_fc.mat'
-fc_path = result_path.joinpath(fname)
-fc = loadmat(fc_path)
-fc = fc['dataset']
-# Plot single trial fc
-plot_single_trial_pfc(fc, cohort, args, F='pGC', baseline= 'Rest', 
-                    alternative='greater', vmin=-3, vmax=3, rotation=90, 
-                    tau_x=0.5, tau_y=0.8)
 #%% Plot single trial gFC
 cohort = ['AnRa', 'ArLa', 'DiAs']
 # Take input data

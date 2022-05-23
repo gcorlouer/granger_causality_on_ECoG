@@ -14,18 +14,20 @@ for s=1:nsub
             'condition',condition{c}, 'suffix', suffix);
         % Read conditions specific time series
         X = gc_input.X;
-        pGC = ts_to_spgc(X, 'morder',morder, 'regmode', regmode, ...
-                    'dim',dim,'band',band ,'sfreq',sfreq,'fres',fres,...
-                    'tstat',tstat,'mhtc', mhtc, 'alpha', alpha);
+        % Functional visual channels indices
+        indices = gc_input.indices;
+        % Spectral mvgc
+        sGC = ts_to_smvgc(X, 'gind',indices,'morder',morder, 'regmode', regmode, ...
+            'sfreq',sfreq,'fres',fres);
         % Save dataset
         dataset(c,s).subject = subject;
         dataset(c,s).condition = condition{c};
-        dataset(c,s).pGC = pGC;
+        dataset(c,s).sGC = sGC;
      end
 end
 
 %% Save dataset for plotting in python
 
-fname = 'multi_trial_sfc.mat';
+fname = 'multi_trial_smvgc.mat';
 fpath = fullfile(datadir, fname);
 save(fpath, 'dataset')

@@ -871,9 +871,9 @@ class VisualClassifier(VisualDetector):
 def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = True,
                      preprocessed_suffix='_hfb_continuous_raw.fif', decim=2,
                      epoch=False, t_prestim=-0.5, t_postim=1.75, tmin_baseline = -0.5,
-                     tmax_baseline = 0, tmin_crop=-0.5, tmax_crop=1.5):
+                     tmax_baseline = 0, tmin_crop=0, tmax_crop=1):
     """
-    Return category-specific dictionary
+    Return category-specific time series as a dictionary 
     """
     conditions = ['Rest', 'Face', 'Place', 'baseline']
     ts = dict.fromkeys(conditions, [])

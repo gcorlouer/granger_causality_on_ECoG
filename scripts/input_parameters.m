@@ -20,7 +20,7 @@ if ~exist('normalise', 'var'), normalise = false; end
 % Mutual information
 if ~exist('q', 'var'), q = 0; end % Covariance lag
 
-% Modeling
+% VAR Modeling
 if ~exist('regmode', 'var'), regmode = 'OLS'; end % OLS or LWR
 if ~exist('morder', 'var'),    morder = 3; end % Model order. Pick 3 or 5.
 if ~exist('momax', 'var'), momax = 10; end
@@ -48,5 +48,3 @@ if ~exist('alpha', 'var'), alpha = 0.05; end
 if ~exist('mhtc', 'var'), mhtc = 'FDRD'; end % multiple testing correction
 if ~exist('LR', 'var'), LR = true; end % If false F test
 
-% Spectral gc
-if ~exist('fres', 'var'), fres = 1024; end

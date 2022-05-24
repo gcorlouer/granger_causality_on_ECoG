@@ -18,7 +18,6 @@ from pathlib import Path
 from scipy.io import savemat
 
 import numpy as np
-import pandas as pd
 #%%
 
 conditions = ['Rest', 'Face', 'Place', 'baseline']

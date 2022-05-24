@@ -14,6 +14,7 @@ from scipy.io import loadmat
 from pathlib import Path
 
 #%%
+#%matplotlib qt
 
 conditions = ['Rest', 'Face', 'Place',]
 cohort = args.cohort
@@ -85,9 +86,46 @@ def plot_smvgc(sgc, args, pairs = ['R->F', 'F->R']):
 
 pairs = ['R->F', 'F->R']
 plot_smvgc(sgc, args, pairs = pairs)
+fig_path = Path('~','PhD','notes','figures').expanduser()
+fig_name = 'cross_smvgc.png'
+fig_path = fig_path.joinpath(fig_name)
+plt.savefig(fig_path)
 
+ 
+#%% Compare top down sGC relative to bottum up accross conditions and subjects
 
-#%% Plot Spectral GC along condition x subjects (compare)
-
+#pairs = ['R->F', 'F->R']
+#xticks = [0,1,10,100]
+#ng = len(pairs)
+#fig, ax = plt.subplots(1, nsub,sharex=True, sharey=True)
+#for s, subject in enumerate(args.cohort):
+#    reader = EcogReader(args.data_path, subject=subject)
+#    df_visual = reader.read_channels_info(fname='visual_channels.csv')
+#    # Find retinotopic and face channels indices 
+#    populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
+#    populations = list(populations.keys())
+#    R_idx = populations.index('R')
+#    F_idx = populations.index('F')
+#    pair_idx = [(F_idx, R_idx),(R_idx, F_idx)]
+#    for c, cdt in enumerate(conditions):
+#        # Get smvgc
+#        f = sgc[c,s][2]['F'][0][0]
+#        # Top down smvgc
+#        f_td = f[R_idx, F_idx, :]
+#         # Bottum up smvgc
+#        f_bu = f[F_idx, R_idx, :]
+#        # Rescale top down by bottum up
+#        f = np.divide(f_td,f_bu,out=np.zeros_like(f_td), where=f_bu!=0)
+#        freqs =sgc[c,s][2]['freqs'][0][0]
+#        freqs = freqs[:,0]
+#        ax[s].plot(freqs, f, label = f'{cdt}')
+#    ax[s].set_xscale('linear')
+#    ax[s].set_yscale('linear')
+#    ax[s].set_ylim(bottom = 0.01, top = 5)
+#    ax[s].set_xlim(left = 0.1, right = 125)
+#    ax[0].set_ylabel('Top down relative to bottom up smvgc')
+#    ax[s].set_title(f"Spectral MVGC {subject}")
+#    ax[s].set_xlabel('frequency (Hz)')
+#plt.legend()
 
 

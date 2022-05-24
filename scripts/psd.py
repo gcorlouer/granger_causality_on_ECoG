@@ -105,7 +105,7 @@ def compute_freq_loss(s, freqs, frac=0.95) :
     return freq_loss
 
 
-#%% Plot psd
+#%% Plot average psd
 fmax = 100
 bandwidth = 8
 conditions = ['Rest', 'Face', 'Place']
@@ -126,7 +126,7 @@ for i, group in enumerate(visual_group):
     ax[i].axvline(x=freq_loss, color = 'k')
 plt.tight_layout()
 plt.legend()
-#%%
+
 
 ##%% Test individual functions
 ##%matplotlib qt

@@ -3,7 +3,9 @@
 input_parameters;
 ncdt = length(condition);
 nsub = length(cohort);
-dataset = struct;
+I = cell(ncdt, nsub);
+F = cell(ncdt, nsub);
+
 %%
 for s=1:nsub
      subject = cohort{s};
@@ -17,16 +19,23 @@ for s=1:nsub
         % Functional visual channels indices
         indices = gc_input.indices;
         % Groupwise Mutual information single distribution
-        gMI = ts_to_single_mvmi(X, 'gind', indices);
+        I{c,s} = ts_to_single_mvmi(X, 'gind', indices);
         % Groupwise MVGC single distribution
-        gGC = ts_to_single_mvgvc(X, 'gind', indices, 'morder',morder,...
+        F{c,s} = ts_to_single_mvgvc(X, 'gind', indices, 'morder',morder,...
                 'regmode',regmode);
-        % Save dataset
-        dataset(c,s).subject = subject;
-        dataset(c,s).condition = condition{c};
-        dataset(c,s).gMI = gMI;
-        dataset(c,s).gGC = gGC;
      end
+end
+%% Return Mutual information and GC in R->F and F->R directions
+
+
+%% Compute group Z-score
+zI = zeros(ncdt,ncdt);
+zF = zeros(ncdt,ncdt);
+for i=1:ncdt
+    for j=1:ncdt
+        zI(i,j) = mann_whitney_group(I(i,:),I{j,:});
+        zF(i,j) = mann_whitney_group(F{i,:},F{j,:});
+    end
 end
 %% Save dataset for plotting in python
 

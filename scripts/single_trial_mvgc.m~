@@ -28,18 +28,18 @@ end
 %% Conpute per subjects Z-score
 % Note just for testing on individual subjects 
 % but we will only return group Z scores
-% z = cell(nsub,1);
-% for s=1:nsub
-%     F_face = F{1,s};
-%     F_place = F{2,s};
-%     T = zeros(ng,ng);
-%     for i=1:ng
-%         for j =1:ng
-%             T(i,j) = mann_whitney(F_place(i,j,:),F_face(i,j,:));
-%         end
-%     end
-%     z{s} = T;
-% end
+z = cell(nsub,1);
+for s=1:nsub
+    F_face = F{1,s};
+    F_place = F{2,s};
+    T = zeros(ng,ng);
+    for i=1:ng
+        for j =1:ng
+            T(i,j) = mann_whitney(F_place(i,j,:),F_face(i,j,:));
+        end
+    end
+    z{s} = T;
+end
 
 %% Compute group Z-score
 % Face and place corss subjects GC across conditions
@@ -55,22 +55,15 @@ ng = length(fieldnames(indices));
 for i=1:ng
     for j=1:ng
         for s = 1:nsub
-            I_face{s} = I{1,s}(i,j,:);
-            I_place{s} = I{2,s}(i,j,:);
+            I_face{s}
             F_face{s} = F{1,s}(i,j,:);
             F_place{s} = F{2,s}(i,j,:);
         end
-        zI(i,j) = mann_whitney_group(I_place,I_face);
         zF(i,j) = mann_whitney_group(F_place,F_face);
     end
 end
-%% Create dataset
-
-dataset.zI = zI;
-dataset.zF = zF;
-
 %% Save dataset for plotting in python
 
-fname = 'compare_condition_fc.mat';
+fname = 'single_trial_fc.mat';
 fpath = fullfile(datadir, fname);
 save(fpath, 'dataset')

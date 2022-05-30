@@ -25,52 +25,57 @@ for s=1:nsub
                 'regmode',regmode);
      end
 end
-%% Conpute per subjects Z-score
-% Note just for testing on individual subjects 
-% but we will only return group Z scores
-% z = cell(nsub,1);
-% for s=1:nsub
-%     F_face = F{1,s};
-%     F_place = F{2,s};
-%     T = zeros(ng,ng);
-%     for i=1:ng
-%         for j =1:ng
-%             T(i,j) = mann_whitney(F_place(i,j,:),F_face(i,j,:));
-%         end
-%     end
-%     z{s} = T;
-% end
+%% Compute individual subject Z scores from GC.
 
-%% Compute group Z-score
-% Face and place corss subjects GC across conditions
-F_face = cell(nsub,1);
-F_place = cell(nsub,1);
-% Mutual information
-I_face = cell(nsub,1);
-I_place = cell(nsub,1);
-% Groupw Mann whitney Z statistics
-zI = zeros(ng,ng);
-zF = zeros(ng,ng);
-ng = length(fieldnames(indices));
-for i=1:ng
-    for j=1:ng
-        for s = 1:nsub
-            I_face{s} = I{1,s}(i,j,:);
-            I_place{s} = I{2,s}(i,j,:);
-            F_face{s} = F{1,s}(i,j,:);
-            F_place{s} = F{2,s}(i,j,:);
+comparisons = [1 2; 1 3; 2 3];
+nComparisons = size(comparisons,1);
+ncomp = length(comparisons);
+GC = struct;
+for s=1:nsub
+    subject = cohort{s};
+    gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
+            'condition',condition{2}, 'suffix', suffix);
+    % Get indices of visually responsive populations to account for 
+    % different indices in different subjects
+    indices = gc_input.indices;
+    populations = fieldnames(indices);
+    ng = length(populations);
+    z = zeros(ng,ng);
+    % Loop over comparisons
+    for c=1:nComparisons
+        i1 = comparisons(c,1);
+        i2 = comparisons(c,2);
+        F1 = F{i1,s};
+        F2 = F{i2,s};
+        % Test wether F1>F2
+        for i=1:ng
+            for j=1:ng
+                z(i,j) = mann_whitney(F2(i,j,:), F1(i,j,:));
+            end
         end
-        zI(i,j) = mann_whitney_group(I_place,I_face);
-        zF(i,j) = mann_whitney_group(F_place,F_face);
+        % Multiple hypothesis correction
+        mhtc = 'Sidak'; % Other methods like FDR or FDRD are too conservative
+        pvals = erfc(abs(z)/sqrt(2));
+        % Number of hypotheses
+        nhyp = numel(pvals)*nsub;
+        % No pvalues
+        nopv = true;
+        % Pcrit and Zcrit
+        pcrit = significance(nhyp,alpha,mhtc,nopv);
+        zcrit = sqrt(2)*erfcinv(pcrit);
+        % Prepare dataset for plotting in python
+        GC(s,c).subject = subject;
+        % Condition i1 > condition i2
+        GC(s,c).pair = {condition{i1}, condition{i2}};
+        GC(s,c).populations = populations;
+        GC(s,c).z = z;
+        % Z critique for threshold p=0.05
+        GC(s,c).zcrit = zcrit;
     end
 end
-%% Create dataset
-
-dataset.zI = zI;
-dataset.zF = zF;
 
 %% Save dataset for plotting in python
 
 fname = 'compare_condition_fc.mat';
 fpath = fullfile(datadir, fname);
-save(fpath, 'dataset')
+save(fpath, 'GC')

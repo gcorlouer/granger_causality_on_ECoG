@@ -1,0 +1,41 @@
+function tstat = tstat_singleFC(Subject, args)
+% Compute z scores and z crit for each subjects and comparison between
+% sing
+arguments
+    Subject struct
+    args.subject_id string = 'DiAs'
+    args.comparison cell = {'Face', 'Place'};
+    args.FC string = 'single_MI';
+    args.mhtc string = 'Sidak';
+end
+
+comparison = args.comparison; FC = args.FC; mhtc = args.mhtc;
+fc1 = Subject.(subject_id).(comparison{1}).(FC);
+fc2 = Subject.(subject_id).(comparison{2}).(FC);
+indices = Subject.(subject_id).indices;
+tstat = mann_whitney_array(fc1,fc2, indices, mhtc);
+
+end
+
+function tstat = mann_whitney_array(fc1,fc2, indices, mhtc)
+
+populations = fieldnames(indices);
+ng = length(populations);
+z = zeros(ng,ng);
+for i=1:ng
+    for j=1:ng
+        z(i,j) = mann_whitney(fc2(i,j,:),fc1(i,j,:));
+    end
+end
+pvals = erfc(abs(z)/sqrt(2));
+% Number of hypotheses
+nhyp = numel(pvals)*nsub;
+% No pvalues
+nopv = true;
+% Compute pcrit and Zcrit
+pcrit = significance(nhyp,alpha,mhtc,nopv);
+zcrit = sqrt(2)*erfcinv(pcrit);
+tstat.z = z;
+tstat.zcrit = zcrit;
+end
+

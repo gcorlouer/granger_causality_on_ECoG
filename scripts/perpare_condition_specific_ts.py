@@ -62,8 +62,11 @@ for subject in  args.cohort:
         X = np.transpose(X, (1,2,0))
         ts[condition] = X
     # Add category specific channels indices to dictionary
-    indices = parcellation_to_indices(df_visual,  parcellation='group', matlab=True) 
-    ts['indices']= indices
+    indices = parcellation_to_indices(df_visual,  parcellation='group', matlab=True)
+    # Pick populations and order them
+    ordered_keys = ['R','O','F']
+    ordered_indices = {k: indices[k] for k in ordered_keys}
+    ts['indices']= ordered_indices
     
     # Add time
     ts['time'] = time

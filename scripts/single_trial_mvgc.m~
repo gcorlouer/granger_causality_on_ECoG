@@ -81,44 +81,24 @@ for c=1:ncomp
     i1 = comparisons(c,1); 
     i2 = comparisons(c,2);
     F1 = cell(nsub,1);
-    F2 = cell(nsub,1);
-    z = zeros(ng,ng);
-    for i=1:ng
-        for j=1:ng
-            for s = 1:nsub
-                subject = cohort{s};
-                gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
-                        'condition',condition{2}, 'suffix', suffix);
-                % Get indices of visually responsive populations
-                indices = gc_input.indices;
-                populations = fieldnames(indices);
-                F1{s} = squeeze(F{i1,s}(i,j,:));
-                F2{s} = squeeze(F{i2,s}(i,j,:));
-            end
-            z(i,j) = mann_whitney_group(F2,F1);
-        end
+    F2 = cell(nsub,2);
+    for s = 1:nsub
+        subject = cohort{s};
+        gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
+                'condition',condition{2}, 'suffix', suffix);
+        % Get indices of visually responsive populations
+        indices = gc_input.indices;
+        populations = fieldnames(indices);
+        F1{s} = F{i1,c};
+        F2{s} = F{i2,c};
     end
-   % Multiple hypothesis correction
-    mhtc = 'Sidak'; % Other methods like FDR or FDRD are too conservative
-    pvals = erfc(abs(z)/sqrt(2));
-    % Number of hypotheses
-    nhyp = numel(pvals);
-    % No pvalues
-    nopv = true;
-    % Pcrit and Zcrit
-    pcrit = significance(nhyp,alpha,mhtc,nopv);
-    zcrit = sqrt(2)*erfcinv(pcrit);
-    % Prepare dataset for plotting in python
-    % Condition i1 > condition i2
-    gGC(c).pair = {condition{i1}, condition{i2}};
-    gGC(c).populations = populations;
-    gGC(c).z = z;
-    % Z critique for threshold p=0.05
-    gGC(c).zcrit = zcrit;
+    zg = mann_whitney_group(F2,x2)
 end
+
+
 
 %% Save dataset for plotting in python
 
 fname = 'compare_condition_fc.mat';
 fpath = fullfile(datadir, fname);
-save(fpath, 'GC','gGC')
+save(fpath, 'GC')

@@ -42,6 +42,8 @@ comparisons_ticks = ['Face/Rest', 'Place/Rest', 'Face/Place']
 cohort = args.cohort
 comparisons = ['FaceRest', 'PlaceRest', 'FacePlace']
 FC = 'single_GC'
+nsub = 3
+ncomp =3
 fig, ax = plt.subplots(nsub, ncomp)
 for s, subject in enumerate(cohort):
     for c, comparison in enumerate(comparisons):

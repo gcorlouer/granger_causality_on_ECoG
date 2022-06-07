@@ -17,15 +17,6 @@ from src.input_config import args
 from scipy.io import loadmat
 from pathlib import Path
 
-#%% Read dataset
-
-fname = 'compare_condition_fc.mat'
-path = args.result_path
-fpath = path.joinpath(fname)
-gc = loadmat(fpath)
-# Read nsubjects x ncomparisons Z scores from single trial GC
-gc = gc['GC']
-
 #%% Read single FC data
 
 fname = 'test_singleFC.mat'
@@ -33,109 +24,85 @@ path = args.result_path
 fpath = path.joinpath(fname)
 dataset = loadmat(fpath)
 # Read nsubjects x ncomparisons Z scores from single trial GC
-dataset = dataset['Subject']
+per_subject_data = dataset['Subject']
+cross_subject_data = dataset['CrossSubject']
 # dataset Is of the form dataset[sub_id][0][0][condition][0][0][FC][0][0]
-comparisons_ticks = ['Face/Rest', 'Place/Rest', 'Face/Place']
 
-#%%
+#%% Plotting functions
 
-cohort = args.cohort
-comparisons = ['FaceRest', 'PlaceRest', 'FacePlace']
-FC = 'single_GC'
-nsub = 3
-ncomp =3
-fig, ax = plt.subplots(nsub, ncomp)
-for s, subject in enumerate(cohort):
-    for c, comparison in enumerate(comparisons):
-        z = dataset[subject][0][0][comparison][0][0][FC][0][0]['z'][0][0]
-        zcrit = dataset[subject][0][0][comparison][0][0][FC][0][0]['zcrit'][0][0]
-        sig = np.where(z>zcrit,1,0)
-        # Plot Z score as a heatmap
-        g = sns.heatmap(z,  vmin=-3, vmax=3, cmap='bwr', ax=ax[c,s])
-    
-#%% 
-
-def plot_zscore(gc, args, z_connect='zF', tau_x=0.5, tau_y= 0.8, 
-                vmin = -3, vmax = 3, cmap = 'bwr'):
+def plot_single_zscore(per_subject_data, args, FC = 'single_GC',
+                       vmin = -3, vmax=3, tau_x=0.5, tau_y=0.8):
+    """
+    We plot Z score of test comparing single FC distrib in condition 1 with
+    single FC in condition 2.
+    """
+    comparisons = ['FaceRest', 'PlaceRest', 'FacePlace']
     cohort = args.cohort
-    comparisons = ['Rest/Face', 'Rest/Place', 'Face/Place']
+    nsub = len(cohort)
+    ncomp = len(comparisons)
+    fig, ax = plt.subplots(nsub, ncomp)
     for s, subject in enumerate(cohort):
         for c, comparison in enumerate(comparisons):
-            z = gc[s,c][z_connect]
-            if z_connect == 'zF':
-                zcrit = gc[s,c]['zFcrit'][0][0]
-            else:
-                zcrit = gc[s,c]['zIcrit'][0][0]
-            # compute significance matrix
-            sig = np.where(z>zcrit,1,0)
-            populations = gc[s,c]['populations']
-            npop = populations.size
-            populations = [populations[i][0][0] for i in range(npop)]
+            # Get statistics from matlab analysis
+            z = per_subject_data[subject][0][0][comparison][0][0][FC][0][0]['zstat'][0][0]['z'][0][0]
+            zcrit = per_subject_data[subject][0][0][comparison][0][0][FC][0][0]['zstat'][0][0]['zcrit'][0][0]
+            sig = per_subject_data[subject][0][0][comparison][0][0][FC][0][0]['zstat'][0][0]['sig'][0][0]
+            ticks = ['R','O','F']
             # Plot Z score as a heatmap
-            g = sns.heatmap(z, xticklabels=populations, vmin=vmin, vmax=vmax,
-                            yticklabels=populations, cmap=cmap, ax=ax[c,s])
+            g = sns.heatmap(z,  vmin=vmin, vmax=vmax, cmap='bwr', ax=ax[c,s],
+            xticklabels=ticks, yticklabels=ticks)
             g.set_yticklabels(g.get_yticklabels(), rotation = 90)
-            # Position xticks on top of heatmap
-            ax[c,s].xaxis.tick_top()
-            ax[c,0].set_ylabel(comparison)
-            # Position xticks on top of heatmap
-            ax[c, 1].xaxis.tick_top()
-            ax[0,s].set_title(f'Z score subject {s}')
+            ax[c, s].xaxis.tick_top()
+            ax[c,0].set_ylabel(f"Z {comparisons[c]}")
             # Plot statistical significant entries
-            for y in range(npop):
-                for x in range(npop):
+            for y in range(z.shape[0]):
+                for x in range(z.shape[1]):
                     if sig[y,x] == 1:
                         ax[c,s].text(x + tau_x, y + tau_y, '*',
                                  horizontalalignment='center', verticalalignment='center',
                                  color='k')
                     else:
                         continue                 
-            plt.tight_layout()
-
-
+        ax[0,s].set_title(f"{subject}")
+    plt.tight_layout()
+    print(f"Critical Z score is {zcrit}")
     
-#%% 
-# Read Z scores for one subjects and plot them
-nsub = len(cohort)
-ncomp = len(comparisons)
-tau_x, tau_y =(0.5, 0.8)
-fig, ax = plt.subplots(nsub, ncomp)
-for s, subject in enumerate(cohort):
+def plot_group_zscore(cross_subject_data, FC = 'single_GC',
+                       vmin = -3, vmax=3, tau_x=0.5, tau_y=0.8):
+    comparisons = ['FaceRest', 'PlaceRest', 'FacePlace']
+    ncomp = len(comparisons)
+    fig, ax = plt.subplots(ncomp)
     for c, comparison in enumerate(comparisons):
-        z = gc[s,c]['z']
-        zcrit = gc[s,c]['zcrit'][0][0]
-        # compute significance matrix
-        sig = np.where(z>zcrit,1,0)
-        populations = gc[s,c]['populations']
-        npop = populations.size
-        populations = [populations[i][0][0] for i in range(npop)]
+        # Get statistics from matlab analysis
+        z = cross_subject_data[comparison][0][0][FC][0][0]['zstat'][0][0]['z'][0][0]
+        zcrit = cross_subject_data[comparison][0][0][FC][0][0]['zstat'][0][0]['zcrit'][0][0]
+        sig = cross_subject_data[comparison][0][0][FC][0][0]['zstat'][0][0]['sig'][0][0]
+        ticks = ['R','O','F']
         # Plot Z score as a heatmap
-        g = sns.heatmap(z, xticklabels=populations, vmin=-3, vmax=3,
-                        yticklabels=populations, cmap='bwr', ax=ax[c,s])
+        g = sns.heatmap(z,  vmin=vmin, vmax=vmax, cmap='bwr', ax=ax[c],
+        xticklabels=ticks, yticklabels=ticks)
         g.set_yticklabels(g.get_yticklabels(), rotation = 90)
-        # Position xticks on top of heatmap
-        ax[c,s].xaxis.tick_top()
-        ax[c,0].set_ylabel(comparison)
-        # Position xticks on top of heatmap
-        ax[c, 1].xaxis.tick_top()
-        ax[0,s].set_title(f'Z score subject {s}')
+        ax[c,].xaxis.tick_top()
+        ax[c].set_ylabel(f"Z {comparisons[c]}")
         # Plot statistical significant entries
-        for y in range(npop):
-            for x in range(npop):
+        for y in range(z.shape[0]):
+            for x in range(z.shape[1]):
                 if sig[y,x] == 1:
-                    ax[c,s].text(x + tau_x, y + tau_y, '*',
+                    ax[c].text(x + tau_x, y + tau_y, '*',
                              horizontalalignment='center', verticalalignment='center',
                              color='k')
                 else:
                     continue                 
-plt.tight_layout()
+        ax[0].set_title(f"Group Z score from {FC} distribution")
+    plt.tight_layout()
+    print(f"Critical Z score is {zcrit}")
+#%% Plot Z score per subjects
+    
+plot_single_zscore(per_subject_data, args, FC = 'single_GC',
+                       vmin = -3, vmax=3, tau_x=0.5, tau_y=0.8)
 
-#%%
+#%% Plot group Z scores
 
-
-
-
-
-
-
-
+plot_group_zscore(cross_subject_data, FC = 'single_GC',
+                       vmin = -3, vmax=3, tau_x=0.5, tau_y=0.8)
+ 

@@ -16,7 +16,7 @@ for s=1:nsub
     for c=1:ncdt
         condition = conditions{c};
         % Compute MI and F
-        gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
+        gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject_id,...
             'condition',condition, 'suffix', suffix);
         X = gc_input.X;
         indices = gc_input.indices;
@@ -29,12 +29,22 @@ for s=1:nsub
     end
     Subject.(subject_id).indices = indices;
 end
-
+%%
 % Loop conditons to build cross subject single FC
 CrossSubject.indices = indices;
 for c=1:ncdt
     % Cross subject
     condition = conditions{c};
+    for s=1:nsub 
+        % Compute MI and F
+        gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject_id,...
+            'condition',condition, 'suffix', suffix);
+        X = gc_input.X;
+        indices = gc_input.indices;
+        I{s} = ts_to_single_mvmi(X, 'gind', indices);
+        F{s} = ts_to_single_mvgvc(X, 'gind', indices, 'morder',morder,...
+                'regmode',regmode);
+    end
     CrossSubject.(condition).('single_MI')= I;
     CrossSubject.(condition).('single_GC')= F;
 end

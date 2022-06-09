@@ -1,0 +1,6 @@
+%% Compare top down vs bottom up GC
+% In this script we compare top down (F -> R) vs bottom-up (R -> F) GC 
+% The rough algorithms goes as follow:
+% Input: Subject and condition-specific mutltirial HFA
+% Output: Z score 
+% First for each subject and condition we estimate single trial pairw

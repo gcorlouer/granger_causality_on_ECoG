@@ -1,6 +1,18 @@
 %% Compare top down vs bottom up GC
 % In this script we compare top down (F -> R) vs bottom-up (R -> F) GC 
-% The rough algorithms goes as follow:
-% Input: Subject and condition-specific mutltirial HFA
-% Output: Z score 
-% First for each subject and condition we estimate single trial pairw
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input:  -Subject and condition-specific mutltirial HFA #X=(n x m x N)
+% Output: -3x1 Z-score testing stochastic dominance of top down vs
+%         bottom up GC in each condition
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Algorithm: 
+%  for c in conditions, for s in subjects
+%     R_idx = gc_input.indices('R')
+%     F_idx = gc_input.indices('F')  
+%     F = ts_to_single_pcgc(X, args);
+%     pF_td = F(R_idx, F_idx);
+%     F_td{pair, s} = {pF_td(i,j), for (i,j) in (R_) ]
+%     pF_bu = F(F_idx, R_idx);
+%  F_td = flatten(F_td{c,s});
+%  F_bu = flatten(F_bu{c,s});
+%  z = wilcox(F_td, F_bu); #z = ncdt x 1

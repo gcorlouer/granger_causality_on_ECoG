@@ -16,7 +16,7 @@ tsdim = 10;
 
 %% Estimate single trial pcgc
 
-F = ts_to_single_pGC(X,'morder',morder, 'regmode', regmode);
+F = ts_to_single_pair_unconditional_gc(X,'morder',morder, 'regmode', regmode);
 
 %% Get top down and bottom up GC
 
@@ -32,11 +32,14 @@ F_bu = F(F_idx, R_idx,:);
 
 %% Estimate paired z score
 p = zeros(nR,nF);
+z =  zeros(nR,nF);
 for i=1:nR
     for j=1:nF
         x = squeeze(F_td(i,j,:));
         y = squeeze(F_bu(j,i,:));
-        p(i,j) = signrank(x, y);
+        [p(i,j),~,stats] = signrank(x, y);
+        z(i,j) = stats.zval;
     end
 end
 [sig,pcrit] = significance(p, alpha, 'FDRD');
+% Compute critical Z score too. 

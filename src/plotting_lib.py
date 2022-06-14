@@ -460,7 +460,7 @@ def sort_populations(populations, order= {'R':0,'F':1}):
     return idx_sort, pop_sort
 
 
-def full_stim_multi_pfc(fc, cohort, args, vmin=-2, vmax=3, F='pGC', sfreq=250,
+def full_stim_multi_pfc(fc, cohort, args, vmin=-3, vmax=3, F='pGC',
                                  rotation=90, tau_x=0.5, tau_y=0.8):
     """
     This function plot multitrial GC and MI during full stimulus presentation
@@ -515,7 +515,7 @@ def full_stim_multi_pfc(fc, cohort, args, vmin=-2, vmax=3, F='pGC', sfreq=250,
                         continue                 
             plt.tight_layout()
 
-def full_stim_multi_gfc(fc, cohort, args, vmin=-2, vmax=3, F='gGC', sfreq=250,
+def full_stim_multi_gfc(fc, cohort, args, vmin=-3, vmax=3, F='gGC',
                                  rotation=90, tau_x=0.5, tau_y=0.8):
     """
     This function plot multitrial group GC and MI during full stimulus presentation
@@ -525,15 +525,8 @@ def full_stim_multi_gfc(fc, cohort, args, vmin=-2, vmax=3, F='gGC', sfreq=250,
     # Loop over subects
     for subject in cohort:
         s = cohort.index(subject)
-        reader = EcogReader(args.data_path, subject=subject)
-        df_visual = reader.read_channels_info(fname='visual_channels.csv')
         # Find retinotopic and face channels indices 
-        populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
-        populations = list(populations.keys())
-        R_idx = populations.index('R')
-        O_idx = populations.index('O')
-        F_idx = populations.index('F')
-        sort_idx = [R_idx, O_idx, F_idx]
+        ticks = ['R', 'O', 'F']
         for c in range(ncdt-1): # Consider resting state as baseline
             condition =  fc[c,s]['condition'][0]
             # Functional connectivity matrix
@@ -543,16 +536,9 @@ def full_stim_multi_gfc(fc, cohort, args, vmin=-2, vmax=3, F='gGC', sfreq=250,
             f = np.log(f)
             # Significance
             sig = fc[c,s][F]['sig'][0][0]
-            # Pick array of R and F pairs
-            f = f[sort_idx, :] 
-            f = f[:, sort_idx]
-            sig = sig[sort_idx, :] 
-            sig = sig[:, sort_idx]
-            # Build xticks label
-            ticks_label = [populations[i] for i in sort_idx]            
             # Plot F as heatmap
-            g = sns.heatmap(f, xticklabels=ticks_label, vmin=vmin, vmax=vmax,
-                            yticklabels=ticks_label, cmap='bwr', ax=ax[c,s])
+            g = sns.heatmap(f, xticklabels=ticks, vmin=vmin, vmax=vmax,
+                            yticklabels=ticks, cmap='bwr', ax=ax[c,s])
             g.set_yticklabels(g.get_yticklabels(), rotation = 90)
             # Position xticks on top of heatmap
             ax[c,s].xaxis.tick_top()

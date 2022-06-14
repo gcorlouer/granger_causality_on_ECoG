@@ -23,5 +23,4 @@ for i=1:N
     % Pairwise conditional GC estimation
     % Single regression
     F(:,:,i) = var_to_pwcgc(A,V);
-    F(isnan(F))=0;
 end

@@ -29,6 +29,14 @@ result_path = Path('../results')
 conditions = ['Rest', 'Face', 'Place', 'baseline']
 cohort = ['AnRa', 'ArLa', 'DiAs']
 nsub = len(args.cohort)
+
+sfreq = 500
+decim = args.decim
+sfreq = sfreq/decim
+min_postim = args.tmin_crop
+max_postim = args.tmax_crop
+print(f"\n Sampling frequency is {sfreq}Hz\n")
+print(f"\n Stimulus is during {min_postim} and {max_postim}s\n")
 #%% Plot multitrial pair FC
 # Load functional connectivity matrix
 fname = 'multi_trial_fc.mat'
@@ -39,43 +47,25 @@ vmax = 3
 #vmax = [11, 15, 12]
 (ncdt, nsub) = fc.shape
 
-full_stim_multi_pfc(fc, cohort, args, F='pGC',vmin=-vmax,vmax=vmax, sfreq=250,
+full_stim_multi_pfc(fc, cohort, args, F='pGC',vmin=-vmax,vmax=vmax,
                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
 
 #%% Plot multitrial pair MI
 
-full_stim_multi_pfc(fc, cohort, args, F='pMI', vmin=-vmax,vmax=vmax,  sfreq=250,
+full_stim_multi_pfc(fc, cohort, args, F='pMI', vmin=-vmax,vmax=vmax,
                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
 #%% Plot multitrial groupwise GC
 vmin = 3
-full_stim_multi_gfc(fc, cohort, args, F='gGC', vmin=vmin,vmax=-vmin,  sfreq=250,
+full_stim_multi_gfc(fc, cohort, args, F='gGC', vmin=vmin,vmax=-vmin,
                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
 #%% Plot  multitrial groupwise MI
 vmin = 4
-full_stim_multi_gfc(fc, cohort, args, F='gMI', vmin=vmin,vmax=-vmin,  sfreq=250,
+full_stim_multi_gfc(fc, cohort, args, F='gMI', vmin=vmin,vmax=-vmin,  
                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
-
-#%% Plot single trial gFC
-cohort = ['AnRa', 'ArLa', 'DiAs']
-# Take input data
-fname = 'single_trial_fc.mat'
-fc_path = result_path.joinpath(fname)
-fc = loadmat(fc_path)
-fc = fc['dataset']
-vmax = 4
-# Plot single trial fc
-plot_single_trial_gfc(fc, cohort, args, F='gGC', baseline= 'Rest', 
-                    alternative='greater', vmin=-vmax, vmax=vmax, rotation=90, 
-                    tau_x=0.5, tau_y=0.8)
-
-#%% Compare bottum up and top down
-
-z, sig, pval = info_flow_stat(fc, cohort, args, subject ='DiAs',F='gGC', baseline= 'Rest', 
-                    alternative='two-sided')
 
 
 

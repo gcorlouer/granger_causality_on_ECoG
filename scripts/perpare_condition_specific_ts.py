@@ -23,6 +23,11 @@ import numpy as np
 conditions = ['Rest', 'Face', 'Place', 'baseline']
 # Original sampling rate
 sfreq = 500
+decim = args.decim
+sfreq = sfreq/decim
+min_postim = args.tmin_crop
+max_postim = args.tmax_crop
+
 ts = dict.fromkeys(conditions, [])
 
 for subject in  args.cohort:
@@ -32,10 +37,12 @@ for subject in  args.cohort:
                          preprocessed_suffix='_hfb_continuous_raw.fif', preload=True, 
                          epoch=False)
         hfb = reader.read_ecog()
+        # Read visually responsive channels
         df_visual = reader.read_channels_info(fname='visual_channels.csv')
         visual_chans = df_visual['chan_name'].to_list()
+        # Pick visually responsive HFA
         hfb = hfb.pick_channels(visual_chans)
-        # Epoch HFA
+        # Epoch visually responsive HFA
         if condition == 'baseline':
             # Return prestimulus baseline
             epocher = Epocher(condition='Stim', t_prestim=args.t_prestim, t_postim = args.t_postim, 
@@ -50,6 +57,7 @@ for subject in  args.cohort:
             epocher = Epocher(condition=condition, t_prestim=args.t_prestim, t_postim = args.t_postim, 
                              baseline=None, preload=True, tmin_baseline=args.tmin_baseline, 
                              tmax_baseline=args.tmax_baseline, mode=args.mode)
+            #Epoch condition specific hfb and log transform to approach Gaussian
             epoch = epocher.log_epoch(hfb)
             epoch = epoch.copy().crop(tmin = args.tmin_crop, tmax=args.tmax_crop)
              # Downsample by factor of 2 and check decimation
@@ -82,3 +90,6 @@ for subject in  args.cohort:
     fname = subject + '_condition_visual_ts.mat'
     fpath = result_path.joinpath(fname)
     savemat(fpath, ts)
+
+print(f"\n Sampling frequency is {sfreq}Hz\n")
+print(f"\n Stimulus is during {min_postim} and {max_postim}s\n")

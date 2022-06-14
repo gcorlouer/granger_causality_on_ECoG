@@ -37,8 +37,6 @@ g = p.Results.g;
 ntrials = p.Results.ntrials;
 nobs = p.Results.nobs;
 
-%
-
 connectivity_matrix = random_connections(tsdim);
 var_coef = var_rand(connectivity_matrix,morder,specrad,w);
 corr_res = corr_rand(tsdim,g); 

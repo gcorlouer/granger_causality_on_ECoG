@@ -65,7 +65,7 @@ def plot_single_zscore(per_subject_data, args, FC = 'single_GC',
                         continue                 
         ax[0,s].set_title(f"{subject}")
     plt.tight_layout()
-    print(f"Critical Z score is {zcrit}")
+    print(f"\n Critical Z score is {zcrit}\n")
     
 def plot_group_zscore(cross_subject_data, FC = 'single_GC',
                        vmin = -3, vmax=3, tau_x=0.5, tau_y=0.8):
@@ -95,9 +95,15 @@ def plot_group_zscore(cross_subject_data, FC = 'single_GC',
                     continue                 
         ax[0].set_title(f"Group Z score from {FC} distribution")
     plt.tight_layout()
-    print(f"Critical Z score is {zcrit}")
+    print(f"\n Critical Z score is {zcrit}\n")
 #%% Plot Z score per subjects
-    
+sfreq = 500
+decim = args.decim
+sfreq = sfreq/decim
+min_postim = args.tmin_crop
+max_postim = args.tmax_crop
+print(f"\n Sampling frequency is {sfreq}Hz\n")
+print(f"\n Stimulus is during {min_postim} and {max_postim}s\n")
 plot_single_zscore(per_subject_data, args, FC = 'single_GC',
                        vmin = -3, vmax=3, tau_x=0.5, tau_y=0.8)
 

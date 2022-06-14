@@ -1,17 +1,18 @@
 % Multitrial functional connectivity analysis
 %% Input parameters
 input_parameters;
-ncdt = length(condition);
+ncdt = length(conditions);
 nsub = length(cohort);
 dataset = struct;
 %% Loop multitrial functional connectivity analysis over each subjects
 for s=1:nsub
-     subject = cohort{s};
+     subject_id = cohort{s};
      % Loop over conditions
      for c=1:ncdt
+        condition = conditions{c};
         % Read condition specific time series
-        gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
-            'condition',condition{c}, 'suffix', suffix);
+        gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject_id,...
+            'condition',condition, 'suffix', suffix);
         % Read conditions specific time series
         X = gc_input.X;
         % Pairwise conditional MI 
@@ -28,8 +29,9 @@ for s=1:nsub
         gGC = ts_to_dual_mvgc(X, 'gind', indices, 'morder',morder,...
                 'regmode',regmode,'tstat', tstat,'alpha', alpha, 'mhtc',mhtc);
         % Save dataset
-        dataset(c,s).subject = subject;
-        dataset(c,s).condition = condition{c};
+        dataset(c,s).subject = subject_id;
+        dataset(c,s).condition = condition;
+        dataset(c,s).indices = indices;
         dataset(c,s).pMI = pMI;
         dataset(c,s).pGC = pGC;
         dataset(c,s).gMI = gMI;

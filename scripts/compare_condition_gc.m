@@ -1,3 +1,16 @@
+%% Compare condition specific GC
+% In this script we compare GC and MI during condition 1 and condition 2
+% Comparison are done for each subjects and directions. In addition to an
+% indivisual subject analysis, we also pool z score across subjects. 
+% We consider all pairs of condition among Rest, Face and Place
+% presentation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input:  -Subject and condition-specific mutltirial HFA #X=(n x m x N)
+% Output: -Subject,comparison,direction-specific Z-score testing 
+%           stochastic dominance of GC in a pair of conditions
+%        - comparison,direction-specific Z-scores pooled across subjects
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% Input parameters
 input_parameters;
 ncdt = length(conditions);
@@ -29,8 +42,7 @@ for s=1:nsub
     end
     Subject.(subject_id).indices = indices;
 end
-%%
-% Loop conditons to build cross subject single FC
+%% Loop conditons to build cross subject single FC
 CrossSubject.indices = indices;
 for c=1:ncdt
     % Cross subject

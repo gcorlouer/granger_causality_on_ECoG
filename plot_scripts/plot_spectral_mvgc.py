@@ -25,6 +25,9 @@ sgc = loadmat(fpath)
 sgc = sgc['dataset']
 nsub = len(cohort)
 ncdt = len(conditions)
+# Saving figure
+fig_path = Path('~','PhD','notes','figures').expanduser()
+fig_name = 'cross_smvgc_ecog.png'
 
 #%% Functions
 
@@ -50,11 +53,8 @@ def plot_smvgc(sgc, args, pairs = ['R->F', 'F->R']):
     ng = len(pairs)
     fig, ax = plt.subplots(ng, nsub,sharex=True, sharey=True)
     for s, subject in enumerate(args.cohort):
-        reader = EcogReader(args.data_path, subject=subject)
-        df_visual = reader.read_channels_info(fname='visual_channels.csv')
         # Find retinotopic and face channels indices 
-        populations = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
-        populations = list(populations.keys())
+        populations = ['R','O','F']
         R_idx = populations.index('R')
         F_idx = populations.index('F')
         pair_idx = [(F_idx, R_idx),(R_idx, F_idx)]
@@ -86,8 +86,6 @@ def plot_smvgc(sgc, args, pairs = ['R->F', 'F->R']):
 
 pairs = ['R->F', 'F->R']
 plot_smvgc(sgc, args, pairs = pairs)
-fig_path = Path('~','PhD','notes','figures').expanduser()
-fig_name = 'cross_smvgc.png'
 fig_path = fig_path.joinpath(fig_name)
 plt.savefig(fig_path)
 

@@ -26,7 +26,7 @@ parser.add_argument("--result_path", type=list, default=result_path)
 parser.add_argument("--cohort", type=list, default=cohort)
 parser.add_argument("--subject", type=str, default='DiAs')
 parser.add_argument("--stage", type=str, default='preprocessed')
-parser.add_argument("--preprocessed_suffix", type=str, default= '_hfb_continuous_raw.fif')
+parser.add_argument("--preprocessed_suffix", type=str, default= '_bad_chans_removed_raw.fif')
 parser.add_argument("--epoch", type=bool, default=False)
 parser.add_argument("--channels", type=str, default='visual_channels.csv')
 
@@ -36,7 +36,7 @@ parser.add_argument("--channels", type=str, default='visual_channels.csv')
 # preprocessed
 
 # Preprocessing suffixes:
-# Bad chans removed:
+# Bad chans removed, concatenated raw ECoG:
 # _bad_chans_removed_raw.fif: 
 # Continuous data:
 # '_hfb_continuous_raw.fif' 
@@ -71,7 +71,7 @@ parser.add_argument("--baseline", default=None) # No baseline from MNE
 parser.add_argument("--preload", default=True)
 parser.add_argument("--tmin_baseline", type=float, default=-0.4)
 parser.add_argument("--tmax_baseline", type=float, default=-0.1)
-parser.add_argument("--mode", type=str, default='logratio')
+parser.add_argument("--mode", type=str, default='mean')
 
 #%% Visually responsive channels classification parmeters
 
@@ -85,7 +85,7 @@ parser.add_argument("--alternative", type=str, default='greater')
 
 #%% Create category specific time series
 
-parser.add_argument("--decim", type=float, default=5)
+parser.add_argument("--decim", type=float, default=2)
 parser.add_argument("--tmin_crop", type=float, default=0)
 parser.add_argument("--tmax_crop", type=float, default=1.5)
 
@@ -106,7 +106,7 @@ args = parser.parse_args()
 #%% Style parameters
 
 plt.style.use('ggplot')
-fig_width = 17  # figure width in cm
+fig_width = 12  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches

@@ -23,6 +23,7 @@ import numpy as np
 conditions = ['Rest', 'Face', 'Place', 'baseline']
 # Original sampling rate
 sfreq = 500
+log_transf = False
 decim = args.decim
 sfreq = sfreq/decim
 min_postim = args.tmin_crop
@@ -33,8 +34,8 @@ ts = dict.fromkeys(conditions, [])
 for subject in  args.cohort:
     for condition in conditions:
         # Read continuous HFA
-        reader = EcogReader(args.data_path, subject=subject, stage='preprocessed',
-                         preprocessed_suffix='_hfb_continuous_raw.fif', preload=True, 
+        reader = EcogReader(args.data_path, subject=subject, stage=args.stage,
+                         preprocessed_suffix=args.preprocessed_suffix, preload=True, 
                          epoch=False)
         hfb = reader.read_ecog()
         # Read visually responsive channels
@@ -48,7 +49,10 @@ for subject in  args.cohort:
             epocher = Epocher(condition='Stim', t_prestim=args.t_prestim, t_postim = args.t_postim, 
                          baseline=None, preload=True, tmin_baseline=args.tmin_baseline, 
                          tmax_baseline=args.tmax_baseline, mode=args.mode)
-            epoch = epocher.log_epoch(hfb)
+            if log_transf == True:
+                epoch = epocher.log_epoch(hfb)
+            else:
+                epoch = epocher.epoch(hfb)
              # Downsample by factor of 2 and check decimation
             epoch = epoch.copy().crop(tmin = -0.5, tmax=0)
             epoch = epoch.copy().decimate(args.decim)
@@ -58,7 +62,11 @@ for subject in  args.cohort:
                              baseline=None, preload=True, tmin_baseline=args.tmin_baseline, 
                              tmax_baseline=args.tmax_baseline, mode=args.mode)
             #Epoch condition specific hfb and log transform to approach Gaussian
-            epoch = epocher.log_epoch(hfb)
+            if log_transf == True:
+                epoch = epocher.log_epoch(hfb)
+            else:
+                epoch = epocher.epoch(hfb)
+            
             epoch = epoch.copy().crop(tmin = args.tmin_crop, tmax=args.tmax_crop)
              # Downsample by factor of 2 and check decimation
             epoch = epoch.copy().decimate(args.decim)

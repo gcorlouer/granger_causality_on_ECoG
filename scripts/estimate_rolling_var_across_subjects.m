@@ -1,5 +1,4 @@
-cohort = {'AnRa',  'AnRi',  'ArLa',  'BeFe',  'DiAs',  'FaWa',  'JuRo', 'NeLa', 'SoGi'};
-conditions = {'Rest', 'Face', 'Place'};
+input_parameters;
 field = {'subject', 'condition', 'time', 'aic', 'bic', 'hqc', 'lrt', 'rho'};
 value = {};
 nsub = length(cohort);
@@ -8,7 +7,7 @@ dataset = struct;
 for i=1:nsub
     subject = cohort{i};
     disp(['VAR estimation subject ' subject])
-    rolling_var
+    estimate_rolling_var
     for c=1:ncdt
         condition = conditions{c};
         for w=1:nwin
@@ -30,6 +29,6 @@ dataset = reshape(dataset, lenData, 1);
 %% Save dataset
 
 df = struct2table(dataset);
-fname = 'rolling_var_estimation.csv';
+fname = 'rolling_var_ecog_estimation.csv';
 fpath = fullfile(datadir, fname);
 writetable(df, fpath)

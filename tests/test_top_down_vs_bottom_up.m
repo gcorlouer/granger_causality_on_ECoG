@@ -1,7 +1,7 @@
 %% Test Compare top down vs bottom up GC
 
 % Input parameters
-nsim = 10;
+nsim = 20;
 input_parameters;
 morder = 3;
 specrad = 0.5;

@@ -16,7 +16,7 @@ verb = 0;
 
 datadir = fullfile('~', 'projects', 'CIFAR', 'CIFAR_data', 'iEEG_10', ... 
     'subjects', subject, 'EEGLAB_datasets', 'preproc');
-fname = [subject, '_ts_visual.mat'];
+fname = [subject, 'condition_ts_visual.mat'];
 fpath = fullfile(datadir, fname);
 
 time_series = load(fpath);

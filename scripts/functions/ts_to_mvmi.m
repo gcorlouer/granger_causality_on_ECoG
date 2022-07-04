@@ -33,9 +33,9 @@ for i=1:ng
         x = gind.(gi{i});
         y = gind.(gi{j});
         if i==j
-            pI = cov_to_pwcmi(V,m);
-            pI(isnan(pI))=0;
-            I(i,j) = mean(pI(x,y), 'all'); 
+            group = {x};
+            [I(i,j), stats] = cov_to_gwgmi(V,group, m,N);
+            pval(i,j) = stats.LR.pval;
         else
             group = {x,y};
             % Compute groupwise mutual information

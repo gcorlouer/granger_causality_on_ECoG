@@ -135,6 +135,13 @@ def plot_log_trial(args, fpath, fname = 'DiAs_log_trial.pdf',
     time = epoch.times
     # Get epoch data
     epoch = epoch.copy().pick(chan)
+    # Get baseline
+    prestim = epoch.copy().crop(tmin=args.tmin_prestim, tmax=args.tmax_prestim)
+    prestim = prestim.get_data()
+    prestim = np.ndarray.flatten(prestim)
+    # Results in muV
+    baseline = np.mean(prestim)
+    # Get epoch data
     X = epoch.copy().get_data()
     # Results in muV
     X = X*1e6
@@ -144,6 +151,7 @@ def plot_log_trial(args, fpath, fname = 'DiAs_log_trial.pdf',
     l_epoch = epocher.log_epoch(hfa)
     l_epoch = l_epoch.copy().decimate(args.decim)
     l_epoch = l_epoch.copy().pick(chan)
+    l_baseline = np.log(baseline)
     l_X = l_epoch.copy().get_data()
     # Log trial
     l_trial = l_X[itrial,0, :]
@@ -157,20 +165,28 @@ def plot_log_trial(args, fpath, fname = 'DiAs_log_trial.pdf',
     ax[0,0].plot(time, trial)
     ax[0,0].set_xlabel('Time (s)')
     ax[0,0].set_ylabel('HFA (muV)')
+    ax[0,0].axvline(x=0, color='k')
+    ax[0,0].axhline(y=baseline*1e6, color='k')
+    ax[0,0].set_title('a)',loc='left')
     # Plot log trial
     ax[0,1].plot(time, l_trial)
     ax[0,1].set_xlabel('Time (s)')
     ax[0,1].set_ylabel('Log HFA (muV)')
+    ax[0,1].axvline(x=0, color='k')
+    ax[0,1].set_title('b)',loc='left')
+    ax[0,1].axhline(y=l_baseline, color='k')
     # Plot hfa histogram
     sns.histplot(x, stat = 'probability', bins=nbins, kde=True, ax=ax[1,0])
     ax[1,0].set_xlabel('HFA (muV)')
     ax[1,0].set_ylabel('Probability')
     ax[1,0].set_xlim(left=0, right=amax)
+    ax[1,0].set_title('c)',loc='left')
 
     # Plot log hfa histogram
     sns.histplot(l_x, stat = 'probability', bins=nbins, kde=True, ax=ax[1,1])
     ax[1,1].set_xlabel('Log HFA')
     ax[1,1].set_ylabel('Probability')
+    ax[1,1].set_title('d)',loc='left')
     #ax[1,1].set_xlim(left=0, right=amax)
     plt.tight_layout()
     # Save figure
@@ -287,13 +303,13 @@ def plot_visual_vs_non_visual(args, fpath, fname='visual_vs_non_visual.pdf'):
         Y = evok_nv.get_data()
         mY = np.mean(Y,0)
         # Plot visual vs non visual
-        plt.subplot(3,3, i+1)
+        plt.subplot(2,2, i+1)
         plt.plot(time, mX, label='visual', color='b')
         plt.plot(time, mY, label='non visual', color = 'r')
         plt.axhline(y=baseline, color='k')
         plt.axvline(x=0, color='k')
         plt.xlabel('Time (s)')
-        plt.ylabel(f'HFA {subject}')
+        plt.ylabel(f'HFA subject {i}')
         plt.tight_layout()
         #plt.legend(loc='lower left', bbox_to_anchor=(1.02, 1.02))
         # Save figure
@@ -373,7 +389,7 @@ def plot_condition_ts(args, fpath, subject='DiAs', figname='_condition_ts.pdf'):
             ax[i].fill_between(time, down_ci, up_ci, alpha=0.6)
             ax[i].axvline(x=0, color ='k')
             ax[i].axhline(y=baseline, color='k')
-            ax[i].set_ylabel(f'{cdt} (dB)')
+            ax[i].set_ylabel(f'{cdt}(dB)')
             ax[0].legend()
     ax[2].set_xlabel('time (s)')
     plt.tight_layout()

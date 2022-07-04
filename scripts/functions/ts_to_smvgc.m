@@ -44,5 +44,5 @@ for i=1:ng
         end
     end
 end
-sGC.F = F; sGC.freqs = freqs;
+sGC.F = F; sGC.freqs = freqs; sGC.indices = gind;
 end

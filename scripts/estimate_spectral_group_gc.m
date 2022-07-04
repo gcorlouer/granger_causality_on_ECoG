@@ -1,7 +1,7 @@
 % Multitrial spectral mvgc analysis
 %% Input parameters
 input_parameters;
-ncdt = length(condition);
+ncdt = length(conditions);
 nsub = length(cohort);
 dataset = struct;
 %% Loop multitrial functional connectivity analysis over each subjects
@@ -11,7 +11,7 @@ for s=1:nsub
      for c=1:ncdt
         % Read condition specific time series
         gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
-            'condition',condition{c}, 'suffix', suffix);
+            'condition',conditions{c}, 'suffix', suffix);
         % Read conditions specific time series
         X = gc_input.X;
         % Functional visual channels indices
@@ -21,7 +21,7 @@ for s=1:nsub
             'sfreq',sfreq,'fres',fres);
         % Save dataset
         dataset(c,s).subject = subject;
-        dataset(c,s).condition = condition{c};
+        dataset(c,s).condition = conditions{c};
         dataset(c,s).sGC = sGC;
      end
 end

@@ -73,7 +73,7 @@ def plot_condition_ts(args, fpath, subject='DiAs'):
     
 home = Path.home()
 fpath = home.joinpath('thesis','overleaf_project','figures')
-plot_condition_ts(args, fpath, subject='DiAs', figname='_condition_ts.pdf')
+plot_condition_ts(args, fpath, subject='DiAs')
 #%%
 
 f, ax = plt.subplots(3,1, sharex=True, sharey=True)

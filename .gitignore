@@ -11,3 +11,7 @@ scripts/bipolar_montage_scripts/
 scripts/electrode_mapping/
 scripts/plot_brain_example_code/
 scripts/plot_electrodes_on_brain_new_scripts/plot_brain_master
+bipolar_montage_scripts/
+electrode_mapping/
+plot_brain_example_code/
+plot_electrodes_on_brain_new_scripts/plot_brain_master

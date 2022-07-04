@@ -22,8 +22,8 @@ if ~exist('q', 'var'), q = 0; end % Covariance lag
 
 % VAR Modeling
 if ~exist('regmode', 'var'), regmode = 'OLS'; end % OLS or LWR
-if ~exist('morder', 'var'),    morder = 3; end % Model order. Pick 3 or 5.
-if ~exist('momax', 'var'), momax = 10; end
+if ~exist('morder', 'var'),    morder = 5; end % Model order. Pick 3 or 5.
+if ~exist('momax', 'var'), momax = 20; end
 if ~exist('pacf', 'var'), pacf = true; end
 if ~exist('plotm', 'var'), plotm = []; end
 if ~exist('verb', 'var'), verb = 0; end

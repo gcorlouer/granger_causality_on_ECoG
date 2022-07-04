@@ -923,7 +923,7 @@ def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = Tr
 def prepare_condition_scaled_ts(path, subject='DiAs', stage='preprocessed', matlab = True,
                      preprocessed_suffix='_hfb_continuous_raw.fif', decim=2,
                      epoch=False, t_prestim=-0.5, t_postim=1.75, tmin_baseline = -0.5,
-                     tmax_baseline = 0, tmin_crop=-0.5, tmax_crop=1.5):
+                     tmax_baseline = 0, tmin_crop=-0.5, tmax_crop=1.5, mode ='logratio'):
     """
     Return category-specific dictionary
     """
@@ -941,7 +941,7 @@ def prepare_condition_scaled_ts(path, subject='DiAs', stage='preprocessed', matl
     for condition in conditions:
         if condition == 'baseline':
             # Return prestimulus baseline
-            epocher = Epocher(condition='Stim', t_prestim=t_prestim, 
+            epocher = Epocher(condition='Stim', mode=mode, t_prestim=t_prestim, 
                               t_postim = t_postim, tmin_baseline=tmin_baseline, 
                          tmax_baseline=tmax_baseline)
             # Ecpoh and baseline scale:
@@ -951,7 +951,7 @@ def prepare_condition_scaled_ts(path, subject='DiAs', stage='preprocessed', matl
             epoch = epoch.copy().decimate(decim)
         else:
             # Return condition specific epochs
-            epocher = Epocher(condition=condition, t_prestim=t_prestim, t_postim = t_postim, 
+            epocher = Epocher(condition=condition, mode=mode, t_prestim=t_prestim, t_postim = t_postim, 
                              baseline=None, preload=True, tmin_baseline=tmin_baseline, 
                              tmax_baseline=tmax_baseline)
             # Ecpoh and baseline scale:

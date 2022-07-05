@@ -26,7 +26,7 @@ parser.add_argument("--result_path", type=list, default=result_path)
 parser.add_argument("--cohort", type=list, default=cohort)
 parser.add_argument("--subject", type=str, default='DiAs')
 parser.add_argument("--stage", type=str, default='preprocessed')
-parser.add_argument("--preprocessed_suffix", type=str, default= '_bad_chans_removed_raw.fif')
+parser.add_argument("--preprocessed_suffix", type=str, default= '_hfb_continuous_raw.fif')
 parser.add_argument("--epoch", type=bool, default=False)
 parser.add_argument("--channels", type=str, default='visual_channels.csv')
 
@@ -69,8 +69,8 @@ parser.add_argument("--t_prestim", type=float, default=-0.5)
 parser.add_argument("--t_postim", type=float, default=1.75)
 parser.add_argument("--baseline", default=None) # No baseline from MNE
 parser.add_argument("--preload", default=True)
-parser.add_argument("--tmin_baseline", type=float, default=-0.4)
-parser.add_argument("--tmax_baseline", type=float, default=-0.1)
+parser.add_argument("--tmin_baseline", type=float, default=-0.3)
+parser.add_argument("--tmax_baseline", type=float, default=0)
 parser.add_argument("--mode", type=str, default='mean')
 
 #%% Visually responsive channels classification parmeters

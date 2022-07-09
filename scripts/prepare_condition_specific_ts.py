@@ -22,18 +22,16 @@ import numpy as np
 
 conditions = ['Rest', 'Face', 'Place', 'baseline']
 # Original sampling rate
-sfreq = args.sfreq
+sfreq = 500
 log_transf = False
 decim = args.decim
 sfreq = sfreq/decim
 min_postim = args.tmin_crop
 max_postim = args.tmax_crop
-result_path = args.result_path
-
 
 ts = dict.fromkeys(conditions, [])
 
-for subject in  args.cohort:
+for subject in args.cohort:
     for condition in conditions:
         # Read continuous HFA
         reader = EcogReader(args.data_path, subject=subject, stage=args.stage,
@@ -96,6 +94,7 @@ for subject in  args.cohort:
     ts['sfreq'] = sfreq/args.decim
     
     # Save condition ts as mat file
+    result_path = args.result_path
     fname = subject + '_condition_visual_ts.mat'
     fpath = result_path.joinpath(fname)
     savemat(fpath, ts)

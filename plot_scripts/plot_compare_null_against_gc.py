@@ -23,8 +23,10 @@ import seaborn as sns
 #%%
 
 home = Path.home()
-figpath = home.joinpath('thesis','overleaf_project','figures')
-result_path = Path('../results')
+fig_path = args.fig_path
+result_path = args.result_path
+fname = 'multi_trial_fc.mat'
+
 # List conditions
 conditions = ['Rest', 'Face', 'Place', 'baseline']
 cohort = ['AnRa', 'ArLa', 'DiAs']
@@ -39,7 +41,6 @@ print(f"\n Sampling frequency is {sfreq}Hz\n")
 print(f"\n Stimulus is during {min_postim} and {max_postim}s\n")
 #%% Plot multitrial pair FC
 # Load functional connectivity matrix
-fname = 'multi_trial_fc.mat'
 fc_path = result_path.joinpath(fname)
 fc = loadmat(fc_path)
 fc = fc['dataset']

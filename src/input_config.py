@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon May 10 20:14:06 2021
-Config file, contain all parameters for analysis
-PROBLEM: How to pass argument into other script by calling them from terminal?
+Config file, contain all input parameters for GC analysis on ECoG
 @author: guime
 """
 import argparse
@@ -15,16 +14,22 @@ import numpy as np
 #cohort = ['AnRa',  'AnRi',  'ArLa',  'BeFe',  'DiAs',  'FaWa',  'JuRo', 'NeLa', 'SoGi']
 cohort = ['AnRa',  'ArLa', 'DiAs']
 # Path to source data, derivatives and results. Enter your own path in local machine
-data_path = Path('~','projects', 'cifar', 'data').expanduser()
-derivatives_path = Path('../data/derivatives/')
-result_path = Path('../results/')
+data_path = Path('data').expanduser()
+derivatives_path = Path('data/derivatives/')
+result_path = Path('results')
+fig_path = Path('results/figures')
 
 parser = argparse.ArgumentParser()
+# Paths
 parser.add_argument("--data_path", type=list, default=data_path)
 parser.add_argument("--derivatives_path", type=list, default=derivatives_path)
 parser.add_argument("--result_path", type=list, default=result_path)
+parser.add_argument("--fig_path", type=list, default=result_path)
+# Dataset parameters 
 parser.add_argument("--cohort", type=list, default=cohort)
-parser.add_argument("--subject", type=str, default='DiAs')
+parser.add_argument("--subject", type=str, default='AnRa')
+parser.add_argument("--sfeq", type=float, default=500.0)
+
 parser.add_argument("--stage", type=str, default='preprocessed')
 parser.add_argument("--preprocessed_suffix", type=str, default= '_bad_chans_removed_raw.fif')
 parser.add_argument("--epoch", type=bool, default=False)
@@ -71,6 +76,9 @@ parser.add_argument("--baseline", default=None) # No baseline from MNE
 parser.add_argument("--preload", default=True)
 parser.add_argument("--tmin_baseline", type=float, default=-0.4)
 parser.add_argument("--tmax_baseline", type=float, default=0)
+# Wether to log transform the data
+parser.add_argument("--log_transf", type=bool, default=False)
+# Mode to rescale data (mean, logratio, zratio)
 parser.add_argument("--mode", type=str, default='mean')
 
 #%% Visually responsive channels classification parmeters

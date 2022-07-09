@@ -14,8 +14,8 @@ import pandas as pd
 #%% 
 
 # Make sure you are in the "/scripts" directory 
-derivatives_path = Path('../data/derivatives/')
-result_path = Path('../results/')
+derivatives_path = args.derivatives_path
+result_path = args.result_path
 cohort = args.cohort
 data_path = args.path
 stage = args.stage

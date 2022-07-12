@@ -25,7 +25,7 @@ power_dict = {"subject": [], "condition": [], "group": [], "power": []}
 parser = argparse.ArgumentParser()
 # Frequency space
 parser.add_argument("--sfreq", type=float, default=500 / args.decim)
-parser.add_argument("--nfreqs", type=float, default=2**3)
+parser.add_argument("--nfreqs", type=float, default=2**9)
 parser.add_argument("--fmin", type=float, default=0.5)
 parser.add_argument("--l_freq", type=float, default=0.01)
 # Baseline correction
@@ -57,7 +57,7 @@ def cross_tf_analysis(args, tf_args):
 def main():
     fname = "tf_power_dataframe.pkl"
     df_power = cross_tf_analysis(args, tf_args)
-    fpath = args.results_path
+    fpath = args.transfer_path
     fpath = fpath.joinpath(fname)
     df_power.to_pickle(fpath)
 

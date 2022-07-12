@@ -14,10 +14,11 @@ import numpy as np
 #cohort = ['AnRa',  'AnRi',  'ArLa',  'BeFe',  'DiAs',  'FaWa',  'JuRo', 'NeLa', 'SoGi']
 cohort = ['AnRa',  'ArLa', 'DiAs']
 # Path to source data, derivatives and results. Enter your own path in local machine
-data_path = Path('../data')
+data_path = Path('data')
 derivatives_path = data_path.joinpath('derivatives')
 result_path = Path('results')
 fig_path = Path('results/figures')
+transfer_path = Path('data_transfer')
 
 parser = argparse.ArgumentParser()
 # Paths
@@ -25,6 +26,8 @@ parser.add_argument("--data_path", type=list, default=data_path)
 parser.add_argument("--derivatives_path", type=list, default=derivatives_path)
 parser.add_argument("--result_path", type=list, default=result_path)
 parser.add_argument("--fig_path", type=list, default=result_path)
+parser.add_argument("--transfer_path", type=list, default=transfer_path)
+
 # Dataset parameters 
 parser.add_argument("--cohort", type=list, default=cohort)
 parser.add_argument("--subject", type=str, default='DiAs')

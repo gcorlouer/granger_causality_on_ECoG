@@ -1,24 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jul  5 13:29:20 2022
-In this script we run cross subjects time frequency analysis
-@author: guime
-"""
 
-#%%
-import mne
-import argparse
-import matplotlib.pyplot as plt
-import numpy as np 
-
-from src.input_config import args
-from src.preprocessing_lib import EcogReader, Epocher, parcellation_to_indices
-from src.preprocessing_lib import prepare_condition_scaled_ts
-from mne.time_frequency import tfr_morlet
-
-
-#%% Functions
 
 def visual_indices(args, subject='DiAs'):
     """
@@ -77,49 +57,3 @@ def compute_group_power(args, freqs, group='F', condition = 'Face', l_freq = 0.0
     power = power.data
     power = np.average(power,axis=0)
     return power, times
-    
-#%% Parameters
-cohort = args.cohort
-conditions = ['Rest', 'Face', 'Place']
-groups = ['R','O','F']
-ngroup = len(groups)
-ncdt = len(conditions)
-# Command arguments
-parser = argparse.ArgumentParser()
-# Frequency space
-parser.add_argument("--sfreq", type=float, default=500/args.decim)
-parser.add_argument("--nfreqs", type=float, default=2**9)
-parser.add_argument("--fmin", type=float, default=0.5)
-parser.add_argument("--;l_freq", type=float, default=0.01)
-# Baseline correction 
-# tf_mode and tf_baseline to not confuse with mode and baseline of epoching
-parser.add_argument("--tf_mode", type=str, default='zscore')
-parser.add_argument("--tf_tmin_baseline", type=float, default=-0.5)
-parser.add_argument("--tf_tmax_baseline", type=float, default=0)
-tf_args = parser.parse_args()
-
-#%% For a given subject, run time frequency analysis across groups and 
-# conditions
-power_dict = {'subject':[],'condition':[],'group':[],'power':[]}
-for group in groups:
-    for condition in conditions:
-        power, time = compute_group_power(args, freqs, group=group, 
-        condition=condition, l_freq=0.01, baseline=baseline, mode=mode)
-        power_dict['condition']['group'] = power
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

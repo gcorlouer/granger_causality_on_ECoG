@@ -974,6 +974,8 @@ def prepare_condition_scaled_ts(path, subject='DiAs', stage='preprocessed', matl
     
     return ts
 
+#%% Visual channels indices, sorting and parcellation
+
 def sort_visual_chan(sorted_indices, hfb):
     """
     Order visual hfb channels indices along visual herarchy (Y coordinate)
@@ -985,7 +987,6 @@ def sort_visual_chan(sorted_indices, hfb):
     X = X_ordered
     return X
 
-
 def sort_indices(hfb, visual_chan):
     """
     Order channel indices along visual hierarchy
@@ -996,6 +997,23 @@ def sort_indices(hfb, visual_chan):
     for idx, chan in enumerate(unsorted_chan):
         sorted_indices[idx] = visual_chan.index(chan)
     return sorted_indices
+
+def visual_indices(args, subject='DiAs'):
+    """
+    Return indices of each functional group for a given subject
+    Input: 
+        - data_path (string): where data of cifar project is stored 
+        - subject (string): subject name
+    Output:
+        - indices (dict): indices of each functional group
+    """
+    # Read visual channel dataframe
+    reader = EcogReader(args.data_path, subject=subject)
+    df_visual = reader.read_channels_info(fname=args.channels)
+    # Return indices of functional groups from visual channel dataframe
+    indices = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
+    return indices 
+
 
 def parcellation_to_indices(visual_population, parcellation='group', matlab=False):
     """

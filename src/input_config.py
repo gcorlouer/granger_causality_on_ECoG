@@ -14,8 +14,8 @@ import numpy as np
 #cohort = ['AnRa',  'AnRi',  'ArLa',  'BeFe',  'DiAs',  'FaWa',  'JuRo', 'NeLa', 'SoGi']
 cohort = ['AnRa',  'ArLa', 'DiAs']
 # Path to source data, derivatives and results. Enter your own path in local machine
-data_path = Path('data').expanduser()
-derivatives_path = Path('data/derivatives/')
+data_path = Path('../data')
+derivatives_path = data_path.joinpath('derivatives')
 result_path = Path('results')
 fig_path = Path('results/figures')
 
@@ -27,7 +27,7 @@ parser.add_argument("--result_path", type=list, default=result_path)
 parser.add_argument("--fig_path", type=list, default=result_path)
 # Dataset parameters 
 parser.add_argument("--cohort", type=list, default=cohort)
-parser.add_argument("--subject", type=str, default='AnRa')
+parser.add_argument("--subject", type=str, default='DiAs')
 parser.add_argument("--sfeq", type=float, default=500.0)
 
 parser.add_argument("--stage", type=str, default='preprocessed')

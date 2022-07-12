@@ -43,7 +43,7 @@ epocher = Epocher(condition=condition, t_prestim=args.t_prestim, t_postim = args
                          baseline=None, preload=True, tmin_baseline=args.tmin_baseline, 
                          tmax_baseline=args.tmax_baseline, mode=args.mode)
 epochs = epocher.epoch(raw)
-epochs = epochs.pick(channel)
+epochs = epochs.pick_channels(channel)
 epochs = epochs.filter(l_freq=0.01, h_freq=None)
 epochs = epochs.copy().decimate(args.decim)
 

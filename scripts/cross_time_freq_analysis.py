@@ -20,7 +20,8 @@ conditions = ["Rest", "Face", "Place"]
 groups = ["R", "O", "F"]
 ngroup = len(groups)
 ncdt = len(conditions)
-power_dict = {"subject": [], "condition": [], "group": [], "power": []}
+power_dict = {"subject": [], "condition": [], "group": [], "power": [],
+              "time": [], "freqs": []}
 # Command arguments
 parser = argparse.ArgumentParser()
 # Frequency space
@@ -43,13 +44,15 @@ def cross_tf_analysis(args, tf_args):
     for subject in args.cohort:
         for group in groups:
             for condition in conditions:
-                power, time = compute_group_power(
+                power, time, freqs = compute_group_power(
                     args, tf_args, subject=subject, group=group, condition=condition
                 )
                 power_dict["subject"].append(subject)
                 power_dict["condition"].append(condition)
                 power_dict["group"].append(group)
                 power_dict["power"].append(power)
+                power_dict["freqs"].append(freqs)
+                power_dict["time"].append(time)
     df_power = pd.DataFrame(power_dict)
     return df_power
 

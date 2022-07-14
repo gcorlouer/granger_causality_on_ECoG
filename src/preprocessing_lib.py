@@ -871,52 +871,73 @@ class VisualClassifier(VisualDetector):
 def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = True,
                      preprocessed_suffix='_hfb_continuous_raw.fif', decim=2,
                      epoch=False, t_prestim=-0.5, t_postim=1.75, tmin_baseline = -0.5,
-                     tmax_baseline = 0, tmin_crop=0, tmax_crop=1):
+                     tmax_baseline = 0, tmin_crop=0, tmax_crop=1, condition='Face',
+                     mode = 'logratio', log_transf=True):
     """
     Return category-specific time series as a dictionary 
     """
     conditions = ['Rest', 'Face', 'Place', 'baseline']
     ts = dict.fromkeys(conditions, [])
-     # Read continuous HFA
+    # Read continuous HFA
     reader = EcogReader(path, subject=subject, stage=stage,
-                     preprocessed_suffix=preprocessed_suffix,
-                     epoch=epoch)
-    hfb = reader.read_ecog()
+                         preprocessed_suffix=preprocessed_suffix, preload=True, 
+                         epoch=False)
+    raw = reader.read_ecog()
+    # Read visually responsive channels
     df_visual = reader.read_channels_info(fname='visual_channels.csv')
     visual_chans = df_visual['chan_name'].to_list()
-    hfb = hfb.pick_channels(visual_chans)
-    # Epoch HFA
+    # Pick visually responsive HFA
+    raw = raw.pick_channels(visual_chans)
     for condition in conditions:
+        # Epoch visually responsive HFA
         if condition == 'baseline':
             # Return prestimulus baseline
-            epocher = Epocher(condition='Stim', t_prestim=t_prestim, 
-                              t_postim = t_postim, tmin_baseline=tmin_baseline, 
-                         tmax_baseline=tmax_baseline)
-            epoch = epocher.log_epoch(hfb)
+            epocher = Epocher(condition='Stim', t_prestim=t_prestim, t_postim = t_postim, 
+                            baseline=None, preload=True, tmin_baseline=tmin_baseline, 
+                            tmax_baseline=tmax_baseline, mode=mode)
+            if log_transf == True:
+                epoch = epocher.log_epoch(raw)
+            else:
+                epoch = epocher.epoch(raw)
+                # Downsample by factor of 2 and check decimation
             epoch = epoch.copy().crop(tmin = -0.5, tmax=0)
-             # Downsample by factor of 2 and check decimation
             epoch = epoch.copy().decimate(decim)
         else:
             # Return condition specific epochs
             epocher = Epocher(condition=condition, t_prestim=t_prestim, t_postim = t_postim, 
-                             baseline=None, preload=True, tmin_baseline=tmin_baseline, 
-                             tmax_baseline=tmax_baseline)
-            epoch = epocher.log_epoch(hfb)
+                                baseline=None, preload=True, tmin_baseline=tmin_baseline, 
+                                tmax_baseline=tmax_baseline, mode=mode)
+            #Epoch condition specific hfb and log transform to approach Gaussian
+            if log_transf == True:
+                epoch = epocher.log_epoch(raw)
+            else:
+                epoch = epocher.epoch(raw)
+            
             epoch = epoch.copy().crop(tmin = tmin_crop, tmax=tmax_crop)
-             # Downsample by factor of 2 and check decimation
+                # Downsample by factor of 2 and check decimation
             epoch = epoch.copy().decimate(decim)
             time = epoch.times
+
         # Prerpare time series for MVGC
         X = epoch.copy().get_data()
         (N, n, m) = X.shape
         X = np.transpose(X, (1,2,0))
         ts[condition] = X
-    # Add category specific channels indices to dictionary
-    indices = parcellation_to_indices(df_visual,  parcellation='group', matlab=matlab) 
-    ts['indices']= indices
-    
-    # Add time
-    ts['time'] = time
+        # Add category specific channels indices to dictionary
+        indices = parcellation_to_indices(df_visual,  parcellation='group', matlab=matlab)
+        # Pick populations and order them
+        ordered_keys = ['R','O','F']
+        ordered_indices = {k: indices[k] for k in ordered_keys}
+        ts['indices']= ordered_indices
+        
+        # Add time
+        ts['time'] = time
+        
+        # Add subject
+        ts['subject'] = subject
+        
+        # Add sampling frequency
+        ts['sfreq'] = 500/decim
     
     return ts
 

@@ -1,10 +1,16 @@
 # Import numpy
 import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+from pathlib import Path
 # Import classes
 from src.preprocessing_lib import EcogReader, Epocher
 # Import functions
 from src.preprocessing_lib import visual_indices, parcellation_to_indices
 from mne.time_frequency import tfr_morlet
+from mne.viz import centers_to_edges
+
 # Import arguments
 #%% Define functions
 
@@ -58,7 +64,7 @@ def compute_group_power(args, tf_args, subject='DiAs', group='R',
     power.apply_baseline(baseline=baseline, mode=tf_args.mode)
     power = power.data
     power = np.average(power, axis=0)
-    return power, times
+    return power, times, freqs
 
 
 def get_freqs(tf_args):
@@ -70,3 +76,34 @@ def get_freqs(tf_args):
     fres = (fmax + fmin - 1)/nfreqs
     freqs = np.arange(fmin, fmax, fres)
     return freqs
+
+
+def plot_tf(fpath, subject='DiAs',vmax=25):
+    """Plot time frequency"""
+    # Parameter specfics to plotting time frequency
+    fname = "tf_power_dataframe.pkl"
+    fpath = fpath.joinpath(fname)
+    df = pd.read_pickle(fpath)
+    conditions = ['Rest', 'Face', 'Place']
+    groups = ['R','O','F']
+    ngroup = 3
+    ncdt = 3
+    fig, ax = plt.subplots(ngroup, ncdt, sharex=True, sharey=True)
+    # Loop over conditions and groups
+    for i, condition in enumerate(conditions):
+        for j, group in enumerate(groups):
+            power = df['power'].loc[df['subject']==subject].loc[df['condition']==condition].loc[df['group']==group]
+            freqs = df['freqs'].loc[df['subject']==subject].loc[df['condition']==condition].loc[df['group']==group]
+            time = df['time'].loc[df['subject']==subject].loc[df['condition']==condition].loc[df['group']==group]
+            power = power.iloc[0]
+            freqs = freqs.iloc[0]
+            time = time.iloc[0]
+            x, y = centers_to_edges(time * 1000, freqs)
+            mesh = ax[i,j].pcolormesh(x, y, power, cmap='RdBu_r', vmax=vmax, vmin=-vmax)
+            ax[i,j].set_title(f'{group} Power during {condition}')
+            ax[i,j].set(ylim=freqs[[0, -1]], xlabel='Time (ms)', ylabel='Freq (Hz)')
+    fig.colorbar(mesh)
+    plt.tight_layout()
+    plt.show()
+
+        

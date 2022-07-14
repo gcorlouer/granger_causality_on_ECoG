@@ -2,6 +2,7 @@
 .~
 # Ignore data files (too heavy)
 data/
+data_transfer
 # Ignore deprecated scripts
 scripts/deprecated
 # Ignore results (for now)

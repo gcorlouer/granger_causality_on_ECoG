@@ -20,7 +20,7 @@ molrt =  cell(ncdt,1);
 rho = cell(ncdt,1);
 
 %% Multitrial VAR model estimation
-
+plotm = 1;
 for c=1:ncdt
     condition = conditions{c};
     sfreq = time_series.sfreq;
@@ -34,8 +34,9 @@ for c=1:ncdt
     [X,~,~,~] = mvdetrend(X,pdeg,[]);
     % Estimate var model order with multiple information criterion
     [moaic{c},mobic{c},mohqc{c},molrt{c}] = tsdata_to_varmo(X, ... 
-                    momax,regmode,alpha,pacf,[],verb);
-    %% Estimate VAR model.    
+                    momax,regmode,alpha,pacf,plotm,verb);
+    %% Estimate VAR model.
+    morder = floor(mean([moaic{c}, mobic{c}, mohqc{c}]));
     VAR = ts_to_var_parameters(X, 'morder', morder, 'regmode', regmode);
     rho{c} = VAR.info.rho;
 end

@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Fri Jul 15 18:16:01 2022
+
+@author: guime
+"""
+
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Mon May 23 14:28:23 2022
 In this script we plot spectral mvgc in each condition and subjects
 @author: guime
@@ -8,8 +17,8 @@ In this script we plot spectral mvgc in each condition and subjects
 import matplotlib.pyplot as plt
 import numpy as np 
 
-from src.preprocessing_lib import EcogReader, parcellation_to_indices
-from src.input_config import args
+from preprocessing_lib import EcogReader, parcellation_to_indices
+from input_config import args
 from scipy.io import loadmat
 from pathlib import Path
 
@@ -88,7 +97,6 @@ pairs = ['R->F', 'F->R']
 plot_smvgc(sgc, args, pairs = pairs)
 fig_path = fig_path.joinpath(fig_name)
 plt.savefig(fig_path)
-
 
  
 #%% Compare top down sGC relative to bottum up accross conditions and subjects

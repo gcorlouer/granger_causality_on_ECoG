@@ -872,7 +872,7 @@ def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = Tr
                      preprocessed_suffix='_hfb_continuous_raw.fif', decim=2,
                      epoch=False, t_prestim=-0.5, t_postim=1.75, tmin_baseline = -0.5,
                      tmax_baseline = 0, tmin_crop=0, tmax_crop=1, condition='Face',
-                     mode = 'logratio', log_transf=True):
+                     mode = 'logratio', log_transf=True, pick_visual=True):
     """
     Return category-specific time series as a dictionary 
     """
@@ -886,8 +886,13 @@ def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = Tr
     # Read visually responsive channels
     df_visual = reader.read_channels_info(fname='visual_channels.csv')
     visual_chans = df_visual['chan_name'].to_list()
-    # Pick visually responsive HFA
-    raw = raw.pick_channels(visual_chans)
+    # Pick channels
+    if pick_visual==True:
+        # Pick visually responsive HFA
+        raw = raw.pick_channels(visual_chans)
+    else:
+        raw = raw
+
     for condition in conditions:
         # Epoch visually responsive HFA
         if condition == 'baseline':

@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Jul 16 
+In this script we plot spectral pair GC in each condition and subjects
+@author: guime
+"""
+import matplotlib.pyplot as plt
+import numpy as np 
+import argparse
+
+from scipy.io import loadmat
+from pathlib import Path
+
+#%%
+#%matplotlib qt
+
+conditions = ['Rest', 'Face', 'Place']
+cohort = ['AnRa',  'ArLa', 'DiAs']
+result_path = Path('results')
+fname = 'multi_trial_sfc.mat'
+fpath = result_path.joinpath(fname)
+sgc = loadmat(fpath)
+sgc = sgc['dataset']
+nsub = len(cohort)
+ncdt = len(conditions)
+# Saving figure
+fig_path = Path('~','projects','cifar','results','figures').expanduser()
+fig_name = 'spectral_unconditional_pgc_ecog.png'
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--subject', type=str, default='DiAs')
+parser.add_argument('--rescale', type=bool, default=False)
+parser.add_argument('--vmax', type=bool, default=0.001)
+
+args = parser.parse_args()
+#%% Functions
+
+def compute_freq_loss(s, freqs, frac=0.95) :
+    """
+    Compute frequency after which psd lose more than 95% of its value
+    """
+    smax = np.amax(s)
+    s_neglect = smax-frac*smax
+    d = s - s_neglect
+    d = np.abs(d)
+    dmin = np.min(d)
+    idx_neglect = np.where(d==dmin)[0][0]
+    freq_loss = freqs[idx_neglect]
+    return freq_loss
+
+def plot_spgc(sgc, subject='DiAs', rescale=True, 
+              vmax=50,  vmin=0):   
+    """
+    Plot spectral gc in each direction and subject, compare between
+    preferred and non preferred stimuli
+    """
+    xticks = [0,1,10,100]
+    s = cohort.index(subject)
+    npair = len(pairs)
+    indices = sgc[0,s][3][0]
+    # Adapt to python indexing
+    iR = list(indices['R'][0][0])
+    iR = [iR[i]-1 for i in range(len(iR))]
+    iF = list(indices['F'][0][0])
+    iF = [iF[i]-1 for i in range(len(iF))]
+    indices = {'R': iR, 'F': iF}
+    iRF = iR + iF
+    nchan = len(iRF)
+    # Plot pair sgc
+    fig, ax = plt.subplots(nchan, nchan,sharex=True, sharey=True)
+    # Define spectral gc during rest as baseline
+    f_b = sgc[0,s][2]['f'][0][0]
+    # Loop over visual channels
+    for iax, i in enumerate(iRF):
+        for jax, j in enumerate(iRF):
+            # Return index group
+            if i in iR:
+                iGroup = 'R'
+            else:
+                iGroup = 'F'
+            if j in iR:
+                jGroup = 'R'
+            else:
+                jGroup = 'F'
+            # Loop over conditions
+            for c, cdt in enumerate(conditions):
+                freqs =sgc[c,s][2]['freqs'][0][0]
+                f = sgc[c,s][2]['f'][0][0]
+                # Baseline rescale
+                if rescale == True:
+                    f = np.divide(f,f_b,out=np.zeros_like(f), where=f_b!=0)
+                else: 
+                    f = f
+                # Plot spectral gc
+                ax[iax, jax].plot(freqs, f[i, j, :], label=cdt)
+            ax[iax, jax].set_xscale('linear')
+            ax[iax, jax].set_yscale('linear')
+            ax[iax, jax].set_xticks(xticks)
+            ax[iax, jax].set_xticklabels(['0','1','10','100'])
+            ax[iax, jax].set_ylim(bottom =vmin, top =vmax)
+            ax[iax, jax].set_xlim(left = 0.1, right = 150)
+            ax[0,jax].set_xlabel(f"Chanel {jGroup}")
+        ax[iax,0].set_ylabel(f"Chanel {iGroup}")
+    fig.suptitle(f"Spectral pGC {subject}")
+    fig.tight_layout()
+    plt.legend()
+    plt.show()
+#%%  Plot spectral GC along pairs x subjects (compare accross conditions)
+
+pairs = ['R->F', 'F->R']
+plot_spgc(sgc, subject=args.subject, rescale=args.rescale, vmax=args.vmax, 
+            vmin=0)
+fig_path = fig_path.joinpath(fig_name)
+plt.savefig(fig_path)
+
+# %%

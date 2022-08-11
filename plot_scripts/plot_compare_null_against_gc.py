@@ -7,7 +7,7 @@ multitrial GC and single trial GC
 @author: guime
 """
 
-
+#%%
 from src.input_config import args
 from src.preprocessing_lib import EcogReader, parcellation_to_indices
 from src.plotting_lib import full_stim_multi_pfc, full_stim_multi_gfc
@@ -19,7 +19,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import seaborn as sns
-
 #%%
 
 home = Path.home()
@@ -51,12 +50,12 @@ vmax = 3
 full_stim_multi_pfc(fc, cohort, args, F='pGC',vmin=-vmax,vmax=vmax,
                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
-
+plt.show()
 #%% Plot multitrial pair MI
 
 full_stim_multi_pfc(fc, cohort, args, F='pMI', vmin=-vmax,vmax=vmax,
                                  rotation=90, tau_x=0.5, tau_y=0.8)
-
+plt.show()
 #%% Plot multitrial groupwise GC
 vmin = 3
 full_stim_multi_gfc(fc, cohort, args, F='gGC', vmin=vmin,vmax=-vmin,

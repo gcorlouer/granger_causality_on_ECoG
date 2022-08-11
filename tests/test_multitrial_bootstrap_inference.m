@@ -20,17 +20,17 @@
 if ~exist('nx',     'var'), nx      = 3;           end % number of target variables
 if ~exist('ny',     'var'), ny      = 5;           end % number of source variables
 if ~exist('nz',     'var'), nz      = 2;           end % number of conditioning variables
-if ~exist('p',      'var'), p       = [4,6];       end % model orders
-if ~exist('m',      'var'), m       = [50,60];     end % numbers of observations per trial
+if ~exist('p',      'var'), p       = 5;       end % model orders
+if ~exist('m',      'var'), m       = 100;     end % numbers of observations per trial
 if ~exist('N',      'var'), N       = [56,56];   end % numbers of trials
 if ~exist('rho',    'var'), rho     = [0.9,0.95];  end % spectral radii
 if ~exist('wvar',   'var'), wvar    = [0.9,0.7];   end % var coefficients decay weighting factors
 if ~exist('rmi',    'var'), rmi     = [0.8,1.2];   end % residuals log-generalised correlations (multi-information):
 if ~exist('regm',   'var'), regm    = 'OLS';       end % VAR model estimation regression mode ('OLS' or 'LWR')
 if ~exist('tstat',  'var'), tstat   = 'LR';        end % GC test statistic: F or LR (likelihood ratio)
-if ~exist('debias', 'var'), debias  = true;        end % Debias GC statistics? (recommended for inference)
+if ~exist('debias', 'var'), debias  = false;        end % Debias GC statistics? (recommended for inference)
 if ~exist('alpha',  'var'), alpha   = 0.05;        end % Significance level
-if ~exist('S',      'var'), S       = [1000,1000];  end % bootdstrap sample sizes
+if ~exist('S',      'var'), S       = [100,100];  end % bootdstrap sample sizes
 if ~exist('hbins',  'var'), hbins   = 50;          end % histogram bins
 if ~exist('seed',   'var'), seed    = 0;           end % random seed (0 for unseeded)
 if ~exist('fignum', 'var'), fignum  = 1;           end % figure number
@@ -50,25 +50,31 @@ Fbm = zeros(2,1);
 Fbd = zeros(2,1);
 ab  = zeros(2,1);
 
+% Generate one ground truth connectivity matrix
+connectivity_matrix = randi([0 1], n);
+for i = 1:n
+    connectivity_matrix(i,i) = 0;
+end
+
 for c = 1:2 % conditions 1 and 2
 
 	% Random VAR model
 
-	AA = var_rand(n,p(c),rho(c),wvar(c));
-	VV = corr_rand(n,rmi(c));
+	A = var_rand(connectivity_matrix,p,rho(c),wvar(c));
+	V = corr_rand(n,rmi(c));
 
 	% The data
 
-	XX = var_to_tsdata(AA,VV,m(c),N(c));
+	X = var_to_tsdata(A,V,m,N(c));
 
 	% Calculate estimated GC y -> x | z test statistic
 
-	Fs(c) = var_to_mvgc_tstat(XX,[],x,y,p(c),regm,tstat);
+	Fs(c) = var_to_mvgc_tstat(X,[],x,y,p,regm,tstat);
 
 	% GC multi-trial bootstrap distribution
 
 	fprintf('\nCalculating multi-trial bootstrap distribution (condition %d) ',c);
-	[Fb{c},et] = mvgc_var_bootstrap_tstat(XX,x,y,p(c),S(c),regm,tstat);
+	[Fb{c},et] = mvgc_var_bootstrap_tstat(X,x,y,p,S(c),regm,tstat);
 	fprintf(' %.2f seconds\n',et);
 
 	% GC bootstrap median and median absolute deviation
@@ -81,7 +87,7 @@ for c = 1:2 % conditions 1 and 2
 		% Debias (approximately) statistics - recommended if VAR parameters and/or
 		% numbers of observations/trials differ between the two conditions
 
-		ab(c) = mvgc_bias(tstat,nx,ny,nz,p(c),m(c),N(c)); % approximate bias
+		ab(c) = mvgc_bias(tstat,nx,ny,nz,p,m,N(c)); % approximate bias
 
 		Fs     = Fs     - ab(c);
 		Fb{c}  = Fb{c}  - ab(c);

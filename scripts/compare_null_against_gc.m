@@ -15,6 +15,8 @@ for s=1:nsub
             'condition',condition, 'suffix', suffix);
         % Read conditions specific time series
         X = gc_input.X;
+        % Detrend
+        X = mvdetrend(X,[],[]);
         % Pairwise conditional MI 
         pMI = ts_to_MI(X, 'q', q, 'mhtc', mhtc, 'alpha', alpha);
         % Pairwise conditional GC

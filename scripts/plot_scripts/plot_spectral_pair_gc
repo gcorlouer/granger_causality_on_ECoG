@@ -31,7 +31,7 @@ fig_name = 'spectral_unconditional_pgc_ecog.png'
 parser = argparse.ArgumentParser()
 parser.add_argument('--subject', type=str, default='DiAs')
 parser.add_argument('--rescale', type=bool, default=True)
-parser.add_argument('--vmax', type=bool, default=100)
+parser.add_argument('--vmax', type=bool, default=0.01)
 
 args = parser.parse_args()
 #%% Style parameters
@@ -110,7 +110,8 @@ def plot_spgc(sgc, subject='DiAs', rescale=True,
                 f = sgc[c,s][2]['f'][0][0]
                 # Baseline rescale
                 if rescale == True:
-                    f = np.divide(f,f_b,out=np.zeros_like(f), where=f_b!=0)
+                    #f = np.divide(f,f_b,out=np.zeros_like(f), where=f_b!=0)
+                    f = f-f_b
                 else: 
                     f = f
                 # Plot spectral gc
@@ -131,7 +132,7 @@ def plot_spgc(sgc, subject='DiAs', rescale=True,
 
 pairs = ['R->F', 'F->R']
 plot_spgc(sgc, subject=args.subject, rescale=args.rescale, vmax=args.vmax, 
-            vmin=0)
+            vmin=-args.vmax)
 fig_path = fig_path.joinpath(fig_name)
 plt.savefig(fig_path)
 

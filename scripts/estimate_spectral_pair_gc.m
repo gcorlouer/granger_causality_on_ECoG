@@ -36,5 +36,25 @@ fname = 'multi_trial_sfc.mat';
 fpath = fullfile(datadir, fname);
 save(fpath, 'dataset')
 
-%% Plot pairwise spectral GC
+%% Plot Band specific GC
+nsub = 3;
+logsx = false;
+cm = [];
+plotm = 0;
+psize = [];
+flines = [];
 
+Fmax = 0.0008;
+ptitle = cell(ncdt,2);
+F = cell(ncdt,2);
+for c=1:ncdt
+    pGC = dataset(c,nsub).pGC;
+    indices =  dataset(c,nsub).indices;
+    freqs = pGC.freqs;
+    F{c,1} = pGC.F;
+    F{c,2} = pGC.sig;
+    ptitle{c,1} = conditions{c};
+    ptitle{c,2} = 'Significance';
+
+end
+plot_gc(F, ptitle,cm,Fmax,plotm,psize)

@@ -3,15 +3,15 @@ from pathlib import Path
 from scipy.io import savemat
 
 import argparse
-
 #%% Parameters
 conditions = ['Rest', 'Face', 'Place', 'baseline']
 cohort = ['AnRa',  'ArLa', 'DiAs']
 
 # Paths (Change before running. Run from root.)
-data_path = Path('data')
+cifar_path = Path('~','projects','cifar').expanduser()
+data_path = cifar_path.joinpath('data')
 derivatives_path = data_path.joinpath('derivatives')
-result_path = Path('results')
+result_path = cifar_path.joinpath('results')
 
 parser = argparse.ArgumentParser()
 
@@ -41,8 +41,8 @@ parser.add_argument("--pick_visual", type=bool, default=True)
 # Create category specific time series
 parser.add_argument("--decim", type=float, default=2)
 parser.add_argument("--tmin_crop", type=float, default=0)
-parser.add_argument("--tmax_crop", type=float, default=1.5)
-parser.add_argument("--matlab", type=bool, default=False)
+parser.add_argument("--tmax_crop", type=float, default=1)
+parser.add_argument("--matlab", type=bool, default=True)
 
 args = parser.parse_args()
 

@@ -11,12 +11,59 @@ of the HFA.
 import mne 
 import matplotlib.pyplot as plt
 import numpy as np
+import argparse
 
 from src.preprocessing_lib import prepare_condition_scaled_ts, EcogReader, parcellation_to_indices
-from src.input_config import args
 from mne.time_frequency import psd_array_multitaper, psd_array_welch, csd_array_multitaper
 from scipy.stats import sem
 from pathlib import Path
+
+
+#%% Parameters
+conditions = ['Rest', 'Face', 'Place', 'baseline']
+cohort = ['AnRa',  'ArLa', 'DiAs']
+
+# Paths (Change before running. Run from root.)
+cifar_path = Path('~','projects','cifar').expanduser()
+data_path = cifar_path.joinpath('data')
+derivatives_path = data_path.joinpath('derivatives')
+result_path = cifar_path.joinpath('results')
+
+parser = argparse.ArgumentParser()
+
+
+# Dataset parameters
+parser.add_argument("--cohort", type=str, default=cohort)
+parser.add_argument("--subject", type=str, default='DiAs')
+parser.add_argument("--sfeq", type=float, default=500.0)
+parser.add_argument("--stage", type=str, default='preprocessed')
+parser.add_argument("--preprocessed_suffix", type=str, default= '_hfb_continuous_raw.fif')
+parser.add_argument("--epoch", type=bool, default=False)
+parser.add_argument("--channels", type=str, default='visual_channels.csv')
+
+# Epoching parameters
+parser.add_argument("--condition", type=str, default='Stim') 
+parser.add_argument("--t_prestim", type=float, default=-0.5)
+parser.add_argument("--t_postim", type=float, default=1.75)
+parser.add_argument("--baseline", default=None) # No baseline from MNE
+parser.add_argument("--preload", default=True)
+parser.add_argument("--tmin_baseline", type=float, default=-0.5)
+parser.add_argument("--tmax_baseline", type=float, default=0)
+
+# Wether to log transform the data
+parser.add_argument("--log_transf", type=bool, default=False)
+# Mode to rescale data (mean, logratio, zratio)
+parser.add_argument("--mode", type=str, default='logratio')
+# Pick visual chan
+parser.add_argument("--pick_visual", type=bool, default=True)
+# Create category specific time series
+parser.add_argument("--decim", type=float, default=2)
+parser.add_argument("--tmin_crop", type=float, default=0)
+parser.add_argument("--tmax_crop", type=float, default=1.5)
+parser.add_argument("--matlab", type=bool, default=True)
+
+args = parser.parse_args()
+
 
 #%% functions
 
@@ -53,13 +100,13 @@ def visual_indices(args, subject='DiAs'):
         - indices (dict): indices of each functional group
     """
     # Read visual channel dataframe
-    reader = EcogReader(args.data_path, subject=subject)
+    reader = EcogReader(data_path, subject=subject)
     df_visual = reader.read_channels_info(fname=args.channels)
     # Return indices of functional groups from visual channel dataframe
     indices = parcellation_to_indices(df_visual, parcellation='group', matlab=False)
     return indices 
 
-def average_hfa(args, condition='Face', group = 'F', matlab = False):
+def average_hfa(args, cohort, condition='Face', group = 'F', matlab = False):
     """
     Compute grand average of hfa accross subjects in each conditions and functional
     group.
@@ -71,12 +118,12 @@ def average_hfa(args, condition='Face', group = 'F', matlab = False):
     Output:
         - hfa (array): condition specific hfa of a functional group averaged over subjects 
     """
-    nsub = len(args.cohort)
+    nsub = len(cohort)
     hfa_population = [0]*nsub
     # Loop over subjects
-    for i, subject in enumerate(args.cohort):
+    for i, subject in enumerate(cohort):
         # Prepare condition specific scaled HFA
-        ts = prepare_condition_scaled_ts(args.data_path, subject=subject, stage=args.stage, matlab = matlab,
+        ts = prepare_condition_scaled_ts(data_path, subject=subject, stage=args.stage, matlab = matlab,
                      preprocessed_suffix=args.preprocessed_suffix, decim=args.decim,
                      epoch=args.epoch, t_prestim=args.t_prestim, t_postim=args.t_postim, 
                      tmin_baseline = args.tmin_baseline, tmax_baseline = args.tmax_baseline,
@@ -107,7 +154,7 @@ def average_hfa(args, condition='Face', group = 'F', matlab = False):
     grand_sem = sem(hfa_population, axis =0)
     return evoked_hfa, grand_sem, time, baseline
     
-def average_psd(args, condition='Face', group = 'F', fmax=50, bandwidth=8,
+def average_psd(args, data_path, condition='Face', group = 'F', fmax=50, bandwidth=8,
                 matlab = False):
     """
     Compute average of psd over subjects in each condition and functional group
@@ -120,12 +167,12 @@ def average_psd(args, condition='Face', group = 'F', fmax=50, bandwidth=8,
         - s (array): condition specific psd of a functional group averaged over subjects 
         - freqs (array): array of frequencies
     """
-    nsub = len(args.cohort)
+    nsub = len(cohort)
     s_average = [0]*nsub
     # Loop over subjects
-    for i, subject in enumerate(args.cohort):
+    for i, subject in enumerate(cohort):
         # Prepare condition specific scaled HFA
-        ts = prepare_condition_scaled_ts(args.data_path, subject=subject, stage=args.stage, matlab = matlab,
+        ts = prepare_condition_scaled_ts(data_path, subject=subject, stage=args.stage, matlab = matlab,
                      preprocessed_suffix=args.preprocessed_suffix, decim=args.decim,
                      epoch=args.epoch, t_prestim=args.t_prestim, t_postim=args.t_postim, 
                      tmin_baseline = args.tmin_baseline, tmax_baseline = args.tmax_baseline,
@@ -163,7 +210,7 @@ colors = ['b', 'r', 'brown']
 ng = len(visual_group)
 
 
-fig_name = 'cross_psd_ecog.jpg'
+fig_name = 'cross_psd_hfa.jpg'
 fig_dir = Path('~','thesis', 'overleaf_project', 'figures', 'results_figures').expanduser()
 fig_path = fig_dir.joinpath(fig_name)
 frac = 0.95 #Fraction of PSD loss
@@ -172,7 +219,7 @@ for i, group in enumerate(visual_group):
     for c, condition in enumerate(conditions):
         color = colors[c]
         # Plot grand averaged psd
-        s, freqs = average_psd(args, condition=condition, group=group, 
+        s, freqs = average_psd(args, data_path, condition=condition, group=group, 
                                fmax=fmax, bandwidth=bandwidth)
         #freq_loss = compute_freq_loss(s, freqs, frac=frac)
         ax[i,0].plot(freqs, s, label=condition, color=color)
@@ -181,7 +228,7 @@ for i, group in enumerate(visual_group):
         ax[i,0].set_xlabel('frequency (Hz)')
         ax[i,0].set_ylabel(f'PSD {group} channels')
         # Plot grand average HFA
-        evoked_hfa, sem_hfa, time, baseline = average_hfa(args, condition=condition, group = group)
+        evoked_hfa, sem_hfa, time, baseline = average_hfa(args, cohort, condition=condition, group = group)
         up_ci = evoked_hfa + 1.96*sem_hfa
         low_ci = evoked_hfa - 1.96*sem_hfa
         ax[i,1].plot(time, evoked_hfa, label=condition, color=color)

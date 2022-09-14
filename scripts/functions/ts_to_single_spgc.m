@@ -1,5 +1,5 @@
 function F = ts_to_single_spgc(X, args)
-
+% Compute single trial pairwise band-specific pair conditional GC distribution
 arguments
     X double
     args.morder double = 3;
@@ -29,4 +29,5 @@ for i=1:N
     f(:,:,:,i) = var_to_spwcgc(A,V,nfreqs);
 end
 % Integrate over frequency band
-F(:,:,i) = bandlimit(f,dim, sfreq, band);
+F = bandlimit(f,dim, sfreq, band);
+end

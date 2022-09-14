@@ -27,8 +27,7 @@ alpha = p.Results.alpha;
 V = tsdata_to_autocov(X,q);
 
 % Given Gaussianity, compute mutual information
-nobs = m * N;
-[MI,pval] = cov_to_pwcmi(V,nobs);
+[MI,pval] = cov_to_pwcmi(V);
 MI(isnan(MI)) = 0;
 % Return LR test statistics
 [sig, pcrit] = significance(pval,alpha,mhtc);

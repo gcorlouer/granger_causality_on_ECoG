@@ -19,9 +19,18 @@ comparisons = {{'Face' 'Rest'}, {'Place' 'Rest'}, {'Face' 'Place'}};
 nComparisons = size(comparisons,2);
 Subject = struct;
 CrossSubject = struct;
-% Prepare cell array of F and I to compute group z score
-F = cell(nsub,1);
+% Prepare cell array of F across subjects
+pF = cell(nsub,1);
+gF = cell(nsub,1);
 
+% EEG bands
+bands = struct;
+bands.delta = [1 4];
+bands.theta = [4 7];
+bands.alpha = [8 12];
+bands.beta = [13 30];
+bands.gamma = [32 60];
+bands.hgamma = [60 120];
 %%
 
 for s=1:nsub
@@ -34,12 +43,13 @@ for s=1:nsub
         X = gc_input.X;
         indices = gc_input.indices;
         [n, m, N] = size(X);
-        f = zeros(n,n,nfreqs+1,N);
-        F = zeros(n,n,N);
-        F{s} = ts_to_single_spgc(X,'morder',morder,'band', band, ...
+        pF{s} = ts_to_single_spgc(X,'morder',morder,'band', band, ...
+               'regmode',regmode, 'sfreq', sfreq);
+        gF{s} = ts_to_single_smvgc(X,'gind',indices,'morder',morder,'band', band, ...
                'regmode',regmode, 'sfreq', sfreq);
         % Store single trial results in subject structure
-        Subject.(subject_id).(condition).('single_GC') = F{s};
+        Subject.(subject_id).(condition).('pair_GC') = pF{s};
+        
     end
     Subject.(subject_id).indices = indices;
 end

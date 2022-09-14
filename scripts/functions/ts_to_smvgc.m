@@ -58,13 +58,13 @@ for i=1:ng
             % Return mvgc between group of populations
             f(i,j,:) = var_to_smvgc(VAR.A,VAR.V,x,y,fres);
         end
-        % Integrate over frequency band
-        F = bandlimit(f,dim, sfreq, band);
-        % Test against null of no GC
-        pval = mvgc_pval(F,tstat,nx,ny,nz,morder,m,N);
-        [sig, pcrit] = significance(pval,alpha,mhtc,[]);
     end
 end
+% Integrate over frequency band
+F = bandlimit(f,dim, sfreq, band);
+% Test against null of no GC
+pval = mvgc_pval(F,tstat,nx,ny,nz,morder,m,N);
+[sig, pcrit] = significance(pval,alpha,mhtc,[]);
 sGC.F=F; sGC.f = f; sGC.sig=sig; sGC.pcrit = pcrit;
 sGC.freqs = freqs; sGC.indices = gind; 
 end

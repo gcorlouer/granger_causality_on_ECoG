@@ -870,6 +870,7 @@ class VisualClassifier(VisualDetector):
         
 def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = True,
                      preprocessed_suffix='_hfb_continuous_raw.fif', decim=2,
+                     l_freq = 0.1,
                      epoch=False, t_prestim=-0.5, t_postim=1.75, tmin_baseline = -0.5,
                      tmax_baseline = 0, tmin_crop=0, tmax_crop=1, condition='Face',
                      mode = 'logratio', log_transf=True, pick_visual=True):
@@ -906,6 +907,8 @@ def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = Tr
                 epoch = epocher.epoch(raw)
                 # Downsample by factor of 2 and check decimation
             epoch = epoch.copy().crop(tmin = -0.5, tmax=0)
+            # Low pass filter
+            epoch = epoch.copy().filter(l_freq=l_freq, h_freq=None)
             epoch = epoch.copy().decimate(decim)
         else:
             # Return condition specific epochs
@@ -919,6 +922,8 @@ def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = Tr
                 epoch = epocher.epoch(raw)
             
             epoch = epoch.copy().crop(tmin = tmin_crop, tmax=tmax_crop)
+            # Low pass filter
+            epoch = epoch.copy().filter(l_freq=l_freq, h_freq=None)
                 # Downsample by factor of 2 and check decimation
             epoch = epoch.copy().decimate(decim)
             time = epoch.times

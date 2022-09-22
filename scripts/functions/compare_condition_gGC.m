@@ -48,7 +48,7 @@ count = zeros(ng,ng);
 for s=1:Ns
     for i=1:ng
         for j=1:ng
-            if tstat(i,j,s)>obsStat(i,j)
+            if abs(tstat(i,j,s))>abs(obsStat(i,j))
                 count(i,j)=count(i,j)+1;
             else
                 continue 

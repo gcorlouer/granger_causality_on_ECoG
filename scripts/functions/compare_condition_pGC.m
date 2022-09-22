@@ -42,7 +42,7 @@ count = zeros(n,n);
 for s=1:Ns
     for i=1:n
         for j=1:n
-            if tstat(i,j,s)>obsStat(i,j)
+            if abs(tstat(i,j,s))>abs(obsStat(i,j))
                 count(i,j)=count(i,j)+1;
             else
                 continue 

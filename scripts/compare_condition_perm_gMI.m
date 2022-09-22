@@ -1,4 +1,4 @@
-%% Compare condition specific GC
+%% Compare condition specific group MI
 % In this script we compare GC and MI during condition 1 and condition 2
 % Comparison are done for each subjects and directions. In addition to an
 % indivisual subject analysis, we also pool z score across subjects. 

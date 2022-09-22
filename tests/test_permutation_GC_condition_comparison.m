@@ -18,7 +18,7 @@ if ~exist('regm',   'var'), regmode    = 'OLS';       end % VAR model estimation
 if ~exist('tstat',  'var'), tstat   = 'LR';        end % GC test statistic: F or LR (likelihood ratio)
 if ~exist('debias', 'var'), debias  = true;        end % Debias GC statistics? (recommended for inference)
 if ~exist('alpha',  'var'), alpha   = 0.05;        end % Significance level
-if ~exist('S',      'var'), Ns       = 100;        end % Permutation sample sizes
+if ~exist('Ns',      'var'), Ns       = 100;        end % Permutation sample sizes
 if ~exist('hbins',  'var'), hbins   = 50;          end % histogram bins
 if ~exist('seed',   'var'), seed    = 0;           end % random seed (0 for unseeded)
 if ~exist('fignum', 'var'), fignum  = 1;           end % figure number
@@ -87,7 +87,7 @@ testStat = Fp{1} - Fp{2};
 observedStat = Fs(1) - Fs(2);
 count = 0;
 for s=1:Ns
-    if testStat(s)>observedStat
+    if abs(testStat(s))>abs(observedStat)
         count=count+1;
     else
         continue 

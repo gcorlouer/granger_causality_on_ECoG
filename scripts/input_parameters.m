@@ -23,11 +23,12 @@ if ~exist('q', 'var'), q = 0; end % Covariance lag
 % VAR Modeling
 if ~exist('regmode', 'var'), regmode = 'OLS'; end % OLS or LWR
 if ~exist('morder', 'var'),    morder = 5; end % Model order. Pick 3 or 5.
-if ~exist('ssmo', 'var'),    ssmo = 20; end % Model order. Pick 3 or 5.
+if ~exist('ssmo', 'var'),    ssmo = 20; end % Model order for SS
 if ~exist('momax', 'var'), momax = 20; end
 if ~exist('pacf', 'var'), pacf = true; end
 if ~exist('plotm', 'var'), plotm = []; end
 if ~exist('verb', 'var'), verb = 0; end
+
 
 % Spectral GC 
 if ~exist('dim', 'var'), dim = 3; end % dimension of spectral integration

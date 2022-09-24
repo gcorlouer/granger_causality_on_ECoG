@@ -13,72 +13,33 @@
 %% Input parameters
 
 input_parameters;
-ncdt = length(conditions);
 nsub = length(cohort);
-
-%%
-
-subject = 'DiAs';
-condition = 'Rest';
 Ns = 500;
-
-gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
-            'condition',condition, 'suffix', suffix);
-X = gc_input.X;
-[n,m,N] = size(X);
-indices = gc_input.indices;
-
-stat = compare_TD_BU_pgc(X, indices, 'morder', morder, 'ssmo', ssmo,...
-    'Ns',Ns,'alpha',alpha, 'mhtc',mhtc);
-
+conditions = {'baseline', 'Face', 'Place'};
+ncdt = length(conditions);
 %%
-
 for s=1:nsub
-    subject_id = cohort{s};
+    subject = cohort{s};
     for c=1:ncdt
         condition = conditions{c};
-        gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject_id,...
+        gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
             'condition',condition, 'suffix', suffix);
         X = gc_input.X;
         [n,m,N] = size(X);
         indices = gc_input.indices;
-        R_idx = indices.('R');
-        F_idx = indices.('F');
-        nR = length(R_idx);
-        nF = length(F_idx);
-        % Test statistic
-        T = zeros(nR, nF,N);
-        for i=1:nR
-            for j=1:nF
-                x = X(i,:,:);
-                y = X(j,:,:);
-                % Compute observed top down and bottom up GC
-                [A,C,K,V,Z,E] = tsdata_to_ss(X([i,j],:,:), pf, ssmo);
-                F = ss_to_pwcgc(A,C,K,V);
-                Ta(i,j) = F(1,2) - F(2,1);
-                % Concatenate in one multitrial time series
-                xRF = cat(1,x,y);
-                [n,m,Nt] = size(xRF);
-                for s=1:Ns
-                    fprintf('MVGC: permutation sample %d of %d',s,Ns);
-                    % Permute trial index
-                    trials = randperm(Nt);
-                    trialsR = trials(1:N);
-                    trialsF = trials(N+1:Nt);
-                    xR = xRF(:,:,trials1);
-                    xF = xRF(:,:,trials2);
-                    % Concatenate pairwise time series
-                    xRFp = cat(1,x1,x2);
-                    % Estimate permutation GC
-                    [A,C,K,V,Z,E] = tsdata_to_ss(xRFp, pf, ssmo);
-                    Fp =  ss_to_pwcgc(A,C,K,V);
-                    % Compute permutation statistic
-                    T(i,j,s) = Fp(1,2)-Fp(2,1);
-                    fprintf('\n');
-                end           
-            end
-        end
-        
+        stat = compare_TD_BU_pgc(X, indices, 'morder', morder, 'ssmo', ssmo,...
+            'Ns',Ns,'alpha',alpha, 'mhtc',mhtc);
+        GC.(subject).(condition).('z') = stat.z;
+        GC.(subject).(condition).('sig') = stat.sig;
+        GC.(subject).(condition).('pval') = stat.pval;
+        GC.(subject).(condition).('zcrit') = stat.zcrit;
+        GC.(subject).indices = indices;
     end
 end
+
+%% Save dataset
+fname = 'compare_TD_BU_GC.mat';
+fpath = fullfile(datadir, fname);
+save(fpath, 'GC')
+
 

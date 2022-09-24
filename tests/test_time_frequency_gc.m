@@ -66,6 +66,8 @@ for w=1:nwin
 end
 
 %% Plot time frequency graph
+
+% Not really necessary
 figure
 imagesc(F');
 

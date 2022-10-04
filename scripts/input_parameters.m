@@ -21,7 +21,7 @@ if ~exist('normalise', 'var'), normalise = false; end
 if ~exist('q', 'var'), q = 0; end % Covariance lag
 
 % VAR Modeling
-if ~exist('regmode', 'var'), regmode = 'OLS'; end % OLS or LWR
+if ~exist('regmode', 'var'), regmode = 'LWR'; end % OLS or LWR
 if ~exist('morder', 'var'),    morder = 5; end % Model order. Pick 3 or 5.
 if ~exist('ssmo', 'var'),    ssmo = 20; end % Model order for SS
 if ~exist('momax', 'var'), momax = 20; end
@@ -39,7 +39,7 @@ if ~exist('conditional', 'var'), conditional = true; end % frequency bins
 
 
 % Rolling window
-if ~exist('mw', 'var'), mw = 80; end % number of observations in window
+if ~exist('mw', 'var'), mw = 50; end % number of observations in window
 if ~exist('shift', 'var'), shift = 10; end % window shift
 
 

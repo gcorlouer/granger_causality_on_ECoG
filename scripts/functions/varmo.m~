@@ -1,0 +1,38 @@
+function model_order = varmo(X,p,regmode,alpha,pacf,plotm,verb)
+
+% plotm = []      - don't plot
+% plotm = n       - Matlab plot to figure n (if zero, use next)
+% plotm = string  - Gnuplot terminal (may be empty)
+
+if nargin < 4 || isempty(alpha), alpha = [0.01 0.05]; end
+if nargin < 5 || isempty(pacf),  pacf  = true;        end
+if nargin < 6,                   plotm = [];          end
+if nargin < 7 || isempty(verb),  verb  = 0;           end
+
+if isempty(plotm), pacf = false; end % no point if we're not going to display
+
+if isscalar(alpha), alpha = [alpha alpha]; end
+
+n = size(X,1);
+
+% get log-likelihoods, pacfs at VAR model orders 1 .. p
+
+[LL,Lk,Lm,R,RM] = tsdata_to_varll(X,p,regmode,pacf,verb>1); % log-likelihood, #free parameters. effective #observations
+
+% calculate information criteria
+
+[aic,bic,hqc] = infocrit(LL,Lk,Lm); % Akaike, Schwarz' Bayesian, Hannan-Quinn
+
+ccalpha = alpha(2)/(n*n*p);             % Bonferroni correction on significance levels
+Rcrit = norminv(1-ccalpha/2)./sqrt(RM); % 2-sided test
+R(:,:,1) = nan(n);                      % lag-zero are trivial, don't display
+Rlim = 1.1*nanmax(abs(R(:)));           % for display
+
+model_order.aic = aic;
+model_order.bic = bic;
+model_order.hqc = hqc;
+model_order.pacf = R;
+
+end
+
+	

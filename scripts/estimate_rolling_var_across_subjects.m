@@ -29,6 +29,6 @@ dataset = reshape(dataset, lenData, 1);
 %% Save dataset
 
 df = struct2table(dataset);
-fname = 'rolling_var_ecog_estimation.csv';
+fname = 'rolling_var_lfp_estimation.csv';
 fpath = fullfile(datadir, fname);
 writetable(df, fpath)

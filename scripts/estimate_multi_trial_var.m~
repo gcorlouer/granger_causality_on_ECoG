@@ -10,6 +10,7 @@ fname = [subject '_condition_visual_ts.mat'];
 fpath = fullfile(datadir, fname);
 time_series = load(fpath);
 
+
 % Initialise information criterion
 varModel = struct;
 
@@ -20,7 +21,7 @@ for c=1:ncdt
     [nchan, nobs, ntrial] = size(X);
     subject = time_series.subject;
     %% Estimate VAR model.
-    varModel.(subject).(condition) = varmo(X,momax,regmode,alpha);
+    varModel.(subject).(condition).('infoCrit') = varmo(X,momax,regmode,alpha);
     morder = 5;
     VAR = ts_to_var_parameters(X, 'morder', morder, 'regmode', regmode);
     varModel.(subject).condition.('rho') = VAR.info.rho;

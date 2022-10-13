@@ -35,7 +35,10 @@ for c=1:ncdt
     molrt{c} = zeros(nwin,1);
     %% VAR model order selection
     % detrend and demean data then estimate VAR model and estimate GC
+    win_size = mw/sfreq;
+    fprintf('Rolling time window of size %4.2f \n', win_size)
     for w=1:nwin
+        fprintf('Time window number %d over %d \n', w,nwin)
         % window offset
         o = (w-1)*shift;   
         % the window
@@ -48,8 +51,6 @@ for c=1:ncdt
     end
 
     %% Sample to time
-
-    win_size = mw/sfreq;
     time_offset = shift/sfreq;
     win_time = zeros(nwin,mw);
     for w=1:nwin
@@ -60,7 +61,9 @@ for c=1:ncdt
     %% Estimate VAR model.
 
     rho{c} = zeros(nwin,1);
+    fprintf('Rolling time window of size %4.2f \n', win_size)
     for w=1:nwin
+        fprintf('Time window number %d over %d \n', w,nwin)
         % window offset
         o = (w-1)*shift; 
         % the window
@@ -68,13 +71,6 @@ for c=1:ncdt
         [W,~,~,~] = mvdetrend(W,pdeg,[]);
         VAR = ts_to_var_parameters(W, 'morder', morder, 'regmode', regmode);
         rho{c}(w) = VAR.info.rho;
+        acdec = VAR.info.acdec;
     end
 end
-%% Plot spectral radius along sliding window
-
-
-% plot(win_time(:,mw), rho);
-% ylim([0.8 1])
-% xlabel(['Time(s) ' conditions{c}])
-% ylabel('Spectral radius')
-

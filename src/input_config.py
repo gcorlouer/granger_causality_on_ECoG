@@ -116,21 +116,21 @@ args = parser.parse_args()
 
 #%% Style parameters
 
-plt.style.use('ggplot')
-fig_width = 12  # figure width in cm
-inches_per_cm = 0.393701               # Convert cm to inch
-golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
-fig_width = fig_width*inches_per_cm  # width in inches
-fig_height = fig_width*golden_mean      # height in inches
-fig_size =  [fig_width,fig_height]
-params = {'backend': 'ps',
-          'lines.linewidth': 1.5,
-          'axes.labelsize': 12,
-          'axes.titlesize': 8,
-          'font.size': 12,
-          'legend.fontsize': 8,
-          'xtick.labelsize': 10,
-          'ytick.labelsize': 10,
-          'text.usetex': False,
-          'figure.figsize': fig_size}
-plt.rcParams.update(params)
+# plt.style.use('ggplot')
+# fig_width = 12  # figure width in cm
+# inches_per_cm = 0.393701               # Convert cm to inch
+# golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
+# fig_width = fig_width*inches_per_cm  # width in inches
+# fig_height = fig_width*golden_mean      # height in inches
+# fig_size =  [fig_width,fig_height]
+# params = {'backend': 'ps',
+#           'lines.linewidth': 1.5,
+#           'axes.labelsize': 12,
+#           'axes.titlesize': 8,
+#           'font.size': 12,
+#           'legend.fontsize': 8,
+#           'xtick.labelsize': 10,
+#           'ytick.labelsize': 10,
+#           'text.usetex': False,
+#           'figure.figsize': fig_size}
+# plt.rcParams.update(params)

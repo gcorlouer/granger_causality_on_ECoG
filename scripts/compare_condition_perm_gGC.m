@@ -45,7 +45,7 @@ for s=1:nsub
                 ss.A = A; ss.C = C; ss.K = K; ss.V =V;
                 % Compute observed group GC 
                 F{i} = ss_to_gGC(ss, 'gind', indices);
-            end
+                endz
             observedF = F{1} - F{2};
             X = cat(3, Xc{1},Xc{2});
             stat = compare_condition_gGC(X, 'obsStat', observedF, 'N', N, ...

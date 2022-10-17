@@ -20,7 +20,7 @@ if ~exist('normalise', 'var'), normalise = false; end
 % Mutual information
 if ~exist('q', 'var'), q = 0; end % Covariance lag
 
-% VAR Modeling
+% Modeling
 if ~exist('regmode', 'var'), regmode = 'LWR'; end % OLS or LWR
 if ~exist('morder', 'var'),    morder = 5; end % Model order. Pick 3 or 5.
 if ~exist('ssmo', 'var'),    ssmo = 20; end % Model order for SS

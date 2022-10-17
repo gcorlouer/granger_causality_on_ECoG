@@ -18,10 +18,10 @@ for i=1:ng
         y = gind.(gi{j});
         if i==j
             % Return gobal GC for diagonal elements
-            F(i,j) = ss_to_cggc(ss.A,ss.C,ss.K,ss.V,x);
+            f(i,j,:) = ss_to_scggc(ss.A,ss.C,ss.K,ss.V,x, fres);
         else 
             % Return mvgc between group of populations
-            F(i,j) = ss_to_mvgc(ss.A,ss.C,ss.K,ss.V,x,y);
+            f(i,j,:) = ss_to_mvgc(ss.A,ss.C,ss.K,ss.V,x,y);
         end            
     end
 end

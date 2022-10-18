@@ -43,7 +43,7 @@ for i=1:2
         % Estimate SS model
         [A,C,K,V,~,~] = tsdata_to_ss(Xp,pf,ssmo);
         model.A = A; model.C = C; model.K = K; model.V =V;
-        % Compute GC 
+        % Compute band specific GC 
         F(:,:,s) = ss_to_GC(model, 'connect', connect ,'group', group,...
         'dim', dim, 'sfreq', sfreq, 'nfreqs', nfreqs, 'band',band);
         fprintf('\n');

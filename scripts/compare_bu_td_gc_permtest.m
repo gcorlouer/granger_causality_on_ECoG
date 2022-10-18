@@ -14,10 +14,9 @@
 
 input_parameters;
 nsub = length(cohort);
-Ns = 500;
-conditions = {'baseline', 'Face', 'Place'};
 ncdt = length(conditions);
-%%
+%% Compare top down and bottom up band-spacific GC with permutation testing
+% For each Subjects and Conditions
 for s=1:nsub
     subject = cohort{s};
     for c=1:ncdt
@@ -25,14 +24,17 @@ for s=1:nsub
         gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
             'condition',condition, 'suffix', suffix);
         X = gc_input.X;
+        sfreq = gc_input.sfreq;
         [n,m,N] = size(X);
         indices = gc_input.indices;
         stat = compare_TD_BU_pgc(X, indices, 'morder', morder, 'ssmo', ssmo,...
-            'Ns',Ns,'alpha',alpha, 'mhtc',mhtc);
+            'Ns',Ns,'alpha',alpha, 'mhtc',mhtc, ...
+            'sfreq',sfreq, 'nfreqs', nfreqs,'dim',dim, 'band',band);
         GC.(subject).(condition).('z') = stat.z;
         GC.(subject).(condition).('sig') = stat.sig;
         GC.(subject).(condition).('pval') = stat.pval;
         GC.(subject).(condition).('zcrit') = stat.zcrit;
+        GC.('band') = band;
         GC.(subject).indices = indices;
     end
 end

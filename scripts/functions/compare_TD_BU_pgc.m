@@ -11,14 +11,21 @@ arguments
     args.ssmo double = 20 % SS model order
     args.Ns double = 100 % Number of permutations
     args.alpha double = 0.05;
-    args.mhtc char = 'FDRD'; 
+    args.mhtc char = 'FDRD';
+    args.dim double = 3; % Integration dimension
+    args.sfreq double = 250; % Sampling frequency
+    args.nfreqs double = 1024; % Number of frequency bins
+    args.band double = [0 40]; % frequency band
 end
 
 morder = args.morder; ssmo = args.ssmo;
 Ns = args.Ns; alpha = args.alpha; mhtc = args.mhtc;
+sfreq = args.sfreq; dim = args.dim; band = args.band; nfreqs = args.nfreqs;
+
 
 pf = 2 * morder;
 
+% Get retonotopic and Face channels indices
 R_idx = indices.('R');
 F_idx = indices.('F');
 
@@ -39,7 +46,8 @@ for i=1:nR
         y = X(iF,:,:);
         % Compute observed TD - BU GC
         [A,C,K,V,~,~] = tsdata_to_ss(X([iR iF],:,:), pf, ssmo);
-        F = ss_to_pwcgc(A,C,K,V);
+        f = ss_to_spwcgc(A,C,K,V, nfreqs);
+        F = bandlimit(f,dim, sfreq, band);
         Ta(i,j) = F(1,2) - F(2,1);
         % Concatenate in one multitrial time series
         xRF = cat(3,x,y);
@@ -56,7 +64,8 @@ for i=1:nR
             xRFp = cat(1,xR,xF);
             % Estimate permutation GC
             [A,C,K,V,~,~] = tsdata_to_ss(xRFp, pf, ssmo);
-            Fp =  ss_to_pwcgc(A,C,K,V);
+            fp =  ss_to_spwcgc(A,C,K,V, nfreqs);
+            Fp = bandlimit(fp,dim, sfreq, band);
             % Compute permutation statistic TD - BU
             T(i,j,s) = Fp(1,2)-Fp(2,1);
             fprintf('\n');

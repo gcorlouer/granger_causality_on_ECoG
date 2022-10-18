@@ -4,7 +4,7 @@
 % Input data
 if ~exist('subject', 'var'), subject = 'DiAs'; end
 if ~exist('cohort','var'), cohort = {'AnRa', 'ArLa', 'DiAs'}; end
-if ~exist('condition', 'var'), conditions = {'Rest', 'Face', 'Place', 'baseline'}; end
+if ~exist('condition', 'var'), conditions = {'Rest', 'Face', 'Place'}; end
 if ~exist('field', 'var'), field = {'time',  'condition', 'pair', 'subject','F'}; end
 if ~exist('datadir', 'var'), datadir = fullfile('~', 'projects', 'cifar', 'results'); end
 if ~exist('suffix', 'var'), suffix = '_condition_visual_ts.mat'; end
@@ -42,9 +42,13 @@ if ~exist('conditional', 'var'), conditional = true; end % frequency bins
 if ~exist('mw', 'var'), mw = 50; end % number of observations in window
 if ~exist('shift', 'var'), shift = 10; end % window shift
 
+% Connectivity 
+if ~exist('connect', 'var'), connect = 'groupwise'; end
+
 
 % Statistics
 if ~exist('nsample', 'var'), nsample = 100; end
+if ~exist('Ns', 'var'), Ns = 100; end % number of permutations
 if ~exist('tstat', 'var'), tstat = 'LR'; end
 if ~exist('debias', 'var'), debias = true; end
 if ~exist('alpha', 'var'), alpha = 0.05; end

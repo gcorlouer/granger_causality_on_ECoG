@@ -9,7 +9,6 @@
 
 %% Input parameters
 input_parameters;
-connect = 'groupwise';
 comparisons = {{'Face' 'Rest'}, {'Place' 'Rest'}, {'Face' 'Place'}};
 compare = {'FR' 'PR' 'FP'};
 % Condition, comparison sized
@@ -20,9 +19,6 @@ nComp = size(comparisons,2);
 F = cell(2,1);
 Xc = cell(2,1);
 Ntrial = zeros(2,1);
-% Number of permutations
-Ns = 500;
-
 %% Compare GC between conditions
 
 for s=1:nsub
@@ -38,10 +34,11 @@ for s=1:nsub
                 Xc{i} = gc_input.X;
                 [n,m,Ntrial(i)] = size(Xc{i});
                 indices = gc_input.indices;
+                sfreq = gc_input.sfreq;
                 % Estimate SS model
                 pf = 2 * morder;
                 [model.A,model.C,model.K,model.V,~,~] = tsdata_to_ss(Xc{i},pf,ssmo);
-                % Compute GC
+                % Compute observed GC
                 fn = fieldnames(indices);
                 ng = length(fn);
                 group = cell(ng,1);
@@ -61,14 +58,16 @@ for s=1:nsub
                 'Ntrial', Ntrial, 'Ns', Ns, 'morder', morder, 'ssmo',ssmo, ...
                 'sfreq',sfreq, 'nfreqs', nfreqs,'dim',dim, 'band',band);
             % Permutation testing
-            stat = permtest(tstat, 'obsStat', obsStat, 'alpha', alpha, 'mhtc','FDRD');
+            stat = permtest(tstat, 'obsStat', obsStat, 'Ns', Ns, ...
+                'alpha', alpha, 'mhtc','FDRD');
             % Save into GC structure for python plotting
             GC.(subject).(comparison_name).('z') = stat.z;
             GC.(subject).(comparison_name).('sig') = stat.sig;
             GC.(subject).(comparison_name).('pval') = stat.pval;
             GC.(subject).(comparison_name).('zcrit') = stat.zcrit;
             GC.(subject).indices = indices;
-            GC.connect = connect;
+            GC.('band') = band;
+            GC.('connectivity') = connect;
     end
 end
 %% Save dataset for plotting in python

@@ -2,16 +2,17 @@ function stat = permtest(tstat, args)
 % Compute pvalue and zscore from permutation test statistics
 arguments
     tstat double % test statistic
-    args.obsStat struct % observed statistic
+    args.obsStat char % observed statistic
+    args.Ns double = 500; % Number of permutations
     args.alpha double = 0.05; 
-    args.mhtc double = 'FDRD'; % multiple correction
+    args.mhtc char = 'FDRD'; % multiple correction
 end
 
-obsStat = args.obsStat; alpha = args.alpha; mhtc = args.mhtc;
+obsStat = args.obsStat; alpha = args.alpha; mhtc = args.mhtc; Ns = args.Ns ;
 
 % Count number of time observed statistic is "extreme"
 count = abs(tstat) > abs(obsStat);
-count = sum(count, 'all');
+count = sum(count, 3);
 
 % Compute p value and significance
 pval = count/Ns;

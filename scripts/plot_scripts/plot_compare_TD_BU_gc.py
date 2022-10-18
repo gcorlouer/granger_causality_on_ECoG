@@ -41,6 +41,7 @@ def plot_TD_BU_zscore(F, cohort, data_path,
     conditions = ['baseline', 'Face', 'Place']
     nsub = len(cohort)
     ncomp = len(conditions)
+    band = F['band'][0][0]
     fig, ax = plt.subplots(nsub, ncomp)
     # Loop over subject and comparison to plot Z score heatmap
     for s, subject in enumerate(cohort):
@@ -68,7 +69,7 @@ def plot_TD_BU_zscore(F, cohort, data_path,
                                  color='k')
                     else:
                         continue                 
-        ax[0,s].set_title(f"{subject}")
+        ax[0,s].set_title(f"S{s}, [{band[0][0]} {band[0][1]}]Hz")
     plt.tight_layout()
     print(f"\n Critical Z score is {zcrit}\n")
 

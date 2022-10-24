@@ -60,7 +60,7 @@ for subject in cohort:
     #%% Save condition ts as mat file
     fname = subject + '_condition_visual_ts.mat'
     fpath = result_path.joinpath(fname)
-    print(f"\n Saving in {fpath}\n")
+    print(f"\n Saving in {fpath}")
     savemat(fpath, ts)
-    print(f"\n Sampling rate is {500/args.decim}Hz\n")
-    print(f"\n Stimulus is during {args.tmin_crop} and {args.tmax_crop}s\n")
+    print(f"\n Sampling rate is {500/args.decim}Hz")
+    print(f"\n Stimulus is during {args.tmin_crop} and {args.tmax_crop}s")

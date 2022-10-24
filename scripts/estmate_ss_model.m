@@ -1,9 +1,9 @@
-%% Estimate VAR model on multitrial data
+%% Estimate VAR and SS model on multitrial data
 input_parameters;
 conditions = {'Rest' 'Face' 'Place'};
 ncdt = 3;
 %% Read data
-subject = 'DiAs';
+subject = 'ArLa';
 datadir = fullfile('~', 'projects', 'cifar', 'results');
 fname = [subject '_condition_visual_ts.mat'];
 fpath = fullfile(datadir, fname);

@@ -7,7 +7,7 @@
 % Concatenate X(i,:) and X(j,:) into a single time series Xc 
 % Randomly allocate trials to ret and face channels without replacement
 % Compute pairwise BU and TD GC between Xi and Xj and return test statistic Ti
-% Repeat 1000 times, compute pvalues, significance and zscore for each pair
+% Repeat 1000 times, compute pvalues, signixficance and zscore for each pair
 % Plot heatmap with ret chan and F chan showing BU vs TD for each sub and
 % cdt (plot in python). 
 %% Input parameters

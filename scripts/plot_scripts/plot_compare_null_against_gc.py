@@ -22,50 +22,124 @@ import seaborn as sns
 
 #%%
 
-home = Path.home()
-fig_path = args.fig_path
-result_path = args.result_path
-fname = 'multi_trial_fc.mat'
+plt.style.use('ggplot')
+fig_width = 25  # figure width in cm
+inches_per_cm = 0.393701               # Convert cm to inch
+golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
+fig_width = fig_width*inches_per_cm  # width in inches
+fig_height = fig_width*golden_mean      # height in inches
+fig_size =  [fig_width,fig_height]
+params = {'backend': 'ps',
+          'lines.linewidth': 1.5,
+          'axes.labelsize': 15,
+          'axes.titlesize': 15,
+          'font.size': 15,
+          'legend.fontsize': 12,
+          'xtick.labelsize': 13,
+          'ytick.labelsize': 15,
+          'text.usetex': False,
+          'figure.figsize': fig_size}
+plt.rcParams.update(params)
 
-# List conditions
-conditions = ['Rest', 'Face', 'Place', 'baseline']
-cohort = ['AnRa', 'ArLa', 'DiAs']
-nsub = len(args.cohort)
+#%%
 
-sfreq = 500
-decim = args.decim
-sfreq = sfreq/decim
-min_postim = args.tmin_crop
-max_postim = args.tmax_crop
-print(f"\n Sampling frequency is {sfreq}Hz\n")
-print(f"\n Stimulus is during {min_postim} and {max_postim}s\n")
+cohort = ['AnRa',  'ArLa', 'DiAs']
+# Useful paths
+cifar_path = Path('~','projects','cifar').expanduser()
+data_path = cifar_path.joinpath('data')
+result_path = cifar_path.joinpath('results')
+fname = 'null_fc.mat'
+path = result_path
+fpath = path.joinpath(fname)
+# Read dataset
+dataset = loadmat(fpath)
+F = dataset['FC']
+
+
+# %% Plot FC
+
+def plot_functional_connectivity(F, cohort, function='GC',
+                       vmin = -5, vmax=5, tau_x=0.5, tau_y=0.8):
+    conditions = ['Face', 'Place']
+    nsub = len(cohort)
+    ncomp = len(conditions)
+    # xticks
+    populations = ['R','O','F']
+    connectivity = F['connectivity'][0][0]
+    fig, ax = plt.subplots(ncomp, nsub)
+    # Loop over subject and comparison to plot Z score heatmap
+    for s, subject in enumerate(cohort):
+        for c, condition in enumerate(conditions):
+            # Get visual channels
+            reader = EcogReader(data_path, subject=subject)
+            df_visual = reader.read_channels_info(fname='visual_channels.csv')
+            # Order channel indices along hierarchy: NEED TO ORDER PROPERLY
+            R_idx = df_visual.index[df_visual['group']=='R'].tolist()
+            F_idx = df_visual.index[df_visual['group']=='F'].tolist()
+            O_idx = df_visual.index[df_visual['group']=='O'].tolist()
+            vis_idx = np.array(R_idx + O_idx + F_idx)
+            # Get statistics from matlab analysis
+            stat = F[subject][0][0][condition][0][0][function][0][0]['F'][0][0]
+            sig = F[subject][0][0][condition][0][0][function][0][0]['sig'][0][0]
+            # Relative to rest
+            statb = F[subject][0][0]['Rest'][0][0][function][0][0]['F'][0][0]
+            stat = (stat - statb)/statb 
+            # Plot Z score as a heatmap
+            if connectivity == 'pairwise':
+                ticks_labels = vis_idx
+            else:
+                ticks_labels = populations
+                # Get statistics from matlab analysis
+                np.fill_diagonal(sig,0)
+            g = sns.heatmap(stat,  vmin=vmin, vmax=vmax, cmap='bwr', ax=ax[c,s],
+            xticklabels=ticks_labels, yticklabels=ticks_labels)
+            g.set_yticklabels(g.get_yticklabels(), rotation = 90)
+            ax[c, s].xaxis.tick_top()
+            ax[c,0].set_ylabel(f"{function } {condition}")
+            ax[0,s].set_title(f"Subject {s}")
+            # Plot statistical significant entries
+            for y in range(stat.shape[0]):
+                for x in range(stat.shape[1]):
+                    if sig[y,x] == 1:
+                        ax[c,s].text(x + tau_x, y + tau_y, '*',
+                                 horizontalalignment='center', verticalalignment='center',
+                                 color='k')
+                    else:
+                        continue                 
+    plt.tight_layout()
+    
+#%%
+
+plot_functional_connectivity(F, cohort, function='GC',
+                       vmin = -5, vmax=5, tau_x=0.5, tau_y=0.8)
+
 #%% Plot multitrial pair FC
 # Load functional connectivity matrix
-fc_path = result_path.joinpath(fname)
-fc = loadmat(fc_path)
-fc = fc['dataset']
-vmax = 3
-#vmax = [11, 15, 12]
-(ncdt, nsub) = fc.shape
+# fc_path = result_path.joinpath(fname)
+# fc = loadmat(fc_path)
+# fc = fc['dataset']
+# vmax = 3
+# #vmax = [11, 15, 12]
+# (ncdt, nsub) = fc.shape
 
-full_stim_multi_pfc(fc, cohort, args, F='pGC',vmin=-vmax,vmax=vmax,
-                                 rotation=90, tau_x=0.5, tau_y=0.8)
+# full_stim_multi_pfc(fc, cohort, args, F='pGC',vmin=-vmax,vmax=vmax,
+#                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
 
-#%% Plot multitrial pair MI
+# #%% Plot multitrial pair MI
 
-full_stim_multi_pfc(fc, cohort, args, F='pMI', vmin=-vmax,vmax=vmax,
-                                 rotation=90, tau_x=0.5, tau_y=0.8)
+# full_stim_multi_pfc(fc, cohort, args, F='pMI', vmin=-vmax,vmax=vmax,
+#                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
-#%% Plot multitrial groupwise GC
-vmin = 3
-full_stim_multi_gfc(fc, cohort, args, F='gGC', vmin=vmin,vmax=-vmin,
-                                 rotation=90, tau_x=0.5, tau_y=0.8)
+# #%% Plot multitrial groupwise GC
+# vmin = 3
+# full_stim_multi_gfc(fc, cohort, args, F='gGC', vmin=vmin,vmax=-vmin,
+#                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
-#%% Plot  multitrial groupwise MI
-vmin = 4
-full_stim_multi_gfc(fc, cohort, args, F='gMI', vmin=vmin,vmax=-vmin,  
-                                 rotation=90, tau_x=0.5, tau_y=0.8)
+# #%% Plot  multitrial groupwise MI
+# vmin = 4
+# full_stim_multi_gfc(fc, cohort, args, F='gMI', vmin=vmin,vmax=-vmin,  
+#                                  rotation=90, tau_x=0.5, tau_y=0.8)
 
 
 

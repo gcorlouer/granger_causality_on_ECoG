@@ -21,7 +21,7 @@ Ntrial = args.Ntrial; Ns = args.Ns;
 morder = args.morder; ssmo = args.ssmo;
 sfreq = args.sfreq; dim = args.dim; band = args.band; nfreqs = args.nfreqs;
 
-[~,~,Nt] = size(X); % Number of concatenated trials
+[n,m,Nt] = size(X); % Number of concatenated trials
 trial_idx = 1:Nt; % Indices of trials
 
 if strcmp(connect, 'groupwise')
@@ -38,6 +38,7 @@ pf = 2 * morder;
 for i=1:2
     for s=1:Ns
         fprintf('MVGC: permutation sample %d of %d',s,Ns);
+        % Sample trials without replacement
         trials = datasample(trial_idx, Ntrial(i),'Replace',false);
         Xp = X(:,:,trials);
         % Estimate SS model

@@ -8,6 +8,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Input parameters
+tic;
 input_parameters;
 comparisons = {{'Face' 'Rest'}, {'Place' 'Rest'}, {'Face' 'Place'}};
 compare = {'FR' 'PR' 'FP'};
@@ -31,9 +32,13 @@ for s=1:nsub
                 condition = comparison{i};
                 gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
                     'condition',condition, 'suffix', suffix);
-                Xc{i} = gc_input.X;
-                [n,m,Ntrial(i)] = size(Xc{i});
+                X = gc_input.X;
+                % Delete other visual channels
                 indices = gc_input.indices;
+                %other_indices = indices.('O');
+                %X(other_indices, :, :) = [];
+                Xc{i} = X;
+                [n,m,Ntrial(i)] = size(Xc{i});
                 sfreq = gc_input.sfreq;
                 % Estimate SS model
                 pf = 2 * morder;
@@ -75,3 +80,4 @@ end
 fname = 'compare_condition_GC.mat';
 fpath = fullfile(datadir, fname);
 save(fpath, 'GC')
+toc; 

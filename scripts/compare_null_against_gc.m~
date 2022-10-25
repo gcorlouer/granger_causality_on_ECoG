@@ -6,12 +6,12 @@ nsub = length(cohort);
 dataset = struct;
 %% Loop multitrial functional connectivity analysis over each subjects
 for s=1:nsub
-     subject = cohort{s};
+     subject_id = cohort{s};
      % Loop over conditions
      for c=1:ncdt
         condition = conditions{c};
         % Read condition specific time series
-        gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
+        gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject_id,...
             'condition',condition, 'suffix', suffix);
         % Read conditions specific time series
         X = gc_input.X;
@@ -36,16 +36,16 @@ for s=1:nsub
         VAR = ts_to_var_parameters(X, 'morder', morder, 'regmode', regmode);
         % Compute GC
         GC = var_to_dualGC(X, VAR, 'connect', connect,'group', group , 'morder',morder,...
-                'regmode',regmode,'test', test);
-        % Save Functional connectivity dataset
-        FC.(subject).(condition).('GC')= GC;
-        FC.(subject).(condition).('MI') = MI;
+                'regmode',regmode,'tstat', tstat);
+        % Save dataset
+       FC.(subject).(condition).= GC;
+       FC.(subject).(condition).MI = GC;
+       FC.(subject).indices = indices;
      end
-     FC.(subject).indices = indices;
 end
-FC.('connectivity') = connect;
+
 %% Save dataset for plotting in python
 
-fname = 'null_fc.mat';
+fname = 'multi_trial_fc.mat';
 fpath = fullfile(datadir, fname);
-save(fpath, 'FC')
+save(fpath, 'dataset')

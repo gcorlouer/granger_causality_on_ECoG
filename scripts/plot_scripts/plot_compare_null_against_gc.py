@@ -73,11 +73,13 @@ def plot_functional_connectivity(F, cohort, function='GC',
             # Get visual channels
             reader = EcogReader(data_path, subject=subject)
             df_visual = reader.read_channels_info(fname='visual_channels.csv')
-            # Order channel indices along hierarchy: NEED TO ORDER PROPERLY
-            R_idx = df_visual.index[df_visual['group']=='R'].tolist()
-            F_idx = df_visual.index[df_visual['group']=='F'].tolist()
-            O_idx = df_visual.index[df_visual['group']=='O'].tolist()
-            vis_idx = np.array(R_idx + O_idx + F_idx)
+            df_sorted = df_visual.copy().sort_values(by='peak_time')
+            l = df_visual.index.tolist()
+            ls = df_sorted.index.tolist()
+            sorted_chan = df_sorted['group'].tolist()
+            nchan = len(sorted_chan)
+            ordered_stat = np.zeros((nchan,nchan))
+            ordered_sig = np.zeros((nchan,nchan))
             # Get statistics from matlab analysis
             stat = F[subject][0][0][condition][0][0][function][0][0]['F'][0][0]
             sig = F[subject][0][0][condition][0][0][function][0][0]['sig'][0][0]
@@ -86,7 +88,15 @@ def plot_functional_connectivity(F, cohort, function='GC',
             stat = (stat - statb)/statb 
             # Plot Z score as a heatmap
             if connectivity == 'pairwise':
-                ticks_labels = vis_idx
+                # Hierarchical ordering
+                for ix, i in enumerate(ls):
+                    for jx, j in enumerate(ls):
+                        ordered_stat[ix,jx] = stat[i,j]
+                        ordered_sig[ix,jx] = sig[i,j]
+                stat = ordered_stat
+                sig = ordered_sig
+                # Make ticks label
+                ticks_labels = sorted_chan
             else:
                 ticks_labels = populations
                 # Get statistics from matlab analysis

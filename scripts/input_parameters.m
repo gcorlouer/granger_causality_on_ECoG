@@ -33,7 +33,7 @@ if ~exist('verb', 'var'), verb = 0; end
 % Spectral GC 
 if ~exist('dim', 'var'), dim = 3; end % dimension of spectral integration
 if ~exist('band', 'var'), band = [60 120]; end % band over which to integrate
-if ~exist('sfreq', 'var'), sfreq = 250; end % sampling frequency
+%if ~exist('sfreq', 'var'), sfreq = 250; end % sampling frequency
 if ~exist('fres', 'var'), nfreqs = 1024; end % frequency bins 
 if ~exist('conditional', 'var'), conditional = true; end % frequency bins 
 

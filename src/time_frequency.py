@@ -99,7 +99,7 @@ def plot_tf(fpath, subject='DiAs',vmax=25):
             freqs = freqs.iloc[0]
             time = time.iloc[0]
             x, y = centers_to_edges(time * 1000, freqs)
-            mesh = ax[i,j].pcolormesh(x, y, power, cmap='RdBu_r', vmax=vmax, vmin=-vmax)
+            mesh = ax[i,j].pcolormesh(time, freqs, power, cmap='RdBu_r', vmax=vmax, vmin=-vmax)
             ax[i,j].set_title(f'{group} Power during {condition}')
             ax[i,j].set(ylim=freqs[[0, -1]], xlabel='Time (ms)', ylabel='Freq (Hz)')
     fig.colorbar(mesh)

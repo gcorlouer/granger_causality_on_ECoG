@@ -42,7 +42,7 @@ end
 [sig, pcrit] = significance(pval,alpha,mhtc,[]);
 
 % Return statistics
-MI.I = F; % effect size
+MI.F = F; % effect size
 MI.pcrit = pcrit;
 MI.sig = sig;
 

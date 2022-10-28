@@ -16,7 +16,7 @@ for s=1:nsub
         % Read conditions specific time series
         X = gc_input.X;
         % Detrend
-        % X = mvdetrend(X,[],[]);
+        % X = mvdetrend(X,pdeg,[]);
         % Functional group indices
         indices = gc_input.indices;
         fn = fieldnames(indices);

@@ -20,6 +20,7 @@ parser.add_argument("--subject", type=str, default='DiAs')
 parser.add_argument("--sfeq", type=float, default=500.0)
 parser.add_argument("--stage", type=str, default='preprocessed')
 parser.add_argument("--preprocessed_suffix", type=str, default= '_hfb_continuous_raw.fif')
+parser.add_argument("--signal", type=str, default= 'hfa') # correspond to preprocessed_suffix
 parser.add_argument("--epoch", type=bool, default=False)
 parser.add_argument("--channels", type=str, default='visual_channels.csv')
 
@@ -47,6 +48,15 @@ parser.add_argument("--matlab", type=bool, default=True)
 
 args = parser.parse_args()
 
+#%% 
+
+def input_ts_fname(subject, visual=True, signal='hfa'):
+    if visual==True:
+        fname = subject + '_condition_' + 'visual_' + signal +'.mat' 
+    else:
+        fname = subject + '_condition_' + signal +'.mat' 
+    return fname
+
 #%% Prepare condition ts for each subjects
 for subject in cohort:
     ts = prepare_condition_ts(data_path, subject=subject, stage=args.stage, matlab = args.matlab,
@@ -58,7 +68,8 @@ for subject in cohort:
                         pick_visual=args.pick_visual)
 
     #%% Save condition ts as mat file
-    fname = subject + '_condition_visual_ts.mat'
+    # Save file as  _condition_visual_ts.mat or _condition_ts.mat
+    fname = input_ts_fname(subject, visual=args.pick_visual, signal=args.signal)
     fpath = result_path.joinpath(fname)
     print(f"\n Saving in {fpath}")
     savemat(fpath, ts)

@@ -42,12 +42,17 @@ cohort = ['AnRa',  'ArLa', 'DiAs']
 cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
 result_path = cifar_path.joinpath('results')
-fname = 'compare_condition_GC.mat'
+connect = "groupwise"
+band = "[0 62.5]"
+fname = "compare_condition_GC_" + connect + '_' band + "Hz.mat"
 path = result_path
 fpath = path.joinpath(fname)
 # Read dataset
 dataset = loadmat(fpath)
 F = dataset['GC']
+
+vmin = -1
+vmax = 1
 
 #%% Plotting function
 
@@ -108,4 +113,4 @@ def plot_compare_condition_GC(F, cohort,
 #%% Plot GC comparison between conditions
 
 plot_compare_condition_GC(F, cohort, 
-                 vmin = -5, vmax=5, tau_x=0.5, tau_y=0.8)
+                 vmin = vmin, vmax=vmax, tau_x=0.5, tau_y=0.8)

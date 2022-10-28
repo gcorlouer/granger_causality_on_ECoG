@@ -1,6 +1,7 @@
 %% Compare GC between conditions 
 % In this script we compare pairwise or groupwise GC between conditions
 % Comparisons are done for each subjects. 
+% Takes about 20mn to run with 100 permutations.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Input:  -Subject and condition-specific mutltirial HFA #X=(n x m x N)
 % Output: -Subject,comparison,direction-specific Z-score testing 
@@ -24,15 +25,23 @@ Ntrial = zeros(2,1);
 
 for s=1:nsub
        subject = cohort{s};
+       fprintf('Compare condition GC for subject %s \n', subject)
     for c=1:nComp
-            % Concatenate comparisons
             comparison = comparisons{c};
             comparison_name = [comparison{1}(1) 'vs' comparison{2}(1)];
+            fprintf('Comparison %s \n', comparison_name)
             for i=1:2
                 condition = comparison{i};
                 gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
                     'condition',condition, 'suffix', suffix);
                 X = gc_input.X;
+                [n,m,N] = size(X);
+                if strcmp(condition, 'Rest')
+                    trial_idx = 1:N;
+                    Nt = 56; % Take same number of trials as Face (faster computation)
+                    trials = datasample(trial_idx, Nt,'Replace',false);
+                    X = X(:,:, trials);
+                end
                 % Delete other visual channels
                 indices = gc_input.indices;
                 %other_indices = indices.('O');
@@ -73,11 +82,13 @@ for s=1:nsub
             GC.(subject).indices = indices;
             GC.('band') = band;
             GC.('connectivity') = connect;
+            fprintf('\n')
     end
+    fprintf('\n')
 end
 %% Save dataset for plotting in python
-
-fname = 'compare_condition_GC.mat';
+bandstr = mat2str(band);
+fname = ['compare_condition_GC_' connect '_' bandstr 'Hz.mat'];
 fpath = fullfile(datadir, fname);
 save(fpath, 'GC')
 toc; 

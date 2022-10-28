@@ -19,8 +19,6 @@ fpath = fullfile(datadir, fname);
 gc_input = load(fpath);
 % Read conditions specific time series
 X = gc_input.(condition);
-% Detrend
-[X,~,~,~] = mvdetrend(X,pdeg,[]);
 % return gc input
 gc_input.X = X;
 end

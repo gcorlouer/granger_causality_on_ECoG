@@ -57,6 +57,17 @@ GC = dataset['GC']
 vmax = 4
 vmin = - vmax
 
+#%% Select anatomical regions
+
+subject = 'DiAs'
+reader = EcogReader(data_path, subject=subject)
+df_visual = reader.read_channels_info(fname='visual_channels.csv')
+dk = df_visual['DK'].unique().tolist()
+dk = [dk[i].replace('ctx-lh-', '') for i in range(len(dk))]
+df_sorted = df_visual.copy().sort_values(by='peak_time')
+indices = parcellation_to_indices(df_visual,  parcellation='DK', matlab=False)
+
+
 # %% Plot FC
 
 def plot_GC(GC, cohort,
@@ -75,6 +86,7 @@ def plot_GC(GC, cohort,
             reader = EcogReader(data_path, subject=subject)
             df_visual = reader.read_channels_info(fname='visual_channels.csv')
             df_sorted = df_visual.copy().sort_values(by='peak_time')
+            indices = parcellation_to_indices(df_visual,  parcellation='DK', matlab=False)
             ls = df_sorted.index.tolist()
             sorted_chan = df_sorted['group'].tolist()
             nchan = len(sorted_chan)

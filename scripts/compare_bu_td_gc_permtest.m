@@ -1,17 +1,7 @@
 %% Comparing GC between direction
-% This script computes the difference between top down and bottom up GC
-% using permutation testing. 
-% For each subjects and conditions, take condition specific time series X
-% For each pairs of channels (i,j) running in the list RF of ret and face
-% indices compute observed stat pairwise GC between channels X(i,:) and X(j,:)
-% Concatenate X(i,:) and X(j,:) into a single time series Xc 
-% Randomly allocate trials to ret and face channels without replacement
-% Compute pairwise BU and TD GC between Xi and Xj and return test statistic Ti
-% Repeat 1000 times, compute pvalues, signixficance and zscore for each pair
-% Plot heatmap with ret chan and F chan showing BU vs TD for each sub and
-% cdt (plot in python). 
+% Scripts does takes about 17mnto run with 100 permutations
 %% Input parameters
-
+tic;
 input_parameters;
 nsub = length(cohort);
 ncdt = length(conditions);
@@ -19,13 +9,21 @@ ncdt = length(conditions);
 % For each Subjects and Conditions
 for s=1:nsub
     subject = cohort{s};
+    fprintf('Compare TD vs BU for subject %s \n', subject)
     for c=1:ncdt
         condition = conditions{c};
+        fprintf('Condition %s \n', condition)
         gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
             'condition',condition, 'suffix', suffix);
         X = gc_input.X;
         sfreq = gc_input.sfreq;
         [n,m,N] = size(X);
+        if strcmp(condition, 'Rest')
+            trial_idx = 1:N;
+            Ntrial = 56; % Take same number of trials as Face (faster computation)
+            trials = datasample(trial_idx, Ntrial,'Replace',false);
+            X = X(:,:, trials);
+        end
         indices = gc_input.indices;
         stat = compare_TD_BU_pgc(X, indices, 'morder', morder, 'ssmo', ssmo,...
             'Ns',Ns,'alpha',alpha, 'mhtc',mhtc, ...
@@ -37,11 +35,12 @@ for s=1:nsub
         GC.('band') = band;
         GC.(subject).indices = indices;
     end
+    fprintf('\n')
 end
-
+toc; 
 %% Save dataset
-fname = 'compare_TD_BU_GC.mat';
+bandstr = mat2str(band);
+fname = ['compare_TD_BU_GC_' bandstr 'Hz.mat'];
 fpath = fullfile(datadir, fname);
 save(fpath, 'GC')
-
 

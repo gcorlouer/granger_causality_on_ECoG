@@ -10,8 +10,7 @@ multitrial GC and single trial GC
 
 from src.input_config import args
 from src.preprocessing_lib import EcogReader, parcellation_to_indices
-from src.plotting_lib import full_stim_multi_pfc, full_stim_multi_gfc
-from src.plotting_lib import plot_single_trial_pfc, plot_single_trial_gfc, info_flow_stat
+from src.plotting_lib import info_flow_stat
 from pathlib import Path
 from scipy.io import loadmat
 
@@ -56,7 +55,7 @@ dataset = loadmat(fpath)
 F = dataset['FC']
 # Plot parameters
 function = 'MI'
-vmax = 0.01
+vmax = 0.1
 vmin = 0
 # %% Plot FC
 

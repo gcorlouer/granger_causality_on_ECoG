@@ -44,7 +44,7 @@ for c=1:ncdt
         % the window
         W = X(:,o+1:o+mw,:); 
         % Detrend
-        [W,~,~,~] = mvdetrend(W,pdeg,[]);
+        %[W,~,~,~] = mvdetrend(W,pdeg,[]);
         % Estimate var model order with multiple information criterion
         [moaic{c}(w),mobic{c}(w),mohqc{c}(w),molrt{c}(w)] = tsdata_to_varmo(W, ... 
                     momax,regmode,alpha,pacf,[],verb);
@@ -68,7 +68,7 @@ for c=1:ncdt
         o = (w-1)*shift; 
         % the window
         W = X(:,o+1:o+mw,:);
-        [W,~,~,~] = mvdetrend(W,pdeg,[]);
+        %[W,~,~,~] = mvdetrend(W,pdeg,[]);
         VAR = ts_to_var_parameters(W, 'morder', morder, 'regmode', regmode);
         rho{c}(w) = VAR.info.rho;
         acdec = VAR.info.acdec;

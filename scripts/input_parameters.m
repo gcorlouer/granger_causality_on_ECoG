@@ -7,11 +7,12 @@ if ~exist('cohort','var'), cohort = {'AnRa', 'ArLa', 'DiAs'}; end
 if ~exist('condition', 'var'), conditions = {'Rest', 'Face', 'Place'}; end
 if ~exist('field', 'var'), field = {'time',  'condition', 'pair', 'subject','F'}; end
 if ~exist('datadir', 'var'), datadir = fullfile('~', 'projects', 'cifar', 'results'); end
-if ~exist('suffix', 'var'), suffix = '_condition_visual_ts.mat'; end
+if ~exist('signal', 'var'), signal = 'hfa'; end
+if ~exist('suffix', 'var'), suffix = ['_condition_visual_' signal '.mat']; end
 
 
 % Detrending
-if ~exist('pdeg', 'var'), pdeg = 2; end % detrending degree
+if ~exist('pdeg', 'var'), pdeg = 1; end % detrending degree
 % vector of polynomial evaluation points (default: evenly spaced)
 if ~exist('x', 'var'), x = []; end 
 % normalise (temporal) variance of each variable to 1 (default: false)
@@ -23,7 +24,7 @@ if ~exist('q', 'var'), q = 0; end % Covariance lag
 % Modeling
 if ~exist('regmode', 'var'), regmode = 'LWR'; end % OLS or LWR
 if ~exist('morder', 'var'),    morder = 5; end % Model order. Pick 3 or 5.
-if ~exist('ssmo', 'var'),    ssmo = 20; end % Model order for SS
+if ~exist('ssmo', 'var'),    ssmo = 15; end % Model order for SS
 if ~exist('momax', 'var'), momax = 20; end
 if ~exist('pacf', 'var'), pacf = true; end
 if ~exist('plotm', 'var'), plotm = []; end

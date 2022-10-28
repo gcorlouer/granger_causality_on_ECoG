@@ -18,12 +18,36 @@ from pathlib import Path
 
 
 #%%
+
+plt.style.use('ggplot')
+fig_width = 20  # figure width in cm
+inches_per_cm = 0.393701               # Convert cm to inch
+golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
+fig_width = fig_width*inches_per_cm  # width in inches
+fig_height = fig_width*golden_mean      # height in inches
+fig_size =  [fig_width,fig_height]
+params = {'backend': 'ps',
+          'lines.linewidth': 1.5,
+          'axes.labelsize': 15,
+          'axes.titlesize': 15,
+          'font.size': 15,
+          'legend.fontsize': 12,
+          'xtick.labelsize': 13,
+          'ytick.labelsize': 15,
+          'text.usetex': False,
+          'figure.figsize': fig_size}
+plt.rcParams.update(params)
+
+
+#%%
 cohort = ['AnRa',  'ArLa', 'DiAs']
 # Useful paths
 cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
 result_path = cifar_path.joinpath('results')
-fname = 'compare_TD_BU_GC.mat'
+connect = "groupwise"
+band = "[0 62.5]"
+fname = "compare_TD_BU_GC_"+ band + "Hz.mat"
 path = result_path
 fpath = path.joinpath(fname)
 # Read dataset
@@ -38,7 +62,7 @@ def plot_TD_BU_zscore(F, cohort, data_path,
     We plot Z score from comparing top down with bottom up pairwise unconditional
     GC in a given condition
     """
-    conditions = ['baseline', 'Face', 'Place']
+    conditions = ['Rest', 'Face', 'Place']
     nsub = len(cohort)
     ncomp = len(conditions)
     band = F['band'][0][0]

@@ -21,6 +21,8 @@ Ntrial = args.Ntrial; Ns = args.Ns;
 morder = args.morder; ssmo = args.ssmo;
 sfreq = args.sfreq; dim = args.dim; band = args.band; nfreqs = args.nfreqs;
 
+bandstr = mat2str(band);
+
 [n,m,Nt] = size(X); % Number of concatenated trials
 trial_idx = 1:Nt; % Indices of trials
 
@@ -37,7 +39,9 @@ pf = 2 * morder;
 % Compute permutation GC
 for i=1:2
     for s=1:Ns
-        fprintf('MVGC: permutation sample %d of %d',s,Ns);
+        if mod(s, Ns/10) == 0
+            fprintf('Compare condition %s %s GC sample %d of %d',connect,bandstr, s,Ns);
+        end
         % Sample trials without replacement
         trials = datasample(trial_idx, Ntrial(i),'Replace',false);
         Xp = X(:,:,trials);

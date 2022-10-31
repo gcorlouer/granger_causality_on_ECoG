@@ -20,6 +20,7 @@ scripts/plot_scripts/plot_compare_pF.py
 scripts/plot_scripts/plot_compare_top_bottom_gc.py
 scripts/plot_scripts/plot_effect_size_GC.py
 scripts/plot_scripts/plot_hfb.py
+scripts/plot_scripts/plot_pairwise_conditional_GC.py
 scripts/plot_scripts/plot_preprocessing_steps.py
 scripts/plot_scripts/plot_presented_stimuli.py
 scripts/plot_scripts/plot_rolling_fc.py

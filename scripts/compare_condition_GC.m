@@ -29,7 +29,7 @@ for s=1:nsub
     for c=1:nComp
             comparison = comparisons{c};
             comparison_name = [comparison{1}(1) 'vs' comparison{2}(1)];
-            fprintf('Comparison %s subject %a \n', comparison_name, subject)
+            fprintf('Comparison %s subject %s \n', comparison_name, subject)
             for i=1:2
                 condition = comparison{i};
                 gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...

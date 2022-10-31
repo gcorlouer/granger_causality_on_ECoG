@@ -9,7 +9,7 @@ from src.preprocessing_lib import EcogReader, Epocher
 # Import functions
 from src.preprocessing_lib import visual_indices, parcellation_to_indices
 from mne.time_frequency import tfr_morlet
-from mne.viz import centers_to_edges
+#from mne.viz import centers_to_edges
 
 # Import arguments
 #%% Define functions
@@ -83,7 +83,7 @@ def plot_tf(fpath, subject='DiAs',vmax=25):
     # Parameter specfics to plotting time frequency
     fname = "tf_power_dataframe.pkl"
     fpath = fpath.joinpath(fname)
-    df = pd.read_pickle(fpath)
+    df = pd.read_csv(fpath)
     conditions = ['Rest', 'Face', 'Place']
     groups = ['R','O','F']
     ngroup = 3
@@ -98,7 +98,7 @@ def plot_tf(fpath, subject='DiAs',vmax=25):
             power = power.iloc[0]
             freqs = freqs.iloc[0]
             time = time.iloc[0]
-            x, y = centers_to_edges(time * 1000, freqs)
+            #x, y = centers_to_edges(time * 1000, freqs)
             mesh = ax[i,j].pcolormesh(time, freqs, power, cmap='RdBu_r', vmax=vmax, vmin=-vmax)
             ax[i,j].set_title(f'{group} Power during {condition}')
             ax[i,j].set(ylim=freqs[[0, -1]], xlabel='Time (ms)', ylabel='Freq (Hz)')

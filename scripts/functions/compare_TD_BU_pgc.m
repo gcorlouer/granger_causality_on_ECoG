@@ -55,7 +55,7 @@ for i=1:nR
         [~,~,Nt] = size(xRF);
         for s=1:Ns
             if mod(s, Ns/10) == 0
-                fprintf('TD vs BU %s GC permutation sample %d of %d',bandstr,s,Ns);
+                fprintf('TD vs BU %s GC permutation sample %d of %d \n',bandstr,s,Ns);
             end
             % Permute trial index
             trials = randperm(Nt);
@@ -71,16 +71,15 @@ for i=1:nR
             Fp = bandlimit(fp,dim, sfreq, band);
             % Compute permutation statistic TD - BU
             T(i,j,s) = Fp(1,2)-Fp(2,1);
-            fprintf('\n');
             if abs(T(i,j,s))>abs(Ta(i,j))
                 count(i,j) = count(i,j)+1;
             else
                 continue 
             end
         end
+        fprintf('\n');
      end
 end
-
 % Compute p value and significance
 pval = count./Ns;
 [sig, pcrit] = significance(pval,alpha,mhtc,[]);

@@ -12,7 +12,7 @@ for s=1:nsub
     fprintf('Compare TD vs BU for subject %s \n', subject)
     for c=1:ncdt
         condition = conditions{c};
-        fprintf('Condition %s \n', condition)
+        fprintf('Condition %s for subject %s\n', condition, subject)
         gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
             'condition',condition, 'suffix', suffix);
         X = gc_input.X;

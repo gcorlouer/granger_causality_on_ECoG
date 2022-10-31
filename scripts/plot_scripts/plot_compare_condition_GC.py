@@ -35,6 +35,9 @@ params = {'backend': 'ps',
           'figure.figsize': fig_size}
 plt.rcParams.update(params)
 
+eeg_bands = {"delta":[1, 4], "theta":[4, 7], "alpha": [8, 12], "beta": [13,30],
+             "gamma": [32, 60], "hgamma":[60, 120]}
+
 #%%
 
 cohort = ['AnRa',  'ArLa', 'DiAs']
@@ -42,9 +45,9 @@ cohort = ['AnRa',  'ArLa', 'DiAs']
 cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
 result_path = cifar_path.joinpath('results')
-connect = "groupwise"
-band = "[0 62.5]"
-fname = "compare_condition_GC_" + connect + '_' band + "Hz.mat"
+connect = "pairwise"
+band = "[60 120]"
+fname = "compare_condition_GC_" + connect + '_' + band + "Hz.mat"
 path = result_path
 fpath = path.joinpath(fname)
 # Read dataset

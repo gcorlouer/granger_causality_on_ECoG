@@ -40,7 +40,7 @@ pf = 2 * morder;
 for i=1:2
     for s=1:Ns
         if mod(s, Ns/10) == 0
-            fprintf('Compare condition %s %s GC sample %d of %d',connect,bandstr, s,Ns);
+            fprintf('Compare condition %s %s GC sample %d of %d \n',connect,bandstr, s,Ns);
         end
         % Sample trials without replacement
         trials = datasample(trial_idx, Ntrial(i),'Replace',false);
@@ -51,8 +51,8 @@ for i=1:2
         % Compute band specific GC 
         F(:,:,s) = ss_to_GC(model, 'connect', connect ,'group', group,...
         'dim', dim, 'sfreq', sfreq, 'nfreqs', nfreqs, 'band',band);
-        fprintf('\n');
     end
+    fprintf('\n');
     permF{i} = F;
 end
 tstat = permF{1} - permF{2};

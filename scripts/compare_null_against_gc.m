@@ -46,6 +46,6 @@ end
 FC.('connectivity') = connect;
 %% Save dataset for plotting in python
 
-fname = 'null_fc.mat';
+fname = ['null_' connect '_fc.mat'];
 fpath = fullfile(datadir, fname);
 save(fpath, 'FC')

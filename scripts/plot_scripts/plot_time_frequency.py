@@ -4,17 +4,18 @@ import numpy as np
 
 #from src.time_frequency import plot_tf
 from pathlib import Path
+from mne.viz import centers_to_edges
 
 #%%
 
 plt.style.use('ggplot')
-fig_width = 15  # figure width in cm
-label_size = 12
+fig_width = 16  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
+label_size = 10
 params = {'backend': 'ps',
           'lines.linewidth': 1.5,
           'axes.labelsize': label_size,
@@ -26,6 +27,7 @@ params = {'backend': 'ps',
           'text.usetex': False,
           'figure.figsize': fig_size}
 plt.rcParams.update(params)
+
 
 #%%
 cifar_path = Path('~','projects','cifar').expanduser()
@@ -56,8 +58,8 @@ def plot_tf(fpath, subject='DiAs',vmax=25):
             power = power.iloc[0]
             freqs = freqs.iloc[0]
             time = time.iloc[0]
-            #x, y = centers_to_edges(time * 1000, freqs)
-            mesh = ax[i,j].pcolormesh(time, freqs, power, cmap='RdBu_r', vmax=vmax, vmin=-vmax)
+            x, y = centers_to_edges(time * 1000, freqs)
+            mesh = ax[i,j].pcolormesh(x, y, power, cmap='RdBu_r', vmax=vmax, vmin=-vmax)
             ax[0,j].set_title(f'{group_dic[group]}')
             ax[i,j].set(ylim=freqs[[0, -1]])
             ax[-1,-1].set_xlabel("Time (ms)")

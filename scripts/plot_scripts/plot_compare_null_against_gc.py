@@ -8,7 +8,6 @@ multitrial GC and single trial GC
 """
 
 
-from src.input_config import args
 from src.preprocessing_lib import EcogReader, parcellation_to_indices
 from src.plotting_lib import info_flow_stat
 from pathlib import Path
@@ -57,7 +56,7 @@ dataset = loadmat(fpath)
 F = dataset['FC']
 # Plot parameters
 function = 'GC'
-vmax = 0.01
+vmax = 0.005
 vmin = 0
 # %% Plot FC
 

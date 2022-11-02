@@ -542,7 +542,7 @@ class VisualDetector():
     """
     def __init__(self, tmin_prestim=-0.4, tmax_prestim=-0.1, tmin_postim=0.1,
                tmax_postim=0.5, alpha=0.05, zero_method='pratt',
-               alternative='two-sided'):
+               alternative='greater'):
         self.tmin_prestim = tmin_prestim
         self.tmax_prestim = tmax_prestim
         self.tmin_postim = tmin_postim
@@ -587,10 +587,8 @@ class VisualDetector():
         A_postim = self.crop_hfb(hfb, tmin=self.tmin_postim, tmax=self.tmax_postim)
         # Test no difference betwee pre and post stimulus amplitude
         reject, pval_correct, z = self.multiple_wilcoxon_test(A_postim, A_prestim)
-        # Compute visual responsivity 
-        visual_responsivity = z
         # Return visually responsive channels
-        visual_chan, effect_size = self.visual_chans_stats(reject, visual_responsivity, hfb)
+        visual_chan, effect_size = self.visual_chans_stats(reject, z, hfb)
         return visual_chan, effect_size
     
     
@@ -630,71 +628,43 @@ class VisualDetector():
         alternative: {“two-sided”, “greater”, “less”}, optional
         zero_method: {“pratt”, “wilcox”, “zsplit”}, optional
         """
+        # Average over time window
         A_postim = np.mean(A_postim, axis=-1)
         A_prestim = np.mean(A_prestim, axis=-1)
         # Iniitialise inflated p values
-        nchans = A_postim.shape[1]
+        nchans = A_postim.shape[-1]
+        w = [0]*nchans
         pval = [0]*nchans
         z = [0]*nchans
         # Compute test stats given non normal distribution
+        # Paired test
         for i in range(0,nchans):
-            z[i], pval[i] = spstats.ranksums(A_postim[:,i], A_prestim[:,i], 
-                                                 alternative=self.alternative) 
+            # Paired test
+            n = A_postim.shape[0]
+            mn = n * (n + 1)/4 # mean of null
+            se = np.sqrt(n * (n + 1) * (2*n+1)/24) # se of null (no correction for tie)
+            w[i], pval[i] = spstats.wilcoxon(A_postim[:,i], A_prestim[:,i], alternative='greater')
+            z[i] = (w[i] - mn)/se
+            z[i] = round(z[i],2)
+            # Unpaired test
+            #w[i], pval[i]  = spstats.ranksums(A_postim[:,i], A_prestim[:,i], 
+            #                                     alternative=self.alternative)
+            # Compute z with unpaired test
         # Correct for multiple testing    
         reject, pval_correct = fdrcorrection(pval, alpha=self.alpha)
-        w_test = reject, pval_correct, z
-        return w_test
+        return reject, pval_correct, z
 
-    def cohen_d(self, x, y):
-        """
-        Compute cohen d effect size between 1D array x and y
-        """
-        n1 = np.size(x)
-        n2 = np.size(y)
-        m1 = np.mean(x)
-        m2 = np.mean(y)
-        s1 = np.std(x)
-        s2 = np.std(y)
-        
-        s = (n1 - 1)*(s1**2) + (n2 - 1)*(s2**2)
-        s = s/(n1+n2-2)
-        s= np.sqrt(s)
-        num = m1 - m2
-        
-        cohen = num/s
-        
-        return cohen
-    
-    def compute_visual_responsivity(self, A_postim, A_prestim):
-        """
-        Compute visual responsivity of a channel from cohen d.
-        """
-        nchan = A_postim.shape[1]
-        visual_responsivity = [0]*nchan
-        
-        for i in range(nchan):
-            x = np.ndarray.flatten(A_postim[:,i,:])
-            y = np.ndarray.flatten(A_prestim[:,i,:])
-            visual_responsivity[i] = self.cohen_d(x,y)
-            
-        return visual_responsivity
-    
-    
-    def visual_chans_stats(self, reject, visual_responsivity, hfb):
+    def visual_chans_stats(self, reject, z, hfb):
         """
         Return visual channels with their corresponding responsivity
         """
-        idx = np.where(reject==True)
-        idx = idx[0]
+        idx = np.where(reject==True)[0]
         visual_chan = []
         effect_size = []
         
         for i in list(idx):
-            if visual_responsivity[i]>0:
-                visual_chan.append(hfb.info['ch_names'][i])
-                effect_size.append(visual_responsivity[i])
-            else:
-                continue
+            visual_chan.append(hfb.info['ch_names'][i])
+            effect_size.append(z[i])
         return visual_chan, effect_size
 
 #%% Compute visual channels latency response
@@ -736,8 +706,8 @@ class VisualClassifier(VisualDetector):
     Classify visual channels into Face, Place and retinotopic channels
     """
     def __init__(self, tmin_prestim=-0.4, tmax_prestim=-0.1, tmin_postim=0.1,
-               tmax_postim=0.5, alpha=0.05, zero_method='pratt',
-               alternative='two-sided'):
+               tmax_postim=0.5, alpha=0.05, zero_method='zsplit',
+               alternative='greater'):
         super().__init__(tmin_prestim, tmax_prestim, tmin_postim,
                tmax_postim, alpha, zero_method, alternative)
 
@@ -802,24 +772,21 @@ class VisualClassifier(VisualDetector):
         A_face = self.crop_stim_hfb(visual_hfb, face_id, tmin=self.tmin_postim, tmax=self.tmax_postim)
         A_place = self.crop_stim_hfb(visual_hfb, place_id, tmin=self.tmin_postim, tmax=self.tmax_postim)
         
-        w_test_face = self.multiple_wilcoxon_test(A_face, A_place)
-        reject_face = w_test_face[0]    
+        reject_face, p_face, z_face = self.multiple_wilcoxon_test(A_face, A_place)
         
-        w_test_place = self.multiple_wilcoxon_test(A_place, A_face)
-        reject_place = w_test_place[0]    
+        reject_place, p_place, z_place = self.multiple_wilcoxon_test(A_place, A_face)
         
         # Significant electrodes located outside of V1 and V2 are Face or Place responsive
         for idx, channel in enumerate(visual_channels):
-            A_f = np.ndarray.flatten(A_face[:,idx,:])
-            A_p = np.ndarray.flatten(A_place[:,idx,:])
             if reject_face[idx]==True :
                 group[idx] = 'F'
-                category_selectivity[idx] = self.cohen_d(A_f, A_p)
+                # Return z score
+                category_selectivity[idx] = z_face[idx] 
             elif reject_place[idx]==True:
                 group[idx] = 'P'
-                category_selectivity[idx] = self.cohen_d(A_p, A_f)
+                category_selectivity[idx] = z_place[idx]
             else:
-                category_selectivity[idx] = self.cohen_d(A_f, A_p)
+                category_selectivity[idx] = z_face[idx]
         return group, category_selectivity
     
     
@@ -832,7 +799,7 @@ class VisualClassifier(VisualDetector):
         for i in range(nchan):
             brodman = (dfelec['Brodman'].loc[dfelec['electrode_name']==bipolar_visual[i][0]].to_string(index=False), 
                        dfelec['Brodman'].loc[dfelec['electrode_name']==bipolar_visual[i][1]].to_string(index=False))
-            if latency_response[i] <= 180:            
+            if latency_response[i] <= 170:            
                 if brodman[0] in ('V1, V2') and brodman[1] in  ('V1, V2') :
                     group[i]='R'
         return group
@@ -873,7 +840,8 @@ def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = Tr
                      l_freq = 0.1,
                      epoch=False, t_prestim=-0.5, t_postim=1.75, tmin_baseline = -0.5,
                      tmax_baseline = 0, tmin_crop=0, tmax_crop=1, condition='Face',
-                     mode = 'logratio', log_transf=True, pick_visual=True):
+                     mode = 'logratio', log_transf=True, pick_visual=True,
+                     channels = 'visual_channels.csv'):
     """
     Return category-specific time series as a dictionary 
     """
@@ -885,7 +853,7 @@ def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = Tr
                          epoch=False)
     raw = reader.read_ecog()
     # Read visually responsive channels
-    df_visual = reader.read_channels_info(fname='visual_channels.csv')
+    df_visual = reader.read_channels_info(fname=channels)
     visual_chans = df_visual['chan_name'].to_list()
     # Pick channels
     if pick_visual==True:
@@ -951,10 +919,11 @@ def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = Tr
     
     return ts
 
-def prepare_condition_scaled_ts(path, subject='DiAs', stage='preprocessed', matlab = True,
+def prepare_condition_scaled_ts(path, subject='DiAs', stage='preprocessed', matlab = False,
                      preprocessed_suffix='_hfb_continuous_raw.fif', decim=2,
                      epoch=False, t_prestim=-0.5, t_postim=1.75, tmin_baseline = -0.5,
-                     tmax_baseline = 0, tmin_crop=-0.5, tmax_crop=1.5, mode ='logratio'):
+                     tmax_baseline = 0, tmin_crop=-0.5, tmax_crop=1.5, mode ='logratio',
+                     channels = 'visual_channels.csv'):
     """
     Return category-specific dictionary
     """
@@ -965,7 +934,7 @@ def prepare_condition_scaled_ts(path, subject='DiAs', stage='preprocessed', matl
                      preprocessed_suffix=preprocessed_suffix,
                      epoch=epoch)
     hfb = reader.read_ecog()
-    df_visual = reader.read_channels_info(fname='visual_channels.csv')
+    df_visual = reader.read_channels_info(fname=channels)
     visual_chans = df_visual['chan_name'].to_list()
     hfb = hfb.pick_channels(visual_chans)
     # Epoch HFA

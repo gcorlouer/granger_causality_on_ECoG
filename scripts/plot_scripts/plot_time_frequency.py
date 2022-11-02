@@ -30,11 +30,12 @@ plt.rcParams.update(params)
 
 
 #%%
+cohort_dic = {'AnRa': 'S0', 'ArLa': 'S1', 'DiAs': 'S2'}
 cifar_path = Path('~','projects','cifar').expanduser()
 fpath = cifar_path.joinpath('data_transfer')
 #fpath = fpath.joinpath("time_frequency.csv")
-
-vmax = 20
+subject = 'ArLa'
+vmax = 15
 #%%
 
 def plot_tf(fpath, subject='DiAs',vmax=25):
@@ -48,7 +49,8 @@ def plot_tf(fpath, subject='DiAs',vmax=25):
     group_dic = {'R': 'Retinotopic', 'O':'Other', 'F':'Face'}
     ngroup = 3
     ncdt = 3
-    fig, ax = plt.subplots(ngroup, ncdt, sharex=True, sharey=True)
+    fig, ax = plt.subplots(ngroup, ncdt, sharex=False, sharey=False)
+    cbar_ax = fig.add_axes([0.91, 0.2, .01, .6])
     # Loop over conditions and groups
     for i, condition in enumerate(conditions):
         for j, group in enumerate(groups):
@@ -62,15 +64,22 @@ def plot_tf(fpath, subject='DiAs',vmax=25):
             mesh = ax[i,j].pcolormesh(x, y, power, cmap='RdBu_r', vmax=vmax, vmin=-vmax)
             ax[0,j].set_title(f'{group_dic[group]}')
             ax[i,j].set(ylim=freqs[[0, -1]])
-            ax[-1,-1].set_xlabel("Time (ms)")
-            ax[-1,-1].set_ylabel("Frequency (Hz)")
-            ax[i,0].set_ylabel(f"{condition}")
-    fig.colorbar(mesh)
-    plt.tight_layout()
+            if i<=2:
+                    ax[i,j].set_xticks([]) # (turn off xticks)
+            if j>=1:
+                    ax[i,j].set_yticks([]) # (turn off xticks)
+            ax[-1,j].set_xticks([-500, 0, 500, 1000, 1500])
+            ax[-1,j].set_xticklabels([-0.5, 0, 0.5, 1, 1.5]) 
+            ax[i,0].set_yticks([0, 30, 60, 90, 120])
+            ax[i,0].set_yticklabels([0, 30, 60, 90, 120])
+            ax[i,0].set_ylabel(f"{condition} (Hz)")
+    fig.colorbar(mesh, cax=cbar_ax)
+    fig.supxlabel("Time (ms)")
+    fig.suptitle(f"Time-frequency subject {cohort_dic[subject]}")
     plt.show()
 
         
 
 #%%
 
-plot_tf(fpath, subject='DiAs', vmax=vmax)
+plot_tf(fpath, subject=subject, vmax=vmax)

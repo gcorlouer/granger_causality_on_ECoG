@@ -32,10 +32,10 @@ plt.rcParams.update(params)
 #%%
 cohort_dic = {'AnRa': 'S0', 'ArLa': 'S1', 'DiAs': 'S2'}
 cifar_path = Path('~','projects','cifar').expanduser()
-fpath = cifar_path.joinpath('data_transfer')
+fpath = cifar_path.joinpath('results')
 #fpath = fpath.joinpath("time_frequency.csv")
-subject = 'ArLa'
-vmax = 15
+subject = 'DiAs'
+vmax = 20
 #%%
 
 def plot_tf(fpath, subject='DiAs',vmax=25):

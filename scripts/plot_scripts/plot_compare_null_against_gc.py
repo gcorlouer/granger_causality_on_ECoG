@@ -47,7 +47,7 @@ cohort = ['AnRa',  'ArLa', 'DiAs']
 cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
 result_path = cifar_path.joinpath('results')
-connect = "pairwise"
+connect = "groupwise"
 fname = 'null_' + connect +'_fc.mat'
 path = result_path
 fpath = path.joinpath(fname)
@@ -56,7 +56,7 @@ dataset = loadmat(fpath)
 F = dataset['FC']
 # Plot parameters
 function = 'GC'
-vmax = 0.005
+vmax = 0.01
 vmin = 0
 # %% Plot FC
 

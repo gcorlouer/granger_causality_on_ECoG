@@ -5,6 +5,8 @@ tic;
 input_parameters;
 nsub = length(cohort);
 ncdt = length(conditions);
+bandstr = mat2str(band);
+if ~exist('fname', 'var'), fname = ['compare_TD_BU_GC_' bandstr 'Hz.mat']; end
 %% Compare top down and bottom up band-spacific GC with permutation testing
 % For each Subjects and Conditions
 for s=1:nsub
@@ -39,8 +41,6 @@ for s=1:nsub
 end
 toc; 
 %% Save dataset
-bandstr = mat2str(band);
-fname = ['compare_TD_BU_GC_' bandstr 'Hz.mat'];
 fpath = fullfile(datadir, fname);
 save(fpath, 'GC')
 

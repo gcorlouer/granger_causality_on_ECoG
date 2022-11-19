@@ -91,7 +91,7 @@ z = (Ta - mT)./sT;
 zcrit = sqrt(2)*erfcinv(pcrit);
 
 % Return statistics
-stat.pval = pval;
+stat.pval = pcrit;
 stat.sig = sig;
 stat.z = z;
 stat.zcrit = zcrit;

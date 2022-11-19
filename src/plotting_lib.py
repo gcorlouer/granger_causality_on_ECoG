@@ -46,7 +46,7 @@ plt.rcParams.update(params)
 
 #def plot_stimuli_presentation():
 
-def plot_narrow_broadband(args, fpath, fname = 'DiAs_narrow_broadband_stim.pdf', 
+def plot_narrow_broadband(args, fpath, fname = 'DiAs_narrow_broadband_stim.png', 
                           chan = ['LTo1-LTo2'], tmin=500, tmax=506):
     """
     Plot the narrowband envelope and broadband hfa between (tmin, tmax) for 
@@ -109,8 +109,8 @@ def plot_narrow_broadband(args, fpath, fname = 'DiAs_narrow_broadband_stim.pdf',
     ax[1].set_title('b)', loc='left')
     plt.tight_layout()
     # Save figure
-    fpath = fpath.joinpath(fname)
-    plt.savefig(fpath)
+    #fpath = fpath.joinpath(fname)
+    #plt.savefig(fpath)
 
 # Plot log vs non log trials
     

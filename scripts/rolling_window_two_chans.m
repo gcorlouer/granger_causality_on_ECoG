@@ -17,7 +17,7 @@ p = 10;  % suggested model order
 nfreq = 1024;
 mosvc = 39; % suggested state space model order
 dim = 3;
-mw = 50;
+mw = 80;
 shift = 10;
 GC = struct;
 
@@ -42,7 +42,7 @@ bandstr = mat2str(band);
                 o = (w-1)*shift;   
                 % the window
                 W = X(:,o+1:o+mw,:);
-                [A,C,K,V,Z,E] = tsdata_to_ss(X,pf,mosvc);
+                [A,C,K,V,Z,E] = tsdata_to_ss(W,pf,mosvc);
                 f = ss_to_spwcgc(A,C,K,V,nfreq);
                 F(:,:,w) = bandlimit(f,dim,sfreq,band);
             end

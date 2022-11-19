@@ -10,8 +10,8 @@ input_parameters
 subject = 'DiAs';
 conditions = {'Face', 'Place'};
 ncdt = length(conditions);
-signal = 'lfp';
-suffix = '_condition_pick_chans_lfp';
+signal = 'hfa';
+suffix = '_condition_pick_chans_hfa';
 connect = 'pairwise';
 morder = 10;  % suggested model order
 nfreq = 1024;

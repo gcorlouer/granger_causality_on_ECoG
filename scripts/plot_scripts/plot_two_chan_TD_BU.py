@@ -46,9 +46,12 @@ eeg_bands = {"[8 12]": "α", "[13 30]": "β",
 bands = list(eeg_bands.keys())
 conditions = ['Face', 'Place']
 nbands = len(bands)
-ymax = 5
-ymin = -5
-fig, ax = plt.subplots(nbands,1)
+ymax = 4
+ymin = -4
+xticks = []
+gc = []
+color = []
+fig, ax = plt.subplots(1,1)
 for i, band in enumerate(bands):
     fname = "two_chans_TD_BU_GC_"+ band + "Hz.mat"
     path = result_path
@@ -56,21 +59,32 @@ for i, band in enumerate(bands):
     # Read dataset
     dataset = loadmat(fpath)
     F = dataset['GC']
-    xticks = []
-    gc = []
+    band_name = eeg_bands[band]
     for condition in conditions:
         z = F[condition][0][0]['z'][0][0][0][0]
         sig = F[condition][0][0]['sig'][0][0][0][0]
-        xticks.append(condition)
+        
+        xticks.append(condition + f' {band_name}')
         gc.append(z)
-        ax[i].bar(xticks, gc, width=0.1)
-        ax[i].set_ylim(ymin, ymax)
-        rects = ax[i].patches
+        if z>=0:
+            c = 'r'
+        elif z<=0:
+            c = 'b'
+        color.append(c)
+        ax.bar(xticks, gc, width=0.1, color=color)
+        ax.set_ylim(ymin, ymax)
+        ax.set_ylabel('Z-score')
+        rects = ax.patches
         label = '*'
         if sig==1:
+            pcrit = F[condition][0][0]['pval'][0][0][0][0]
+            zcrit = F[condition][0][0]['zcrit'][0][0][0][0]
+            print(f"pval={pcrit}\n")
+            print(f"z={z}\n")
+            print(f"zcrit={zcrit}\n")
             for rect in rects:
                 height = rect.get_height()
-            ax[i].text(
+            ax.text(
                 rect.get_x() + rect.get_width() / 2, height + 0.1, label, ha="center", va="bottom"
             )
         else:

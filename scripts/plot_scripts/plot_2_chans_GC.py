@@ -40,15 +40,15 @@ cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
 result_path = cifar_path.joinpath('results')
 
-eeg_bands = {"[4 7]":"θ", "[8 12]": "α", "[13 30]": "β",
+eeg_bands = {"[8 12]": "α", "[13 30]": "β",
              "[32 60]": "γ", "[60 120]":"hγ"}
 bands = list(eeg_bands.keys())
 conditions = ['Rest', 'Face', 'Place']
 directions = ["BU", "TD"]
 nbands = len(bands)
-ymax = 0.0006
+ymax = 0.0015
 
-fig, ax = plt.subplots(nbands,1)
+fig, ax = plt.subplots(nbands,1,sharex=False, sharey = False)
 for i, band in enumerate(bands):
     fname = "validate_GC_"+ band + "Hz.mat"
     path = result_path
@@ -66,5 +66,10 @@ for i, band in enumerate(bands):
             for j, direction in enumerate(directions):
                 xticks.append(condition + ' ' +  direction)
                 gc.append(bu_td[j])
-    ax[i].bar(xticks, gc, width=0.5)
+    if i<=nbands-1:
+        ax[i].set_xticklabels([])
+    ax[i].bar(xticks, gc, width=0.1)
     ax[i].set_ylim(0, ymax)
+    band_name = eeg_bands[band]
+    ax[i].set_ylabel(f"GC {band_name}")
+ax[-1].set_xticklabels(xticks)

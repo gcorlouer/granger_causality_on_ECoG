@@ -1,6 +1,6 @@
 % EEG bands
 bands = struct;
-bands.delta = [1 4];
+%bands.delta = [1 4];
 bands.theta = [4 7];
 bands.alpha = [8 12];
 bands.beta = [13 30];
@@ -25,9 +25,9 @@ band_names = fieldnames(bands);
 nband = length(band_names);
 for ib=1:nband
     band = bands.(band_names{ib});
-    connect = 'pairwise';
-    compare_condition_GC
-    connect = 'groupwise';
-    compare_condition_GC
+%     connect = 'pairwise';
+%     compare_condition_GC
+%     connect = 'groupwise';
+%     compare_condition_GC
     compare_bu_td_gc_permtest
 end

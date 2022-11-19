@@ -9,13 +9,69 @@ In this script we plot the high frequency narrow and broad envelope.
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import argparse
 
 from src.preprocessing_lib import EcogReader, Epocher
-from src.input_config import args
 from scipy.stats import sem
+from pathlib import Path
+
+
+#%%
+
+# Parameters
+conditions = ['Rest', 'Face', 'Place', 'baseline']
+cohort = ['AnRa',  'ArLa', 'DiAs']
+
+# Paths (Change before running. Run from root.)
+cifar_path = Path('~','projects','cifar').expanduser()
+data_path = cifar_path.joinpath('data')
+derivatives_path = data_path.joinpath('derivatives')
+result_path = cifar_path.joinpath('results')
+
+parser = argparse.ArgumentParser()
+
+# Dataset parameters
+parser.add_argument("--subject", type=str, default='DiAs')
+parser.add_argument("--sfeq", type=float, default=500.0)
+parser.add_argument("--stage", type=str, default='preprocessed')
+parser.add_argument("--preprocessed_suffix", type=str, default= '_bad_chans_removed_raw.fif')
+parser.add_argument("--signal", type=str, default= 'lfp') # correspond to preprocessed_suffix
+parser.add_argument("--epoch", type=bool, default=False)
+parser.add_argument("--channels", type=str, default='visual_channels.csv')
+
+#%z Filtering parameters
+
+parser.add_argument("--l_freq", type=float, default=70.0)
+parser.add_argument("--band_size", type=float, default=20.0)
+parser.add_argument("--nband", type=float, default=5)
+parser.add_argument("--l_trans_bandwidth", type=float, default=10.0)
+parser.add_argument("--h_trans_bandwidth", type=float, default=10.0)
+parser.add_argument("--filter_length", type=str, default='auto')
+parser.add_argument("--phase", type=str, default='minimum')
+parser.add_argument("--fir_window", type=str, default='blackman')
+
+
+# Epoching parameters
+parser.add_argument("--condition", type=str, default='Stim') 
+parser.add_argument("--t_prestim", type=float, default=-0.5)
+parser.add_argument("--t_postim", type=float, default=1.5)
+parser.add_argument("--baseline", default=None) # No baseline from MNE
+parser.add_argument("--preload", default=True)
+parser.add_argument("--tmin_baseline", type=float, default=-0.5)
+parser.add_argument("--tmax_baseline", type=float, default=0)
+
+# Wether to log transform the data
+parser.add_argument("--log_transf", type=bool, default=False)
+# Mode to rescale data (mean, logratio, zratio)
+parser.add_argument("--mode", type=str, default='logratio')
+# Pick visual chan
+parser.add_argument("--pick_visual", type=bool, default=True)
+
+args = parser.parse_args()
+
 #%% 
 chan = ['LTo1-LTo2']
-reader = EcogReader(args.data_path, stage=args.stage,
+reader = EcogReader(data_path, stage=args.stage,
                  preprocessed_suffix=args.preprocessed_suffix, preload=True, 
                  epoch=False)
 

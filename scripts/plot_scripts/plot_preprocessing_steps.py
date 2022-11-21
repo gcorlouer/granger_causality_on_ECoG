@@ -56,8 +56,8 @@ parser.add_argument("--subject", type=str, default='DiAs')
 parser.add_argument("--sfeq", type=float, default=500.0)
 
 parser.add_argument("--stage", type=str, default='preprocessed')
-parser.add_argument("--preprocessed_suffix", type=str, default= '_hfb_continuous_raw.fif')
-parser.add_argument("--epoch", type=bool, default=False)
+parser.add_argument("--preprocessed_suffix", type=str, default= '_hfb_Stim_scaled-epo.fif')
+parser.add_argument("--epoch", type=bool, default=True)
 parser.add_argument("--channels", type=str, default='visual_channels.csv')
 
 # Input parameters:
@@ -403,12 +403,20 @@ def plot_visual_vs_non_visual(args, data_path):
         time = hfb_visual.times
         X = evok_visual
         mX = np.mean(X,0)
+        semX = sem(X,0)
+        up_ciX = mX + 1.96*semX
+        down_ciX = mX - 1.96*semX
         Y = evok_nv
+        semY = sem(Y,0)
         mY = np.mean(Y,0)
+        up_ciY = mY + 1.96*semY
+        down_ciY = mY - 1.96*semY
         # Plot visual vs non visual
         plt.subplot(2,2, i+1)
         plt.plot(time, mX, label='visual', color='b')
+        plt.fill_between(time, down_ciX, up_ciX, alpha=0.3, color='b')
         plt.plot(time, mY, label='non visual', color = 'r')
+        plt.fill_between(time, down_ciY, up_ciY, alpha=0.3, color='r')
         plt.axhline(y=baseline, color='k')
         plt.axvline(x=0, color='k')
         plt.xlabel('Time (s)')

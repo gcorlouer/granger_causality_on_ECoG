@@ -19,8 +19,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--subject", type=str, default='DiAs')
 parser.add_argument("--sfeq", type=float, default=500.0)
 parser.add_argument("--stage", type=str, default='preprocessed')
-parser.add_argument("--preprocessed_suffix", type=str, default= '_bad_chans_removed_raw.fif')
-parser.add_argument("--signal", type=str, default= 'lfp') # correspond to preprocessed_suffix
+parser.add_argument("--preprocessed_suffix", type=str, default= '_hfb_continuous_raw.fif')
+parser.add_argument("--signal", type=str, default= 'hfa') # correspond to preprocessed_suffix
 parser.add_argument("--epoch", type=bool, default=False)
 parser.add_argument("--channels", type=str, default='visual_channels.csv')
 
@@ -41,13 +41,16 @@ parser.add_argument("--mode", type=str, default='logratio')
 parser.add_argument("--pick_visual", type=bool, default=True)
 # Create category specific time series
 parser.add_argument("--l_freq", type=float, default=1)
-parser.add_argument("--decim", type=float, default=2)
+parser.add_argument("--decim", type=float, default=4)
 parser.add_argument("--tmin_crop", type=float, default=0.2)
 parser.add_argument("--tmax_crop", type=float, default=1.5)
 parser.add_argument("--matlab", type=bool, default=True)
 
 args = parser.parse_args()
 
+# Suffix
+#'_bad_chans_removed_raw.fif'
+# '_hfb_continuous_raw.fif' 
 #%% 
 
 def input_ts_fname(subject, visual=True, signal='hfa'):

@@ -1,43 +1,50 @@
 %% Estimate VAR and SS model on multitrial data
 input_parameters;
-conditions = {'Rest' 'Face' 'Place'};
-ncdt = 3;
-%% Read data
-
-% Initialise information criterion
-moaic =  cell(ncdt,1);
-mobic =  cell(ncdt,1);
-mohqc =  cell(ncdt,1);
-molrt =  cell(ncdt,1);
-mosvc =  cell(ncdt,1);
-% Initialise spectral radius
-rho = cell(ncdt,1);
-
-%% Multitrial VAR model estimation
-for c=1:ncdt
-    plotm = c;
-    condition = conditions{c};
-    gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
-                    'condition',condition, 'suffix', suffix);
-    sfreq = gc_input.sfreq;
-    X = gc_input.(condition);
-    [nchan, nobs, ntrial] = size(X);
-    subject = gc_input.subject;
-    findices = gc_input.indices;
-    fn = fieldnames(findices);
-    time = gc_input.time;
-    % Detrend
-    %[X,~,~,~] = mvdetrend(X,pdeg,[]);
-    % Estimate var model order with multiple information criterion
-    [moaic{c},mobic{c},mohqc{c},molrt{c}] = tsdata_to_varmo(X, ... 
-                    momax,regmode,alpha,pacf,plotm,verb);
-    %% Estimate VAR model.
-    morder = 5;
-    VAR = ts_to_var_parameters(X, 'morder', morder, 'regmode', regmode);
-    rho{c} = VAR.info.rho;
-    
-    %% Estimate SS model
-    pf = 2*morder;
-    [mosvc,rmax] = tsdata_to_ssmo(X,pf,plotm);
-    [A,C,K,V,Z,E] = tsdata_to_ss(X,pf,mosvc);
+suffix = ['_condition_visual_' signal '.mat'];
+conditions = {'Rest','Face','Place'};
+nsub = length(cohort);
+ncdt = length(conditions);
+plotm = [];
+verb = [];
+momax = 20;
+ModelOrder = struct;
+%Multitrial VAR model estimation
+for s=1:nsub
+    subject = cohort{s};
+    for c=1:ncdt
+        condition = conditions{c};
+        gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
+                        'condition',condition, 'suffix', suffix);
+        sfreq = gc_input.sfreq;
+        X = gc_input.(condition);
+        [n, m,N] = size(X);
+        subject = gc_input.subject;
+        findices = gc_input.indices;
+        fn = fieldnames(findices);
+        time = gc_input.time;
+        % Take same number of trials as Face (no bias)
+        if strcmp(condition, 'Rest')
+                trial_idx = 1:N;
+                Ntrial = 56; 
+                trials = datasample(trial_idx, Ntrial,'Replace',false);
+                X = X(:,:, trials);
+        end
+        % Estimate VAR model.
+        varmo = var_model_order(X, ... 
+                        momax,regmode,alpha,pacf,plotm,verb);
+        morder = varmo.bic;
+        VAR = ts_to_var_parameters(X, 'morder', morder, 'regmode', regmode);
+        rho = VAR.info.rho;
+        % Estimate SS model
+        pf = 2*morder;
+        ssmo = ssmodel_order(X,pf,plotm);
+        [A,C,K,V,Z,E] = tsdata_to_ss(X,pf,ssmo.mosvc);
+        ModelOrder.(subject).(condition).('varmo') = varmo;
+        ModelOrder.(subject).(condition).('ssmo') = ssmo;
+        ModelOrder.(subject).(condition).('rho') = rho;
+    end
 end
+%% Save dataset
+fname = [signal '_model_order_estimation.m'];
+fpath = fullfile(datadir, fname);
+save(fpath, 'ModelOrder')

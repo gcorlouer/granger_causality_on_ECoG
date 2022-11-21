@@ -8,7 +8,6 @@ if ~exist('condition', 'var'), conditions = {'Rest', 'Face', 'Place'}; end
 if ~exist('field', 'var'), field = {'time',  'condition', 'pair', 'subject','F'}; end
 if ~exist('datadir', 'var'), datadir = fullfile('~', 'projects', 'cifar', 'results'); end
 if ~exist('signal', 'var'), signal = 'hfa'; end
-if ~exist('suffix', 'var'), suffix = ['_condition_visual_' signal '.mat']; end
 
 
 % Detrending

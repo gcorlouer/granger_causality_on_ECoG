@@ -34,14 +34,14 @@ parser.add_argument("--tmin_baseline", type=float, default=-0.5)
 parser.add_argument("--tmax_baseline", type=float, default=0)
 
 # Wether to log transform the data
-parser.add_argument("--log_transf", type=bool, default=False)
+parser.add_argument("--log_transf", type=bool, default=True)
 # Mode to rescale data (mean, logratio, zratio)
 parser.add_argument("--mode", type=str, default='logratio')
 # Pick visual chan
 parser.add_argument("--pick_visual", type=bool, default=True)
 # Create category specific time series
-parser.add_argument("--l_freq", type=float, default=1)
-parser.add_argument("--decim", type=float, default=4)
+parser.add_argument("--l_freq", type=float, default=0.1)
+parser.add_argument("--decim", type=float, default=2)
 parser.add_argument("--tmin_crop", type=float, default=0.2)
 parser.add_argument("--tmax_crop", type=float, default=1.5)
 parser.add_argument("--matlab", type=bool, default=True)
@@ -51,6 +51,7 @@ args = parser.parse_args()
 # Suffix
 #'_bad_chans_removed_raw.fif'
 # '_hfb_continuous_raw.fif' 
+# signal hfa/lfp
 #%% 
 
 def input_ts_fname(subject, visual=True, signal='hfa'):

@@ -482,16 +482,46 @@ from src.plotting_lib import plot_condition_ts
 fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
 plot_condition_ts(args, fpath, subject='DiAs', figname='_condition_ts.jpg')
 
-#%% Plot var
+#%% Plot rolling var
 
-from src.plotting_lib import plot_rolling_var
+def plot_rolling_var(df, fpath, momax=10, figname='rolling_var.pdf'):
+    """
+    This function plots results of rolling VAR estimation
+    """
+    cohort = ['AnRa', 'ArLa', 'DiAs']
+    nsub = len(cohort)
+    ic = ["aic", "bic", "hqc", "lrt"]
+    cdt = list(df["condition"].unique())
+    ncdt = len(cdt)
+    # Plot rolling var
+    f, ax = plt.subplots(ncdt, nsub, sharex=True, sharey=True)
+    for c in range(ncdt):
+        for s in range(nsub):
+            for i in ic:
+                time = df["time"].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
+                morder = df[i].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
+                ax[c,s].plot(time, morder, label=i)
+                ax[c,s].set_ylim(0,momax)
+                ax[0,s].set_title(f"Subject {s}")
+                ax[c,0].set_ylabel(cdt[c])
+                ax[2,s].set_xlabel("Time (s)")
+                #ax[2,s].set_xticks(ticks)
+                        
+    # legend situated upper right                
+    handles, labels = ax[c,s].get_legend_handles_labels()
+    f.legend(handles, labels, loc='upper right')
+    plt.tight_layout()
+    # Save figure
+    fpath = fpath.joinpath(figname)
+    #plt.savefig(fpath)
+
 
 result_path = Path('..','results')
 fname = 'rolling_var_estimation.csv'
 fpath = Path.joinpath(result_path, fname)
 df = pd.read_csv(fpath)
 
-figname = 'rolling_var.jpg'
+figname = 'rolling_var.png'
 
 fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
 

@@ -24,14 +24,15 @@ fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
 label_size = 10
+tick_size = 8
 params = {'backend': 'ps',
-          'lines.linewidth': 1.5,
+          'lines.linewidth': 1.2,
           'axes.labelsize': label_size,
           'axes.titlesize': label_size,
           'font.size': label_size,
-          'legend.fontsize': label_size,
-          'xtick.labelsize': label_size,
-          'ytick.labelsize': label_size,
+          'legend.fontsize': tick_size,
+          'xtick.labelsize': tick_size,
+          'ytick.labelsize': tick_size,
           'text.usetex': False,
           'figure.figsize': fig_size}
 plt.rcParams.update(params)
@@ -118,9 +119,10 @@ args = parser.parse_args()
 def plot_condition_ts(args, cohort):
     # Prepare inputs for plotting
     conditions = ['Rest','Face','Place']
+    populations = ['R','O','F']
     ncdt = len(conditions)
     nsub = len(cohort)
-    fig, ax = plt.subplots(ncdt,nsub, sharex=False, sharey=False)
+    fig, ax = plt.subplots(3,nsub, sharex=False, sharey=False)
     # Prepare condition ts
     for s, subject in enumerate(cohort):
         ts = prepare_condition_scaled_ts(args.data_path, subject=subject, 
@@ -130,13 +132,13 @@ def plot_condition_ts(args, cohort):
                             tmin_baseline = args.tmin_baseline, tmax_baseline = args.tmax_baseline,
                             tmin_crop=args.tmin_crop, tmax_crop=args.tmax_crop, 
                             mode = args.mode, channels = args.channels)
-        populations = ts['indices'].keys()
+        #populations = ts['indices'].keys()
         time = ts['time']
         baseline = ts['baseline']
         baseline = np.average(baseline)
         # Plot condition ts
-        for c, cdt in enumerate(conditions):
-            for pop in populations:
+        for p, pop in enumerate(populations):
+            for c, cdt in enumerate(conditions):
                 # Condition specific neural population
                 X = ts[cdt]
                 pop_idx = ts['indices'][pop]
@@ -149,21 +151,21 @@ def plot_condition_ts(args, cohort):
                 up_ci = evok + 1.96*smX
                 down_ci = evok - 1.96*smX
                 # Plot condition-specific evoked HFA
-                ax[c,s].plot(time, evok, label=pop)
-                ax[c,s].fill_between(time, down_ci, up_ci, alpha=0.4)
-                ax[c,s].set_ylim([-2.5, 6])
-                ax[c,s].axvline(x=0, color ='k')
-                ax[c,s].axhline(y=baseline, color='k')
-                ax[c,0].set_ylabel(f'{cdt} (dB)')
+                ax[p,s].plot(time, evok, label=cdt)
+                ax[p,s].fill_between(time, down_ci, up_ci, alpha=0.3)
+                ax[p,s].set_ylim([-2.5, 6])
+                ax[p,s].axvline(x=0, color ='k')
+                ax[p,s].axhline(y=baseline, color='k')
+                ax[p,0].set_ylabel(f'{pop} (dB)')
                 ax[0,s].set_title(f'subject S{s}')
-                if c<=2:
-                        ax[c,s].set_xticks([]) # (turn off xticks)
+                if p<=2:
+                        ax[p,s].set_xticks([]) # (turn off xticks)
                 if s>=1:
-                        ax[c,s].set_yticks([]) # (turn off xticks)
-                handles, labels = ax[c,s].get_legend_handles_labels()
-                #ax[2,s].set_xticks([-400, 0, 1000])
-                #ax[2,s].set_xticklabels([-0.4, 0, 1]) 
-                #ax[2,s].set_xlabel("Time (s)")
+                        ax[p,s].set_yticks([]) # (turn off xticks)
+                handles, labels = ax[p,s].get_legend_handles_labels()
+                ax[2,s].set_xticks([-0.5, 0, 0.5, 1, 1.5])
+                ax[2,s].set_xticklabels([-0.5, 0, 0.5, 1, 1.5]) 
+                ax[2,s].set_xlabel("Time (s)")
     fig.legend(handles, labels, loc='upper right')
     fig.suptitle('Average HFA', )
     #fig.supxlabel("Time (s)")

@@ -6,7 +6,7 @@ nsub = length(cohort);
 ncdt = length(conditions);
 plotm = [];
 verb = [];
-momax = 20;
+momax = 30;
 ModelOrder = struct;
 %Multitrial VAR model estimation
 for s=1:nsub

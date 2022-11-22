@@ -17,20 +17,22 @@ from src.input_config import args
 #%% Style parameters
 
 plt.style.use('ggplot')
-fig_width = 25  # figure width in cm
+fig_width = 16  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
+label_size = 10
+tick_size = 8
 params = {'backend': 'ps',
-          'lines.linewidth': 1.5,
-          'axes.labelsize': 15,
-          'axes.titlesize': 15,
-          'font.size': 15,
-          'legend.fontsize': 12,
-          'xtick.labelsize': 13,
-          'ytick.labelsize': 15,
+          'lines.linewidth': 1.2,
+          'axes.labelsize': label_size,
+          'axes.titlesize': label_size,
+          'font.size': label_size,
+          'legend.fontsize': tick_size,
+          'xtick.labelsize': tick_size,
+          'ytick.labelsize': tick_size,
           'text.usetex': False,
           'figure.figsize': fig_size}
 plt.rcParams.update(params)
@@ -60,7 +62,7 @@ pticks = [0, 5, 10]
 
 #%matplotlib qt
 
-f, ax = plt.subplots(ncdt, nsub, sharex=True, sharey=True)
+fig, ax = plt.subplots(ncdt, nsub, sharex=True, sharey=True)
 
 for c in range(ncdt):
     for s in range(nsub):
@@ -79,9 +81,10 @@ for c in range(ncdt):
             ax[2,s].set_xlabel("Time (s)")
             ax[c,s].axvline(x=0, color='k')
 handles, labels = ax[c,s].get_legend_handles_labels()
-f.legend(handles, labels, loc='upper right')
-f.suptitle('Rolling model order', )
-plt.tight_layout()
+fig.legend(handles, labels, loc='upper right')
+fig.suptitle('Rolling model order', )
+
+
 fpath = Path('~','thesis','overleaf_project', 'figures','method_figure').expanduser()
 fname = signal + '_rolling_var.png'
 figpath = fpath.joinpath(fname)

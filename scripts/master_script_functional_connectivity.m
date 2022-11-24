@@ -10,7 +10,7 @@ bands.hgamma = [60 120];
 
 signal = 'hfa';
 suffix = ['_condition_visual_' signal '.mat'];
-band = [0 62]; % Band if downsampled to 125 Hz
+band = [0 62]; % Band when downsampled to 125 Hz
 connect = 'pairwise';
 compare_condition_GC
 connect = 'groupwise';

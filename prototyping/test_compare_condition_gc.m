@@ -20,6 +20,7 @@ nComp = size(comparisons,2);
 % Prepare cell arrays
 F = cell(2,1);
 Xc = cell(2,1);
+Ntrial = zeros(2,1);
 %% Compare GC between conditions
 
 for s=1:nsub
@@ -35,16 +36,15 @@ for s=1:nsub
                     'condition',condition, 'suffix', suffix);
                 X = gc_input.X;
                 [n,m,N] = size(X);
-                % Take same number of trials as Face (faster computation)
                 if strcmp(condition, 'Rest')
                     trial_idx = 1:N;
-                    Nt = 56;
+                    Nt = 56; % Take same number of trials as Face (faster computation)
                     trials = datasample(trial_idx, Nt,'Replace',false);
                     X = X(:,:, trials);
                 end
                 indices = gc_input.indices;
                 Xc{i} = X;
-                [n,m,N] = size(Xc{i});
+                [n,m,Ntrial(i)] = size(Xc{i});
                 sfreq = gc_input.sfreq;
                 % Estimate SS model
                 pf = 2 * morder;

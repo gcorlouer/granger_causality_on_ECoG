@@ -61,9 +61,11 @@ for i=1:nR
             trials = randperm(Nt);
             trialsR = trials(1:N);
             trialsF = trials(N+1:Nt);
+            % Permuted Retinotopic time series
             xR = xRF(:,:,trialsR);
+            % Permuted Face time series
             xF = xRF(:,:,trialsF);
-            % Concatenate pairwise time series
+            % Concatenate in 2D time series
             xRFp = cat(1,xR,xF);
             % Estimate permutation GC
             [A,C,K,V,~,~] = tsdata_to_ss(xRFp, pf, ssmo);

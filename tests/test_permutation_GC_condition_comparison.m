@@ -80,19 +80,13 @@ fprintf('Permuted median : %6.4f         %6.4f\n', Fpm(1), Fpm(2));
 fprintf('Permuted mad    : %6.4f         %6.4f\n', Fpd(1), Fpd(2));
 fprintf('--------------------------------------------\n\n');
 
-
-%% Compute p value and Z scores
+%% Compute p value and Z scores (with pvalue from permtest)
 
 testStat = Fp{1} - Fp{2};
 observedStat = Fs(1) - Fs(2);
-count = 0;
-for s=1:Ns
-    if abs(testStat(s))>abs(observedStat)
-        count=count+1;
-    else
-        continue 
-    end
-end
+
+count = abs(testStat) > abs(observedStat);
+count = sum(count, 1);
 
 pval = count/Ns;
 mT = mean(testStat);
@@ -115,12 +109,21 @@ fprintf('z-score     : %6.4f\n',z);
 fprintf('p-value     : %6.4f\n',pval);
 fprintf('Significant : %s\n\n', sigstr);
 
+%% Test for gaussianity
+t = (testStat - mT)/sT;
+[kt,p,ksstat] = kstest(t);
+q = skewness(testStat);
+k = kurtosis(testStat);
+% xn = randn(1000,1);
+% kx = kurtosis(xn);
+% [ksx,px,ksstat] = kstest(xn);
+% 
 %% Plot histograms of test statistics
 
-figure(fignum); clf;
-histogram(testStat,hbins,'facecolor','g');
-hold on
-xline(observedStat,'-','Observed statistic')
-hold off
-
-title(sprintf('Permutation distribution of difference in GC between 2 conditions'));
+% figure(fignum); clf;
+% histogram(testStat,hbins,'facecolor','g');
+% hold on
+% xline(observedStat,'-','Observed statistic')
+% hold off
+% 
+% title(sprintf('Permutation distribution of difference in GC between 2 conditions'));

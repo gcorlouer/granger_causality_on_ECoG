@@ -865,7 +865,8 @@ def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = Tr
     for condition in conditions:
         # Epoch visually responsive HFA
         if condition == 'baseline':
-            # Return prestimulus baseline
+            # Return prestimulus baseline. 
+            # Condition is Stim to pre-stimulus baseline for all stim trials
             epocher = Epocher(condition='Stim', t_prestim=t_prestim, t_postim = t_postim, 
                             baseline=None, preload=True, tmin_baseline=tmin_baseline, 
                             tmax_baseline=tmax_baseline, mode=mode)
@@ -879,7 +880,7 @@ def prepare_condition_ts(path, subject='DiAs', stage='preprocessed', matlab = Tr
             epoch = epoch.copy().filter(l_freq=l_freq, h_freq=None)
             epoch = epoch.copy().decimate(decim)
         else:
-            # Return condition specific epochs
+            # Return condition-specific epochs
             epocher = Epocher(condition=condition, t_prestim=t_prestim, t_postim = t_postim, 
                                 baseline=None, preload=True, tmin_baseline=tmin_baseline, 
                                 tmax_baseline=tmax_baseline, mode=mode)

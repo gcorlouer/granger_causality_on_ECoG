@@ -49,7 +49,7 @@ if ~exist('connect', 'var'), connect = 'groupwise'; end
 % Statistics
 if ~exist('nsample', 'var'), nsample = 100; end
 if ~exist('Ns', 'var'), Ns = 500; end % number of permutations
-if ~exist('test', 'var'), test = 'F'; end
+if ~exist('test', 'var'), test = 'LR'; end
 if ~exist('debias', 'var'), debias = true; end
 if ~exist('alpha', 'var'), alpha = 0.05; end
 if ~exist('mhtc', 'var'), mhtc = 'FDRD'; end % multiple testing correction

@@ -17,7 +17,7 @@ nstim = 29  # 14 faces, 14 places and 1 fixation screen
 stimuli = [0]*nstim
 home = Path.home()
 # Directory containing presented stimuli
-stimuli_dir = home.joinpath('projects', 'CIFAR', 'CIFAR_data', 'iEEG_10',
+stimuli_dir = home.joinpath('projects', 'cifar', 'data', 'source_data', 'iEEG_10',
                             'presented_stimuli')
 # Read stimuli into numpy array
 for i, fname in enumerate(stimuli_dir.iterdir()):

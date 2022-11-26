@@ -11,10 +11,16 @@ bands.hgamma = [60 120];
 signal = 'hfa';
 suffix = ['_condition_visual_' signal '.mat'];
 band = [0 62]; % Band when downsampled to 125 Hz
+% HFA model order
+morder = 5;
+ssmo = 15;
 connect = 'pairwise';
 compare_condition_GC
 connect = 'groupwise';
 compare_condition_GC
+% HFA model order for pairwise unconditional GC
+morder = 20;
+ssmo = 29;
 compare_bu_td_gc_permtest
 %% Functional connectivity on ECoG
 
@@ -24,9 +30,15 @@ band_names = fieldnames(bands);
 nband = length(band_names);
 for ib=1:nband
     band = bands.(band_names{ib});
+    % LFP model order
+    morder = 5;
+    ssmo = 20;
     connect = 'pairwise';
     compare_condition_GC
     connect = 'groupwise';
     compare_condition_GC
+    % LFP model order for pairwise unconditional GC
+    morder = 30;
+    ssmo = 47;
     compare_bu_td_gc_permtest
 end

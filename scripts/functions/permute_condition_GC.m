@@ -8,7 +8,7 @@ arguments
     args.connect char % Observed difference in MI between conditions
     args.morder double = 5 % VAR model order
     args.ssmo double = 20 % SS model order
-    args.Ntrial double = [56 56] % Number of trials per condition
+    args.Ntrial double = 56 % Number of trials per condition
     args.Ns double = 500; % Number of permutations
     args.dim double = 3; % Integration dimension
     args.sfreq double = 250; % Sampling frequency
@@ -17,7 +17,7 @@ arguments
 end
 
 group = args.group; connect = args.connect;
-Ntrial = args.Ntrial; Ns = args.Ns;
+N = args.Ntrial; Ns = args.Ns;
 morder = args.morder; ssmo = args.ssmo;
 sfreq = args.sfreq; dim = args.dim; band = args.band; nfreqs = args.nfreqs;
 
@@ -43,7 +43,7 @@ for i=1:2
             fprintf('Compare condition %s %s GC sample %d of %d \n',connect,bandstr, s,Ns);
         end
         % Sample trials without replacement
-        trials = datasample(trial_idx, Ntrial(i),'Replace',false);
+        trials = datasample(trial_idx, N,'Replace',false);
         Xp = X(:,:,trials);
         % Estimate SS model
         [A,C,K,V,~,~] = tsdata_to_ss(Xp,pf,ssmo);

@@ -20,7 +20,7 @@ parser.add_argument("--subject", type=str, default='DiAs')
 parser.add_argument("--sfeq", type=float, default=500.0)
 parser.add_argument("--stage", type=str, default='preprocessed')
 parser.add_argument("--preprocessed_suffix", type=str, default= '_bad_chans_removed_raw.fif')
-parser.add_argument("--signal", type=str, default= 'hfa') # correspond to preprocessed_suffix
+parser.add_argument("--signal", type=str, default= 'lfp') # correspond to preprocessed_suffix
 parser.add_argument("--epoch", type=bool, default=False)
 parser.add_argument("--channels", type=str, default='visual_channels.csv')
 

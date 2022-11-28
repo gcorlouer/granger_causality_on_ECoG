@@ -72,6 +72,7 @@ for s=1:nsub
             stat = permtest(tstat, 'obsStat', obsStat, 'Ns', Ns, ...
                 'alpha', alpha, 'mhtc','FDRD');
             % Save into GC structure for python plotting
+            GC.(subject).(comparison_name).('T') = stat.T;
             GC.(subject).(comparison_name).('z') = stat.z;
             GC.(subject).(comparison_name).('sig') = stat.sig;
             GC.(subject).(comparison_name).('pval') = stat.pval;

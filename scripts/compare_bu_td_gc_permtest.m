@@ -1,12 +1,11 @@
 %% Comparing GC between direction
-% Scripts does takes about 17mnto run with 100 permutations
+% Scripts takes about 17mnto run with 100 permutations
 %% Input parameters
 tic;
 input_parameters;
 nsub = length(cohort);
 ncdt = length(conditions);
 bandstr = mat2str(band);
-if ~exist('fname', 'var'), fname = ['compare_TD_BU_GC_' bandstr 'Hz.mat']; end
 %% Compare top down and bottom up band-spacific GC with permutation testing
 % For each Subjects and Conditions
 for s=1:nsub
@@ -22,7 +21,7 @@ for s=1:nsub
         [n,m,N] = size(X);
         if strcmp(condition, 'Rest')
             trial_idx = 1:N;
-            Ntrial = 56; % Take same number of trials as Face (faster computation)
+            Ntrial = 56; % Take same number of trials as Face
             trials = datasample(trial_idx, Ntrial,'Replace',false);
             X = X(:,:, trials);
         end
@@ -30,6 +29,8 @@ for s=1:nsub
         stat = compare_TD_BU_pgc(X, indices, 'morder', morder, 'ssmo', ssmo,...
             'Ns',Ns,'alpha',alpha, 'mhtc',mhtc, ...
             'sfreq',sfreq, 'nfreqs', nfreqs,'dim',dim, 'band',band);
+        % Make restult dataset
+        GC.(subject).(condition).('T') = stat.T;
         GC.(subject).(condition).('z') = stat.z;
         GC.(subject).(condition).('sig') = stat.sig;
         GC.(subject).(condition).('pval') = stat.pval;
@@ -41,6 +42,7 @@ for s=1:nsub
 end
 toc; 
 %% Save dataset
+fname = ['compare_TD_BU_GC_' bandstr 'Hz.mat'];
 fpath = fullfile(datadir, fname);
 save(fpath, 'GC')
 

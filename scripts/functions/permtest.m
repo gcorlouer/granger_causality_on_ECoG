@@ -25,6 +25,7 @@ z = (obsStat - mT)./sT;
 zcrit = sqrt(2)*erfcinv(pcrit);
 
 % Return statistics
+stat.T = tstat;
 stat.pval = pval;
 stat.sig = sig;
 stat.z = z;

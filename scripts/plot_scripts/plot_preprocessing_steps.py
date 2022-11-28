@@ -442,7 +442,6 @@ def plot_linreg(reg, xlabels, ylabels):
     
     Regressors/regressands
     """
-    result_path = Path('../results')
     fname = 'all_visual_channels.csv'
     fpath = result_path.joinpath(fname)
     df = pd.read_csv(fpath)
@@ -464,13 +463,13 @@ def plot_linreg(reg, xlabels, ylabels):
         plt.scatter(x,y, color='b')
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.annotate(f'r2={round(stats.rvalue,2)}\n p={round(stats.pvalue,3)}', 
+        plt.annotate(f'r={round(stats.rvalue,2)}\n p={round(stats.pvalue,3)}', 
                        xy = (0.75, 0.75), xycoords='axes fraction', fontsize = 8)
         plt.tight_layout()
 
 reg = [('Y','latency'), ('Y','visual_responsivity'),('latency', 'visual_responsivity'),
            ('Y','category_selectivity')]
-xlabels = ['Y axis (mm)', 'Y axis (mm)', 'latency (ms)', 'Y (mm)']
+xlabels = ['Y axis (MNI)', 'Y axis (MNI)', 'latency (ms)', 'Y (MNI)']
 ylabels = ['latency (ms)', 'responsivity (dB)', 'responsivity (dB)', 'selectivity (dB)']
 fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
 figname = 'visual_hierarchy.png'

@@ -20,25 +20,27 @@ from pathlib import Path
 #%%
 
 plt.style.use('ggplot')
-fig_width = 16  # figure width in cm
+fig_width = 24  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
-label_size = 10
+label_size = 12
+tick_size = 8
 params = {'backend': 'ps',
           'lines.linewidth': 1.5,
           'axes.labelsize': label_size,
           'axes.titlesize': label_size,
           'font.size': label_size,
-          'legend.fontsize': label_size,
-          'xtick.labelsize': label_size,
-          'ytick.labelsize': label_size,
+          'legend.fontsize': tick_size,
+          'xtick.labelsize': tick_size,
+          'ytick.labelsize': tick_size,
           'text.usetex': False,
-          'figure.figsize': fig_size}
+          'figure.figsize': fig_size,
+          "font.weight": "bold",
+          "axes.labelweight": "bold"}
 plt.rcParams.update(params)
-# Bands
 
 #eeg_bands = {"delta":[1, 4], "theta":[4, 7], "alpha": [8, 12], "beta": [12,30],
 #            "gamma": [32, 60], "hgamma":[60, 120]}
@@ -46,26 +48,18 @@ plt.rcParams.update(params)
 eeg_bands = {"[1 4]":"δ", "[4 7]":"θ", "[ 8 12]": "α", "[13 30]": "β",
              "[32 60]": "γ", "[ 60 120]":"hγ", "[ 0 62]": "hfa"}
 
-#%%
-cohort = ['AnRa',  'ArLa', 'DiAs']
-# Useful paths
-cifar_path = Path('~','projects','cifar').expanduser()
-data_path = cifar_path.joinpath('data')
-result_path = cifar_path.joinpath('results')
-connect = "groupwise"
-band = "[60 120]"
-fname = "compare_TD_BU_GC_"+ band + "Hz.mat"
-path = result_path
-fpath = path.joinpath(fname)
-# Read dataset
-dataset = loadmat(fpath)
-F = dataset['GC']
+eeg_bands = ["[4 7]", "[8 12]", "[13 30]", 
+                    "[32 60]", "[60 120]", "[0 62]"] # EEG bands
 
-vmax = 5
-vmin = -vmax
+eeg_bands_fname_dic = {"[1 4]":"delta", "[4 7]":"theta", "[8 12]": "alpha", "[13 30]": "beta",
+             "[32 60]": "gamma", "[60 120]":"hgamma", "[0 62]": "hfa"} # to safe fig file name
+
+eeg_bands_fig_title_dic = {"[1 4]":"δ", "[4 7]":"θ", "[ 8 12]": "α", "[13 30]": "β",
+             "[32 60]": "γ", "[ 60 120]":"hγ", "[ 0 62]": "hfa"} # To write fig titles
+
 #%%
 
-def plot_TD_BU_zscore(F, cohort, data_path,
+def plot_TD_BU_zscore(F, cohort, data_path, cmap = 'PuOr',
                        vmin = -5, vmax=5, tau_x=0.5, tau_y=0.8):
     """
     We plot Z score from comparing top down with bottom up pairwise unconditional
@@ -90,13 +84,13 @@ def plot_TD_BU_zscore(F, cohort, data_path,
             xticklabels = ['F']*nF
             yticklabels = ['R']*nR
             # Plot Z score as a heatmap
-            g = sns.heatmap(z,  vmin=vmin, vmax=vmax, cmap='bwr', ax=ax[c,s],
+            g = sns.heatmap(z,  vmin=vmin, vmax=vmax, cmap=cmap, ax=ax[c,s],
             xticklabels=xticklabels, yticklabels=yticklabels, cbar_ax=cbar_ax)
             g.set_yticklabels(g.get_yticklabels(), rotation = 90)
-            if c>=1:
-                    ax[c,s].set_xticks([]) # (turn off xticks)
-            if s>=1:
-                    ax[c,s].set_yticks([]) # (turn off xticks)
+            # if c>=1:
+            #         ax[c,s].set_xticks([]) # (turn off xticks)
+            # if s>=1:
+            #         ax[c,s].set_yticks([]) # (turn off xticks)
             ax[c,s].xaxis.set_ticks_position('top')
             ax[c,s].xaxis.set_label_position('top')
             ax[c,0].set_ylabel(f"Z {condition}")
@@ -109,11 +103,35 @@ def plot_TD_BU_zscore(F, cohort, data_path,
                                  color='k')
                     else:
                         continue                 
-            fband = eeg_bands[bandstr]
+            fband = eeg_bands_fig_title_dic[bandstr]
             ax[0,s].set_title(f"S{s}, {fband}")
+    plt.suptitle(f"Top-down relative to bottom-up GC")
     print(f"\n Critical Z score is {zcrit}\n")
 
-#%%
+#%% Plot results
 
-plot_TD_BU_zscore(F, cohort, data_path, 
-                 vmax=vmax, vmin=vmin, tau_x=0.5, tau_y=0.8)
+cohort = ['AnRa',  'ArLa', 'DiAs']
+cmap ='PuOr'
+vmax = 10
+
+for band in eeg_bands:
+    # Useful paths
+    cifar_path = Path('~','projects','cifar').expanduser()
+    data_path = cifar_path.joinpath('data')
+    result_path = cifar_path.joinpath('results')
+    fname = "compare_TD_BU_GC_"+ band + "Hz.mat"
+    path = result_path
+    fpath = path.joinpath(fname)
+    # Read dataset
+    dataset = loadmat(fpath)
+    F = dataset['GC']
+    
+    vmin = -vmax
+    
+    plot_TD_BU_zscore(F, cohort, data_path,  cmap=cmap,
+                     vmax=vmax, vmin=vmin, tau_x=0.5, tau_y=0.8)
+    figpath = Path('~','thesis','overleaf_project', 'figures','results_figures').expanduser()
+    bandstr = eeg_bands_fname_dic[band]
+    fname =  "_".join(["compare", "td_vs_bu","condition", bandstr,"GC.pdf"])
+    figpath = figpath.joinpath(fname)
+    plt.savefig(figpath)

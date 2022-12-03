@@ -21,43 +21,47 @@ import seaborn as sns
 #%%
 
 plt.style.use('ggplot')
-fig_width = 16  # figure width in cm
+fig_width = 24  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
 label_size = 10
+tick_size = 8
 params = {'backend': 'ps',
           'lines.linewidth': 1.5,
           'axes.labelsize': label_size,
           'axes.titlesize': label_size,
           'font.size': label_size,
-          'legend.fontsize': label_size,
-          'xtick.labelsize': label_size,
-          'ytick.labelsize': label_size,
+          'legend.fontsize': tick_size,
+          'xtick.labelsize': tick_size,
+          'ytick.labelsize': tick_size,
           'text.usetex': False,
-          'figure.figsize': fig_size}
+          'figure.figsize': fig_size,
+          "font.weight": "bold",
+          "axes.labelweight": "bold"}
 plt.rcParams.update(params)
 
 #%%
-
+# Variable inputs of the script
+function = 'MI' # MI or GC
+connect = "pairwise" # pairwise or groupwise
+plot_dic = {"MI": {"pairwise": 0.02, "groupwise": 0.1} , "GC":{"pairwise":0.005, "groupwise":0.01}}
+vmax = plot_dic[function][connect]
+vmin = 0
 cohort = ['AnRa',  'ArLa', 'DiAs']
 # Useful paths
 cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
 result_path = cifar_path.joinpath('results')
-connect = "pairwise"
-fname = 'null_' + connect +'_fc.mat'
+fname = "_".join(['null', connect, 'fc.mat'])
 path = result_path
 fpath = path.joinpath(fname)
 # Read dataset
 dataset = loadmat(fpath)
 F = dataset['FC']
-# Plot parameters
-function = 'GC'
-vmax = 0.01
-vmin = 0
+
 # %% Plot FC
 
 def plot_functional_connectivity(F, cohort, function='GC', vmax=5, vmin=0, 
@@ -112,12 +116,12 @@ def plot_functional_connectivity(F, cohort, function='GC', vmax=5, vmin=0,
                 g = sns.heatmap(stat, vmin=0, vmax=vmax, cmap='YlOrBr', ax=ax[c,s],
                             cbar_ax=cbar_ax, xticklabels=ticks_labels, yticklabels=ticks_labels)
                 g.set_yticklabels(g.get_yticklabels(), rotation = 90)
-                if c>=1:
-                    ax[c,s].set_xticks([]) # (turn off xticks)
-                if s>=1:
-                    ax[c,s].set_yticks([]) # (turn off xticks)
-                #ax[c,s].set_xticklabels(ticks_labels)
-                #ax[c,s].set_yticklabels(ticks_labels)
+                # if c>=1:
+                #     ax[c,s].set_xticks([]) # (turn off xticks)
+                # if s>=1:
+                #     ax[c,s].set_yticks([]) # (turn off xticks)
+                ax[c,s].set_xticklabels(ticks_labels)
+                ax[c,s].set_yticklabels(ticks_labels)
                 ax[c,s].xaxis.set_ticks_position('top')
                 ax[c,s].xaxis.set_label_position('top')
                 ax[c,0].set_ylabel(f"{function } {condition}")
@@ -130,16 +134,16 @@ def plot_functional_connectivity(F, cohort, function='GC', vmax=5, vmin=0,
                 g = sns.heatmap(stat, vmin=0, vmax=vmax, cmap='YlOrBr', ax=ax[c,s],
                             cbar_ax=cbar_ax)
                 g.set_yticklabels(g.get_yticklabels(), rotation = 90)
-                ax[0,s].set_xticklabels(ticks_labels)
-                ax[c,0].set_yticklabels(ticks_labels)
-                ax[0,s].xaxis.set_ticks_position('top')
-                ax[0,s].xaxis.set_label_position('top')
+                ax[c,s].set_xticklabels(ticks_labels)
+                ax[c,s].set_yticklabels(ticks_labels)
+                ax[c,s].xaxis.set_ticks_position('top')
+                ax[c,s].xaxis.set_label_position('top')
                 ax[c,0].set_ylabel(f"{function } {condition}")
                 ax[0,s].set_title(f"S{s}")
-                if c>=1:
-                    ax[c,s].set_xticks([]) # (turn off xticks)
-                if s>=1:
-                    ax[c,s].set_yticks([]) # (turn off xticks)
+                # if c>=1:
+                #     ax[c,s].set_xticks([]) # (turn off xticks)
+                # if s>=1:
+                #     ax[c,s].set_yticks([]) # (turn off xticks)
             # Plot statistical significant entries
             for y in range(stat.shape[0]):
                 for x in range(stat.shape[1]):
@@ -149,13 +153,17 @@ def plot_functional_connectivity(F, cohort, function='GC', vmax=5, vmin=0,
                                  color='k')
                     else:
                         continue                 
-    #fig.tight_layout()
+    plt.suptitle(f"Single subject {connectivity[0]} conditional {function}")
     
 #%%
-
+connectivity = F['connectivity'][0][0][0]
 plot_functional_connectivity(F, cohort, function=function, vmax=vmax, vmin=vmin,
                              tau_x=0.5, tau_y=0.8)
 
+figpath = Path('~','thesis','overleaf_project', 'figures','results_figures').expanduser()
+fname =  "_".join([connectivity, function, "against", "null.pdf"])
+figpath = figpath.joinpath(fname)
+plt.savefig(figpath)
 
 #%% Try to change axes positions
 

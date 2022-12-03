@@ -17,7 +17,7 @@ from pathlib import Path
 #%%
 
 plt.style.use('ggplot')
-fig_width = 16  # figure width in cm
+fig_width = 24  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches

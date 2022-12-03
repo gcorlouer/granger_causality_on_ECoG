@@ -14,13 +14,13 @@ from pathlib import Path
 
 #%%
 plt.style.use('ggplot')
-fig_width = 16  # figure width in cm
+fig_width = 20  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
-label_size = 10
+label_size = 12
 tick_size = 8
 params = {'backend': 'ps',
           'lines.linewidth': 1.2,
@@ -42,8 +42,11 @@ cohort = ['AnRa',  'ArLa', 'DiAs']
 cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
 result_path = cifar_path.joinpath('results')
-signal = 'lfp'
-infocrit = 'bic'
+signal = 'hfa'
+if signal == 'lfp':
+    infocrit = 'bic'
+elif signal == 'hfa':
+    infocrit = 'hqc'
 fname = signal + '_model_order_estimation.m'
 path = result_path
 fpath = path.joinpath(fname)
@@ -74,16 +77,16 @@ def plot_var_model_order(model_order, cohort, infocrit='aic'):
             ax[c,s].plot(lags, sbic, color = 'g', label = 'bic')
             ax[c,s].axvline(x=morder, color='k')
             ax[c,s].annotate(r'$\rho$'+f'={rho}', 
-                       xy = (0.50, 0.50), xycoords='axes fraction', fontsize = 8)
+                       xy = (0.50, 0.50), xycoords='axes fraction', fontsize = 12)
             ticks_labels = [0,5,10,15,20,25,30]
             ax[0,s].set_title(f'Subject {s}')
             ax[-1,s].set_xlabel('Lags (obs)')
-            if c<=1:
-                        ax[c,s].set_xticks([]) # (turn off xticks)
-            if s>=1:
-                        ax[c,s].set_yticks([]) # (turn off xticks)
-            ax[-1,s].set_xticks([0,5,10,15,20,25,30])
-            ax[-1,s].set_xticklabels(ticks_labels)
+            # if c<=1:
+            #             ax[c,s].set_xticks([]) # (turn off xticks)
+            # if s>=1:
+            #             ax[c,s].set_yticks([]) # (turn off xticks)
+            ax[c,s].set_xticks([0,5,10,15,20,25,30])
+            ax[c,s].set_xticklabels(ticks_labels)
             ax[c,0].set_ylabel(f'Morder {condition}')
     #ax[-1,-1].legend()
     handles, labels = ax[c,s].get_legend_handles_labels()
@@ -106,13 +109,13 @@ def plot_ss_model_order(model_order, cohort, xmax=50):
             ticks_labels = [0,10,20,30,40,50]
             ax[0,s].set_title(f'SVC, subject {s}')
             ax[-1,s].set_xlabel('Lags (obs)')
-            if c<=1:
-                        ax[c,s].set_xticks([]) # (turn off xticks)
-            if s>=1:
-                        ax[c,s].set_yticks([]) # (turn off xticks)
+            # if c<=1:
+            #             ax[c,s].set_xticks([]) # (turn off xticks)
+            # if s>=1:
+            #             ax[c,s].set_yticks([]) # (turn off xticks)
             ax[c,s].set_xlim(0,xmax)
-            ax[-1,s].set_xticks(ticks_labels)
-            ax[-1,s].set_xticklabels(ticks_labels)
+            ax[c,s].set_xticks(ticks_labels)
+            ax[c,s].set_xticklabels(ticks_labels)
             ax[c,0].set_ylabel(f'{condition}')
     #ax[-1,-1].legend()
     handles, labels = ax[c,s].get_legend_handles_labels()
@@ -120,7 +123,16 @@ def plot_ss_model_order(model_order, cohort, xmax=50):
 #%% Plot var model order estimation
 
 plot_var_model_order(model_order, cohort, infocrit=infocrit)
+fpath = Path('~','thesis','overleaf_project', 'figures','method_figure').expanduser()
+fname = signal + '_varmorder_multi_trial.pdf'
+figpath = fpath.joinpath(fname)
+plt.savefig(figpath)
+
 
 #%% Plot ss model order estimation
 
 plot_ss_model_order(model_order, cohort)
+fpath = Path('~','thesis','overleaf_project', 'figures','method_figure').expanduser()
+fname = signal + '_ssmorder_multi_trial.pdf'
+figpath = fpath.joinpath(fname)
+plt.savefig(figpath)

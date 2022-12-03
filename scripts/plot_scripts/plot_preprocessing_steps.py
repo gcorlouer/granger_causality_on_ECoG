@@ -19,13 +19,13 @@ import argparse
 #%% Plotting parameters
 
 plt.style.use('ggplot')
-fig_width = 16  # figure width in cm
+fig_width = 20  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
-label_size = 10
+label_size = 12
 tick_label_size = 8
 params = {'backend': 'ps',
           'lines.linewidth': 1.2,
@@ -119,8 +119,8 @@ parser.add_argument("--alternative", type=str, default='greater')
 #% Create category specific time series
 
 parser.add_argument("--decim", type=float, default=2)
-parser.add_argument("--tmin_crop", type=float, default=0.3)
-parser.add_argument("--tmax_crop", type=float, default=1.5)
+parser.add_argument("--tmin_crop", type=float, default=-0.5)
+parser.add_argument("--tmax_crop", type=float, default=1.75)
 
 #% Functional connectivity parameters
 
@@ -196,7 +196,7 @@ def plot_narrow_broadband(args, data_path,
     ax[1].set_ylabel('Amplitude (muV)')
     ax[1].set_title('b)', loc='left')
     
-fname = 'DiAs_narrow_broadband_stim.png'
+fname = 'DiAs_narrow_broadband_stim.pdf'
 home = Path.home()
 fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
 plot_narrow_broadband(args, data_path, chan = ['LTo1-LTo2'], tmin=500, tmax=506)
@@ -206,7 +206,7 @@ fpath = fpath.joinpath(fname)
 plt.savefig(fpath)
 
 #%% Plot log trial
-fname = 'DiAs_log_trial.png'
+fname = 'DiAs_log_trial.pdf'
 home = Path.home()
 fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
 
@@ -267,7 +267,7 @@ def plot_log_trial(args, data_path,
     # Plot log trial
     ax[0,1].plot(time, l_trial)
     ax[0,1].set_xlabel('Time (s)')
-    ax[0,1].set_ylabel('Log HFA (muV)')
+    ax[0,1].set_ylabel('Log HFA ')
     ax[0,1].axvline(x=0, color='k')
     ax[0,1].set_title('b)',loc='left')
     ax[0,1].axhline(y=l_baseline, color='k')
@@ -343,7 +343,7 @@ def plot_visual_trial(args, data_path,
     # Plot representative trial
     ax[0,0].plot(time, trial, color='b')
     ax[0,0].set_xlabel('Time (s)')
-    ax[0,0].set_ylabel('Trial HFA (dB) ')
+    ax[0,0].set_ylabel('Trial log HFA')
     ax[0,0].axvline(x=0, color='k')
     ax[0,0].axvline(x=latency, color='r', label='latency response')
     ax[0,0].axhline(y=baseline, color='k')
@@ -351,9 +351,9 @@ def plot_visual_trial(args, data_path,
     ax[0,0].legend()
     # Plot evoked response
     ax[1,0].plot(time, evok, color='b')
-    ax[1,0].fill_between(time, down_ci, up_ci, alpha=0.6, color='b')
+    ax[1,0].fill_between(time, down_ci, up_ci, alpha=0.4, color='b')
     ax[1,0].set_xlabel('Time (s)')
-    ax[1,0].set_ylabel('Average HFA (dB)')
+    ax[1,0].set_ylabel('Average log HFA ')
     ax[1,0].axvline(x=0, color='k')
     ax[1,0].axvline(x=latency, color='r', label='latency response')
     ax[1,0].axhline(y=baseline, color='k')
@@ -373,7 +373,7 @@ def plot_visual_trial(args, data_path,
     ax[1,1].set_title('d)',loc='left')
     plt.tight_layout()
 
-fname = 'DiAs_visual_trial.png'
+fname = 'DiAs_visual_trial.pdf'
 home = Path.home()
 fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
 plot_visual_trial(args, data_path,
@@ -420,10 +420,10 @@ def plot_visual_vs_non_visual(args, data_path):
         plt.axhline(y=baseline, color='k')
         plt.axvline(x=0, color='k')
         plt.xlabel('Time (s)')
-        plt.ylabel(f'HFA subject {i}')
+        plt.ylabel(f'HFA subject {i} (dB)') # Data has been baseline rescaled
         plt.tight_layout()
         #plt.legend(loc='lower left', bbox_to_anchor=(1.02, 1.02))
-fname = 'visual_vs_non_visual.png'
+fname = 'visual_vs_non_visual.pdf'
 fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
 
 plot_visual_vs_non_visual(args, data_path)
@@ -464,102 +464,102 @@ def plot_linreg(reg, xlabels, ylabels):
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         plt.annotate(f'r={round(stats.rvalue,2)}\n p={round(stats.pvalue,3)}', 
-                       xy = (0.75, 0.75), xycoords='axes fraction', fontsize = 8)
+                       xy = (0.75, 0.75), xycoords='axes fraction', fontsize = 12)
         plt.tight_layout()
 
 reg = [('Y','latency'), ('Y','visual_responsivity'),('latency', 'visual_responsivity'),
            ('Y','category_selectivity')]
 xlabels = ['Y axis (MNI)', 'Y axis (MNI)', 'latency (ms)', 'Y (MNI)']
-ylabels = ['latency (ms)', 'responsivity (dB)', 'responsivity (dB)', 'selectivity (dB)']
+ylabels = ['latency (ms)', 'responsivity (z)', 'responsivity (z)', 'selectivity (z)']
 fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
-figname = 'visual_hierarchy.png'
+figname = 'visual_hierarchy.pdf'
 plot_linreg(reg, xlabels, ylabels)
 fpath = fpath.joinpath(figname)
 plt.savefig(fpath)
 #%%
-from src.plotting_lib import plot_condition_ts
-fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
-plot_condition_ts(args, fpath, subject='DiAs', figname='_condition_ts.jpg')
+# from src.plotting_lib import plot_condition_ts
+# fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
+# plot_condition_ts(args, fpath, subject='DiAs', figname='_condition_ts.jpg')
 
 #%% Plot rolling var
 
-def plot_rolling_var(df, fpath, momax=10, figname='rolling_var.pdf'):
-    """
-    This function plots results of rolling VAR estimation
-    """
-    cohort = ['AnRa', 'ArLa', 'DiAs']
-    nsub = len(cohort)
-    ic = ["aic", "bic", "hqc", "lrt"]
-    cdt = list(df["condition"].unique())
-    ncdt = len(cdt)
-    # Plot rolling var
-    f, ax = plt.subplots(ncdt, nsub, sharex=True, sharey=True)
-    for c in range(ncdt):
-        for s in range(nsub):
-            for i in ic:
-                time = df["time"].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
-                morder = df[i].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
-                ax[c,s].plot(time, morder, label=i)
-                ax[c,s].set_ylim(0,momax)
-                ax[0,s].set_title(f"Subject {s}")
-                ax[c,0].set_ylabel(cdt[c])
-                ax[2,s].set_xlabel("Time (s)")
-                #ax[2,s].set_xticks(ticks)
+# def plot_rolling_var(df, fpath, momax=10, figname='rolling_var.pdf'):
+#     """
+#     This function plots results of rolling VAR estimation
+#     """
+#     cohort = ['AnRa', 'ArLa', 'DiAs']
+#     nsub = len(cohort)
+#     ic = ["aic", "bic", "hqc", "lrt"]
+#     cdt = list(df["condition"].unique())
+#     ncdt = len(cdt)
+#     # Plot rolling var
+#     f, ax = plt.subplots(ncdt, nsub, sharex=True, sharey=True)
+#     for c in range(ncdt):
+#         for s in range(nsub):
+#             for i in ic:
+#                 time = df["time"].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
+#                 morder = df[i].loc[(df["subject"]==cohort[s]) & (df["condition"]==cdt[c])].to_numpy()
+#                 ax[c,s].plot(time, morder, label=i)
+#                 ax[c,s].set_ylim(0,momax)
+#                 ax[0,s].set_title(f"Subject {s}")
+#                 ax[c,0].set_ylabel(cdt[c])
+#                 ax[2,s].set_xlabel("Time (s)")
+#                 #ax[2,s].set_xticks(ticks)
                         
-    # legend situated upper right                
-    handles, labels = ax[c,s].get_legend_handles_labels()
-    f.legend(handles, labels, loc='upper right')
-    plt.tight_layout()
-    # Save figure
-    fpath = fpath.joinpath(figname)
-    #plt.savefig(fpath)
+#     # legend situated upper right                
+#     handles, labels = ax[c,s].get_legend_handles_labels()
+#     f.legend(handles, labels, loc='upper right')
+#     plt.tight_layout()
+#     # Save figure
+#     fpath = fpath.joinpath(figname)
+#     #plt.savefig(fpath)
 
 
-result_path = Path('..','results')
-fname = 'rolling_var_estimation.csv'
-fpath = Path.joinpath(result_path, fname)
-df = pd.read_csv(fpath)
+# result_path = Path('..','results')
+# fname = 'rolling_var_estimation.csv'
+# fpath = Path.joinpath(result_path, fname)
+# df = pd.read_csv(fpath)
 
-figname = 'rolling_var.png'
+# figname = 'rolling_var.pdf'
 
-fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
+# fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
 
-plot_rolling_var(df, fpath, momax=10, figname=figname)
-
-
+# plot_rolling_var(df, fpath, momax=10, figname=figname)
 
 
-#%% Plot Spectral radius
-from src.plotting_lib import plot_rolling_specrad
-
-# Read input
-result_path = Path('..','results')
-fname = 'rolling_var_estimation.csv'
-fpath = Path.joinpath(result_path, fname)
-df = pd.read_csv(fpath)
-
-fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
-plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.jpg')
 
 
-#%% Plot rolling window on multitrial
+# #%% Plot Spectral radius
+# from src.plotting_lib import plot_rolling_specrad
 
-# List conditions
-conditions = ['Rest', 'Face', 'Place']
-cohort = ['AnRa',  'ArLa', 'DiAs'];
-# Load functional connectivity matrix
-result_path = Path('../results')
+# # Read input
+# result_path = Path('..','results')
+# fname = 'rolling_var_estimation.csv'
+# fpath = Path.joinpath(result_path, fname)
+# df = pd.read_csv(fpath)
 
-fname = 'rolling_multi_trial_fc.mat'
-fc_path = result_path.joinpath(fname)
-fc = loadmat(fc_path)
-fc = fc['dataset']
+# fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
+# plot_rolling_specrad(df, fpath, ncdt =3, momax=10, figname='rolling_specrad.jpg')
+
+
+# #%% Plot rolling window on multitrial
+
+# # List conditions
+# conditions = ['Rest', 'Face', 'Place']
+# cohort = ['AnRa',  'ArLa', 'DiAs'];
+# # Load functional connectivity matrix
+# result_path = Path('../results')
+
+# fname = 'rolling_multi_trial_fc.mat'
+# fc_path = result_path.joinpath(fname)
+# fc = loadmat(fc_path)
+# fc = fc['dataset']
     
-figpath = home.joinpath('thesis','overleaf_project','figures')
-figname = 'cross_rolling_multi_mvgc.pdf'
-figpath = fpath.joinpath(figname)
+# figpath = home.joinpath('thesis','overleaf_project','figures')
+# figname = 'cross_rolling_multi_mvgc.pdf'
+# figpath = fpath.joinpath(figname)
 
-plot_multitrial_rolling_fc(fc, figpath, interaction='gGC' ,fc_type='gc')
+# plot_multitrial_rolling_fc(fc, figpath, interaction='gGC' ,fc_type='gc')
 
 
 

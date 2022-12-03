@@ -22,7 +22,7 @@ stimuli_dir = home.joinpath('projects', 'cifar', 'data', 'source_data', 'iEEG_10
 # Read stimuli into numpy array
 for i, fname in enumerate(stimuli_dir.iterdir()):
     fpath = stimuli_dir.joinpath(fname)
-    stimuli[i] = img.imread(fpath, format='jpg')
+    stimuli[i] = img.imread(fpath, format='pdf')
 
 stimuli = np.stack(stimuli)
 
@@ -36,3 +36,8 @@ for i in range(6):
             ax[i, j].axis('off')
 
 ax[5,4].axis('off')
+
+figpath = Path('~','thesis','overleaf_project', 'figures','supplementary_methods_figures').expanduser()
+fname = 'presented_stimuli.pdf'
+figpath = figpath.joinpath(fname)
+plt.savefig(figpath)

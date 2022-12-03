@@ -17,60 +17,49 @@ from pathlib import Path
 #%%
 
 plt.style.use('ggplot')
-fig_width = 16  # figure width in cm
+fig_width = 24  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
 label_size = 10
+tick_size = 8
 params = {'backend': 'ps',
           'lines.linewidth': 1.5,
           'axes.labelsize': label_size,
           'axes.titlesize': label_size,
           'font.size': label_size,
-          'legend.fontsize': label_size,
-          'xtick.labelsize': label_size,
-          'ytick.labelsize': label_size,
+          'legend.fontsize': tick_size,
+          'xtick.labelsize': tick_size,
+          'ytick.labelsize': tick_size,
           'text.usetex': False,
-          'figure.figsize': fig_size}
+          'figure.figsize': fig_size,
+          "font.weight": "bold",
+          "axes.labelweight": "bold"}
 plt.rcParams.update(params)
-
 
 #eeg_bands = {"delta":[1, 4], "theta":[4, 7], "alpha": [8, 12], "beta": [13,30],
 #             "gamma": [32, 60], "hgamma":[60, 120], "hfa": [0, 62]}
 
-eeg_bands = {"[1 4]":"δ", "[4 7]":"θ", "[ 8 12]": "α", "[13 30]": "β",
-             "[32 60]": "γ", "[ 60 120]":"hγ", "[ 0 62]": "hfa"}
+eeg_bands = ["[4 7]", "[8 12]", "[13 30]", 
+                    "[32 60]", "[60 120]", "[0 62]"] # EEG bands
 
-#%%
+eeg_bands_fname_dic = {"[1 4]":"delta", "[4 7]":"theta", "[8 12]": "alpha", "[13 30]": "beta",
+             "[32 60]": "gamma", "[60 120]":"hgamma", "[0 62]": "hfa"} # to safe fig file name
 
-cohort = ['AnRa',  'ArLa', 'DiAs']
-# Useful paths
-cifar_path = Path('~','projects','cifar').expanduser()
-data_path = cifar_path.joinpath('data')
-result_path = cifar_path.joinpath('results')
-connect = "pairwise"
-band = "[0 62]"
-fname = "compare_condition_GC_" + connect + '_' + band + "Hz.mat"
-path = result_path
-fpath = path.joinpath(fname)
-# Read dataset
-dataset = loadmat(fpath)
-F = dataset['GC']
+eeg_bands_fig_title_dic = {"[1 4]":"δ", "[4 7]":"θ", "[ 8 12]": "α", "[13 30]": "β",
+             "[32 60]": "γ", "[ 60 120]":"hγ", "[ 0 62]": "hfa"} # To write fig titles
 
-vmin = -1
-vmax = 1
 
-#%% Plotting function
-
-def plot_compare_condition_GC(F, cohort,
+def plot_compare_condition_GC(F, cohort, cmap='BrBg',
                        vmin = -5, vmax=5, tau_x=0.5, tau_y=0.8):
     """
     We plot Z score from comparing permutation group F in condition 1 with
     condition 2.
     """
     comparisons = ['FvsR', 'PvsR', 'FvsP']
+    comparisons_dic = {'FvsR':'Face/Rest', 'PvsR':'Place/Rest', 'FvsP':'Face/Place'}
     nsub = len(cohort)
     ncomp = len(comparisons)
     # xticks
@@ -117,17 +106,14 @@ def plot_compare_condition_GC(F, cohort,
                 sig = ordered_sig
                 # Plot z score
                 ticks_labels = [sorted_chan[i] for i in RF_idx]
-                g = sns.heatmap(z, vmin=vmin, vmax=vmax, cmap='bwr', ax=ax[c,s],
+                g = sns.heatmap(z, vmin=vmin, vmax=vmax, cmap=cmap, ax=ax[c,s],
                             cbar_ax=cbar_ax, cbar_kws={"ticks":[-1,-0.5,0,0.5,1]},
                             xticklabels=ticks_labels, yticklabels=ticks_labels)
                 g.set_yticklabels(g.get_yticklabels(), rotation = 90)
-                if c>=1:
-                    ax[c,s].set_xticks([]) # (turn off xticks)
-                if s>=1:
-                    ax[c,s].set_yticks([]) # (turn off xticks)
                 ax[c,s].xaxis.set_ticks_position('top')
                 ax[c,s].xaxis.set_label_position('top')
-                ax[c,0].set_ylabel(f"{comparisons[c]}")
+                ylabel = comparisons_dic[comparison]
+                ax[c,0].set_ylabel(f"Z, {ylabel}")
                 # Plot statistical significant entries
                 for y in range(z.shape[0]):
                     for x in range(z.shape[1]):
@@ -141,19 +127,16 @@ def plot_compare_condition_GC(F, cohort,
                 ticks_labels = populations
                 # Get statistics from matlab analysis
                 np.fill_diagonal(sig,0)
-                g = sns.heatmap(z,  vmin=vmin, vmax=vmax, cmap='bwr', ax=ax[c,s],
+                g = sns.heatmap(z,  vmin=vmin, vmax=vmax, cmap=cmap, ax=ax[c,s],
                                 cbar_ax=cbar_ax, cbar_kws={"ticks":[-1,-0.5,0,0.5,1]})
                 g.set_yticklabels(g.get_yticklabels(), rotation = 90)
-                ax[0,s].set_xticklabels(ticks_labels)
-                ax[c,0].set_yticklabels(ticks_labels)
-                ax[0,s].xaxis.set_ticks_position('top')
-                ax[0,s].xaxis.set_label_position('top')
+                ax[c,s].set_xticklabels(ticks_labels)
+                ax[c,s].set_yticklabels(ticks_labels)
+                ax[c,s].xaxis.set_ticks_position('top')
+                ax[c,s].xaxis.set_label_position('top')
                 g.set_yticklabels(g.get_yticklabels(), rotation = 90)
-                ax[c,0].set_ylabel(f"{comparisons[c]}")
-                if c>=1:
-                        ax[c,s].set_xticks([]) # (turn off xticks)
-                if s>=1:
-                        ax[c,s].set_yticks([]) # (turn off xticks)
+                ylabel = comparisons_dic[comparison]
+                ax[c,0].set_ylabel(f"Z, {ylabel}")
                 # Plot statistical significant entries
                 for y in range(z.shape[0]):
                     for x in range(z.shape[1]):
@@ -163,11 +146,33 @@ def plot_compare_condition_GC(F, cohort,
                                      color='k')
                         else:
                             continue                 
-            fband = eeg_bands[bandstr]
+            fband = eeg_bands_fig_title_dic[bandstr]
             ax[0,s].set_title(f"S{s}, {fband}")
+    plt.suptitle(f"Singe subject {connectivity[0]} GC between conditions")
     print(f"\n Critical Z score is {zcrit}\n")
-
+#%%
+connect = "groupwise"
+for band in eeg_bands:
+    cmap ='PuOr'
+    cohort = ['AnRa',  'ArLa', 'DiAs']
+    # Useful paths
+    cifar_path = Path('~','projects','cifar').expanduser()
+    data_path = cifar_path.joinpath('data')
+    result_path = cifar_path.joinpath('results')
+    fname = "compare_condition_GC_" + connect + '_' + band + "Hz.mat"
+    path = result_path
+    fpath = path.joinpath(fname)
+    # Read dataset
+    dataset = loadmat(fpath)
+    F = dataset['GC']
+    vmax = 0.5
+    vmin = -vmax
 #%% Plot GC comparison between conditions
-
-plot_compare_condition_GC(F, cohort, 
-                 vmin = vmin, vmax=vmax, tau_x=0.5, tau_y=0.8)
+    connectivity = F['connectivity'][0][0][0]
+    plot_compare_condition_GC(F, cohort, cmap=cmap,
+                     vmin = vmin, vmax=vmax, tau_x=0.5, tau_y=0.8)
+    figpath = Path('~','thesis','overleaf_project', 'figures','results_figures').expanduser()
+    bandstr = eeg_bands_fname_dic[band]
+    fname =  "_".join(["compare", connectivity,"condition", bandstr,"GC.pdf"])
+    figpath = figpath.joinpath(fname)
+    plt.savefig(figpath)

@@ -24,13 +24,13 @@ from pathlib import Path
 #%% Style parameters
 
 plt.style.use('ggplot')
-fig_width = 16  # figure width in cm
+fig_width = 24  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
-label_size = 10
+label_size = 12
 tick_size = 8
 params = {'backend': 'ps',
           'lines.linewidth': 1.2,
@@ -51,7 +51,7 @@ cohort = ['AnRa',  'ArLa', 'DiAs']
 cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
 result_path = cifar_path.joinpath('results')
-signal = 'lfp'
+signal = 'hfa'
 fname = signal + '_rolling_model_order_estimation.m'
 path = result_path
 fpath = path.joinpath(fname)
@@ -63,7 +63,7 @@ varmo_min = 1
 varmo_max = 10
 ssmo_min = 5
 ssmo_max = 30
-rho_min = 0.93 #0.5 for lfp
+rho_min = 0.5 #0.5 for HFA 0.93 for LFP
 rho_max = 1
 
 #%% Function model order
@@ -90,14 +90,14 @@ def plot_rolling_var(model_order, cohort, varmo_min = 3, varmo_max=10):
             ax[c,s].axvline(x=0, color='k')
             ax[0,s].set_title(f'Subject {s}')
             ax[-1,s].set_xlabel('Time (s)')
-            if c<=1:
-                        ax[c,s].set_xticks([]) # (turn off xticks)
-            if s>=1:
-                        ax[c,s].set_yticks([]) # (turn off xticks)
+            # if c<=1:
+            #             ax[c,s].set_xticks([]) # (turn off xticks)
+            # if s>=1:
+            #             ax[c,s].set_yticks([]) # (turn off xticks)
             ticks_labels = [-0.5,0,0.5,1,1.5]
-            ax[-1,s].set_xticks(ticks_labels)
-            ax[-1,s].set_xticklabels(ticks_labels)
-            ax[c,0].set_ylabel(f'varmo {condition}')
+            ax[c,s].set_xticks(ticks_labels)
+            ax[c,s].set_xticklabels(ticks_labels)
+            ax[c,0].set_ylabel(f'p, {condition}')
         #ax[-1,-1].legend()
         handles, labels = ax[c,s].get_legend_handles_labels()
         fig.legend(handles, labels, loc='upper right')
@@ -118,14 +118,14 @@ def plot_rolling_svc(model_order, cohort, ssmo_min=10, ssmo_max=30):
             ax[c,s].set_ylim(ssmo_min,ssmo_max)
             ax[0,s].set_title(f'Subject {s}')
             ax[-1,s].set_xlabel('Time (s)')
-            if c<=1:
-                        ax[c,s].set_xticks([]) # (turn off xticks)
-            if s>=1:
-                        ax[c,s].set_yticks([]) # (turn off xticks)
+            # if c<=1:
+            #             ax[c,s].set_xticks([]) # (turn off xticks)
+            # if s>=1:
+            #             ax[c,s].set_yticks([]) # (turn off xticks)
             ticks_labels = [-0.5,0,0.5,1,1.5]
-            ax[-1,s].set_xticks(ticks_labels)
-            ax[-1,s].set_xticklabels(ticks_labels)
-            ax[c,0].set_ylabel(f'ssmo {condition}')
+            ax[c,s].set_xticks(ticks_labels)
+            ax[c,s].set_xticklabels(ticks_labels)
+            ax[c,0].set_ylabel(f'SVC, {condition}')
         
 def plot_rolling_specrad(model_order, cohort, rho_min=0.9, rho_max=1):
     conditions = ['Rest', 'Face', 'Place']
@@ -143,19 +143,19 @@ def plot_rolling_specrad(model_order, cohort, rho_min=0.9, rho_max=1):
             ax[c,s].set_ylim(rho_min,rho_max)
             ax[0,s].set_title(f'Subject {s}')
             ax[-1,s].set_xlabel('Time (s)')
-            if c<=1:
-                        ax[c,s].set_xticks([]) # (turn off xticks)
-            if s>=1:
-                        ax[c,s].set_yticks([]) # (turn off xticks)
+            # if c<=1:
+            #             ax[c,s].set_xticks([]) # (turn off xticks)
+            # if s>=1:
+            #             ax[c,s].set_yticks([]) # (turn off xticks)
             ticks_labels = [-0.5,0,0.5,1,1.5]
-            ax[-1,s].set_xticks(ticks_labels)
-            ax[-1,s].set_xticklabels(ticks_labels)
-            ax[c,0].set_ylabel(r'$\rho$' + f' {condition}')
+            ax[c,s].set_xticks(ticks_labels)
+            ax[c,s].set_xticklabels(ticks_labels)
+            ax[c,0].set_ylabel(r'$\rho$' + f', {condition}')
 
 #%% Plot rolling var
 
 fpath = Path('~','thesis','overleaf_project', 'figures','method_figure').expanduser()
-fname = signal + '_rolling_var.png'
+fname = signal + '_rolling_var.pdf'
 figpath = fpath.joinpath(fname)
 
 plot_rolling_var(model_order, cohort, varmo_min=varmo_min, varmo_max=varmo_max)
@@ -164,7 +164,7 @@ plt.savefig(figpath)
 #%% Plot rolling var
 
 fpath = Path('~','thesis','overleaf_project', 'figures','method_figure').expanduser()
-fname = signal + '_rolling_ss.png'
+fname = signal + '_rolling_ss.pdf'
 figpath = fpath.joinpath(fname)
 
 plot_rolling_svc(model_order, cohort, ssmo_min=ssmo_min, ssmo_max=ssmo_max)
@@ -173,7 +173,7 @@ plt.savefig(figpath)
 #%% Plot rolling rho
 
 fpath = Path('~','thesis','overleaf_project', 'figures','method_figure').expanduser()
-fname = signal + '_rolling_specrad.png'
+fname = signal + '_rolling_specrad.pdf'
 figpath = fpath.joinpath(fname)
 
 plot_rolling_specrad(model_order, cohort, rho_min=rho_min, rho_max=rho_max)

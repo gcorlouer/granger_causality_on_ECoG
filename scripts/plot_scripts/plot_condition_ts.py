@@ -17,14 +17,14 @@ from scipy.stats import sem
 #%% Plot parameters
 
 plt.style.use('ggplot')
-fig_width = 16  # figure width in cm
+fig_width = 22  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
-label_size = 10
-tick_size = 8
+label_size = 12
+tick_size = 10
 params = {'backend': 'ps',
           'lines.linewidth': 1.2,
           'axes.labelsize': label_size,
@@ -41,13 +41,14 @@ plt.rcParams.update(params)
 
 cohort = ['AnRa',  'ArLa', 'DiAs']
 cohort_dic = {'AnRa': 'S0', 'ArLa': 'S1', 'DiAs': 'S2'}
-
 # Path to source data, derivatives and results. Enter your own path in local machine
 cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
 derivatives_path = data_path.joinpath('derivatives')
 result_path = cifar_path.joinpath('results')
-fig_path = cifar_path.joinpath('results/figures')
+# Figure path
+home = Path.home()
+figpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
 
 parser = argparse.ArgumentParser()
 # Paths
@@ -120,6 +121,7 @@ def plot_condition_ts(args, cohort):
     # Prepare inputs for plotting
     conditions = ['Rest','Face','Place']
     populations = ['R','O','F']
+    pop_dic = {'R': 'Retinotopic', 'O': 'Other', 'F': 'Face'}
     ncdt = len(conditions)
     nsub = len(cohort)
     fig, ax = plt.subplots(3,nsub, sharex=False, sharey=False)
@@ -138,6 +140,7 @@ def plot_condition_ts(args, cohort):
         baseline = np.average(baseline)
         # Plot condition ts
         for p, pop in enumerate(populations):
+            popstr = pop_dic[pop]
             for c, cdt in enumerate(conditions):
                 # Condition specific neural population
                 X = ts[cdt]
@@ -156,23 +159,23 @@ def plot_condition_ts(args, cohort):
                 ax[p,s].set_ylim([-2.5, 6])
                 ax[p,s].axvline(x=0, color ='k')
                 ax[p,s].axhline(y=baseline, color='k')
-                ax[p,0].set_ylabel(f'{pop} (dB)')
+                ax[p,0].set_ylabel(f'{popstr} (dB)')
                 ax[0,s].set_title(f'subject S{s}')
-                if p<=2:
-                        ax[p,s].set_xticks([]) # (turn off xticks)
-                if s>=1:
-                        ax[p,s].set_yticks([]) # (turn off xticks)
+                # if p<=2:
+                #         ax[p,s].set_xticks([]) # (turn off xticks)
+                # if s>=1:
+                #         ax[p,s].set_yticks([]) # (turn off xticks)
                 handles, labels = ax[p,s].get_legend_handles_labels()
-                ax[2,s].set_xticks([-0.5, 0, 0.5, 1, 1.5])
-                ax[2,s].set_xticklabels([-0.5, 0, 0.5, 1, 1.5]) 
-                ax[2,s].set_xlabel("Time (s)")
+                ax[p,s].set_xticks([-0.5, 0, 0.5, 1, 1.5])
+                ax[p,s].set_xticklabels([-0.5, 0, 0.5, 1, 1.5]) 
+                ax[p,s].set_xlabel("Time (s)")
     fig.legend(handles, labels, loc='upper right')
     fig.suptitle('Average HFA', )
-    #fig.supxlabel("Time (s)")
+    figpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
     plt.show()
-    #fname = subject + figname
-    #fpath = fpath.joinpath(fname)
-    #plt.savefig(fpath)
+    figname = 'condition_hfa.pdf'
+    fpath = figpath.joinpath(figname)
+    plt.savefig(fpath)
     
 #%%
 

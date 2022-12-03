@@ -4,7 +4,7 @@
 % Input data
 if ~exist('subject', 'var'), subject = 'DiAs'; end
 if ~exist('cohort','var'), cohort = {'AnRa', 'ArLa', 'DiAs'}; end
-if ~exist('condition', 'var'), conditions = {'Rest', 'Face', 'Place'}; end
+if ~exist('conditions', 'var'), conditions = {'Rest', 'Face', 'Place'}; end
 if ~exist('field', 'var'), field = {'time',  'condition', 'pair', 'subject','F'}; end
 if ~exist('datadir', 'var'), datadir = fullfile('~', 'projects', 'cifar', 'results'); end
 if ~exist('signal', 'var'), signal = 'hfa'; end

@@ -1,18 +1,21 @@
 % Multitrial spectral mvgc analysis
 %% Input parameters
 input_parameters;
-signal = 'hfa';
 suffix = ['_condition_visual_' signal '.mat'];
 ncdt = length(conditions);
 nsub = length(cohort);
 dataset = struct;
+
 if strcmp(signal,'hfa')
     morder = 5;
     ssmo = 15;
+    band = [0 62]; % Band when downsampled to 125 Hz
 else
     morder = 5;
     ssmo = 20;
 end
+
+bandstr = mat2str(band);
 %% Loop multitrial functional connectivity analysis over each subjects
 for s=1:nsub
      subject = cohort{s};
@@ -39,7 +42,7 @@ for s=1:nsub
         % Estimate SS model
         pf = 2 * morder;
         [model.A,model.C,model.K,model.V,~,~] = tsdata_to_ss(X,pf,ssmo);
-        % Compute group spectral GC
+        % Compute band GC
         fn = fieldnames(indices);
         ng = length(fn);
         group = cell(ng,1);
@@ -47,17 +50,20 @@ for s=1:nsub
             group{k} = double(indices.(fn{k}));
         end
         group = group';
-        f = ss_to_sGC(model, 'connect', connect ,'group', group,'nfreqs', nfreqs);
+        F = ss_to_GC(model, 'connect', connect ,'group', group, ..., 
+            'nfreqs', nfreqs, 'band', band,'dim',dim);
         % Functional visual channels indices
         indices = gc_input.indices;
-        sGC.(subject).(condition) = f;
-        sGC.freqs = freqs;
-        sGC.(subject).indices = indices;
+        GC.(subject).(condition) = F;
+        GC.freqs = freqs;
+        GC.band = band;
+        GC.connect = connect;
+        GC.(subject).indices = indices;
      end
 end
 
 %% Save dataset for plotting in python
 
-fname = ['spectral_group_GC_' signal '.mat'];
+fname = ['magnitude_', connect,'_',bandstr, '_GC.mat'];
 fpath = fullfile(datadir, fname);
-save(fpath, 'sGC')
+save(fpath, 'GC')

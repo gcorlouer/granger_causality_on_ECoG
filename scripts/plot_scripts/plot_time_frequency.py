@@ -41,58 +41,56 @@ vdict = {"AnRa": [8,2,2], "ArLa": [2,2,3], "DiAs": [10,2,5]}
 #%%
 
 def plot_tf(fpath, vmax, vmin, subject='DiAs'):
-    """Plot time frequency"""
-    # Parameter specfics to plotting time frequency
-    fname = "tf_power_dataframe.pkl"
-    fpath = fpath.joinpath(fname)
-    df = pd.read_pickle(fpath)
-    conditions = ['Rest', 'Face', 'Place']
-    groups = ['R','O','F']
-    group_dic = {'R': 'Retinotopic', 'O':'Other', 'F':'Face'}
-    ngroup = 3
-    ncdt = 3
-    fig, ax = plt.subplots(ngroup, ncdt, sharex=False, sharey=False)
-    #cbar_ax = fig.add_axes([0.91, 0.2, .01, .6])
-    # Loop over conditions and groups
-    for i, condition in enumerate(conditions):
-        for j, group in enumerate(groups):
-            power = df['power'].loc[df['subject']==subject].loc[df['condition']==condition].loc[df['group']==group]
-            freqs = df['freqs'].loc[df['subject']==subject].loc[df['condition']==condition].loc[df['group']==group]
-            time = df['time'].loc[df['subject']==subject].loc[df['condition']==condition].loc[df['group']==group]
-            power = power.iloc[0]
-            power = power/10 # Rescale power
-            freqs = freqs.iloc[0]
-            time = time.iloc[0]
-            power_max = np.max(power)
-            power_min = np.min(power)
-            #vmax  = np.max(power)
-            print(f"Z max for {group} group in {condition} is {power_max} \n")
-            print(f"Z min for {group} group in {condition}  is {power_min} \n")
-            x, y = centers_to_edges(time * 1000, freqs)
-            mesh = ax[i,j].pcolormesh(x, y, power, cmap='PuOr_r', vmax=vmax[j], vmin=vmin[j])
-            fig.colorbar(mesh, ax=ax[i,j])
-            ax[0,j].set_title(f'{group_dic[group]}')
-            ax[i,j].set(ylim=freqs[[0, -1]])
-            if i<=2:
-                    ax[i,j].set_xticks([]) # (turn off xticks)
-            if j>=1:
-                    ax[i,j].set_yticks([]) # (turn off xticks)
-            ax[-1,j].set_xticks([-500, 0, 500, 1000, 1500])
-            ax[-1,j].set_xticklabels([-0.5, 0, 0.5, 1, 1.5]) 
-            ax[i,0].set_yticks([0, 30, 60, 90, 120])
-            ax[i,0].set_yticklabels([0, 30, 60, 90, 120])
-            ax[i,0].set_ylabel(f"Frequency (Hz) \n {condition}", multialignment='center')
-    #fig.colorbar(mesh, cax=cbar_ax, label='z-score')
-    fig.supxlabel("Time (ms)")
-    fig.suptitle(f"Time-frequency subject {cohort_dic[subject]}")
-    plt.show()
-
-#%%
-for subject in cohort:
-        vmax = vdict[subject]
-        vmin = [-vmax[i] for i in range(len(vmax))]
-        plot_tf(fpath, subject=subject, vmax=vmax, vmin=vmin)
+        """Plot time frequency""" 
+        # Parameter specfics to plotting time frequency
+        fname = "tf_power_dataframe.pkl"
+        fpath = fpath.joinpath(fname)
+        df = pd.read_pickle(fpath)
+        conditions = ['Rest', 'Face', 'Place']
+        groups = ['R','O','F']
+        group_dic = {'R': 'Retinotopic', 'O':'Other', 'F':'Face'}
+        ngroup = 3
+        ncdt = 3
+        fig, ax = plt.subplots(ngroup, ncdt, sharex=False, sharey=False)
+        #cbar_ax = fig.add_axes([0.91, 0.2, .01, .6])
+        # Loop over conditions and groups
+        for i, condition in enumerate(conditions):
+                for j, group in enumerate(groups):
+                        power = df['power'].loc[df['subject']==subject].loc[df['condition']==condition].loc[df['group']==group]
+                        freqs = df['freqs'].loc[df['subject']==subject].loc[df['condition']==condition].loc[df['group']==group]
+                        time = df['time'].loc[df['subject']==subject].loc[df['condition']==condition].loc[df['group']==group]
+                        power = power.iloc[0]
+                        power = power/10 # Rescale power
+                        freqs = freqs.iloc[0]
+                        time = time.iloc[0]
+                        power_max = np.max(power)
+                        power_min = np.min(power)
+                        #vmax  = np.max(power)
+                        print(f"Z max for {group} group in {condition} is {power_max} \n")
+                        print(f"Z min for {group} group in {condition}  is {power_min} \n")
+                        x, y = centers_to_edges(time * 1000, freqs)
+                        mesh = ax[i,j].pcolormesh(x, y, power, cmap='PuOr_r', vmax=vmax[j], vmin=vmin[j])
+                        fig.colorbar(mesh, ax=ax[i,j])
+                        ax[0,j].set_title(f'{group_dic[group]}')
+                        ax[i,j].set(ylim=freqs[[0, -1]])
+                        if i<=2:
+                                ax[i,j].set_xticks([]) # (turn off xticks)
+                        if j>=1:
+                                ax[i,j].set_yticks([]) # (turn off xticks)
+                        ax[-1,j].set_xticks([-500, 0, 500, 1000, 1500])
+                        ax[-1,j].set_xticklabels([-0.5, 0, 0.5, 1, 1.5]) 
+                        ax[i,0].set_yticks([0, 30, 60, 90, 120])
+                        ax[i,0].set_yticklabels([0, 30, 60, 90, 120])
+                        ax[i,0].set_ylabel(f"Frequency (Hz) \n {condition}", multialignment='center')
+        #fig.colorbar(mesh, cax=cbar_ax, label='z-score')
+        fig.supxlabel("Time (ms)")
+        fig.suptitle(f"Time-frequency subject {cohort_dic[subject]}")
         figpath = Path('~','thesis','overleaf_project', 'figures','results_figures').expanduser()
-        fname =  "_".join(["time_frequency", f"{subject}.pdf"])
+        fname =  "_".join(["test_time_frequency", f"{subject}.pdf"])
         figpath = figpath.joinpath(fname)
-        plt.savefig(figpath)
+        plt.show()
+#%%
+subject = 'DiAs'
+vmax = vdict[subject]
+vmin = [-vmax[i] for i in range(len(vmax))]
+plot_tf(fpath, subject=subject, vmax=vmax, vmin=vmin)

@@ -125,12 +125,17 @@ def plot_direction_sgc(F):
 #%%
 
 plot_condition_sgc(F)
-
+figpath = Path('~','thesis','overleaf_project', 'figures','results_figures').expanduser()
+fname =  "_".join(["magnitude", connectivity, bandstr,"GC.pdf"])
+figpath = figpath.joinpath(fname)
+plt.savefig(figpath)
 #%%
 
 plot_direction_sgc(F)
-
-
+figpath = Path('~','thesis','overleaf_project', 'figures','results_figures').expanduser()
+fname =  "_".join(["magnitude", connectivity, bandstr,"GC.pdf"])
+figpath = figpath.joinpath(fname)
+plt.savefig(figpath)
 
 
 

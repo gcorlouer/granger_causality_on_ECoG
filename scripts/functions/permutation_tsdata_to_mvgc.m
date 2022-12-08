@@ -1,4 +1,4 @@
-function Fp = permutation_tsdata_to_mvgc(X,x,y,args)
+function testStat = permutation_tsdata_to_mvgc(X,x,y,args)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Calculate permutation distribution GC in a 
 % given conditions from permuting trials from 2 conditions.
@@ -19,14 +19,24 @@ p = args.morder; regmode = args.regmode; Ns = args.Ns; N = args.N;
 [n,m,Nt] = size(X);
 trial_idx = 1:Nt;
 
-Fp = zeros(Ns,1);
+%F1 = zeros(Ns,1);
+%F2 = zeros(Ns,1);
+testStat = zeros(Ns,1);
 
 for s=1:Ns
     fprintf('MVGC: permutation sample %d of %d',s,Ns);
-    trials = datasample(trial_idx, N,'Replace',false);
-    Xp = X(:,:,trials);
-    VAR = ts_to_var_parameters(Xp, 'morder', p, 'regmode', regmode);
-    Fp(s) = var_to_mvgc(VAR.A, VAR.V,x,y);
+    trials = randperm(Nt);
+    trial1 = trials(1:N);
+    trial2 = trials(N+1:Nt);
+    %trials = datasample(trial_idx, N,'Replace',false);
+    %Xp = X(:,:,trials);
+    X1 = X(:,:,trial1);
+    X2 = X(:,:,trial2);
+    VAR1 = ts_to_var_parameters(X1, 'morder', p, 'regmode', regmode);
+    VAR2 = ts_to_var_parameters(X2, 'morder', p, 'regmode', regmode);
+    F1 = var_to_mvgc(VAR1.A, VAR1.V,x,y);
+    F2 = var_to_mvgc(VAR2.A, VAR2.V,x,y);
+    testStat(s) = F1 - F2;
     fprintf('\n');
 end
 

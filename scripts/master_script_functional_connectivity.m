@@ -1,5 +1,6 @@
 % EEG bands
 bands = struct;
+bands.delta = [1 4];
 bands.theta = [4 7];
 bands.alpha = [8 12];
 bands.beta = [13 30];

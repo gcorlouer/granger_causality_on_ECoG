@@ -42,7 +42,7 @@ plt.rcParams.update(params)
 # Paths
 result_path = Path('~','projects','cifar', 'results').expanduser()
 figpath = Path('~','thesis','overleaf_project', 'figures','method_figure').expanduser()
-fname = 'permtest_vs_single_trial.mat'
+fname = 'edited_permtest_vs_single_trial.mat'
 fpath = Path.joinpath(result_path, fname)
 dataset = loadmat(fpath)
 stat = dataset['stat']

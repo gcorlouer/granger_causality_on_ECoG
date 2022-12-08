@@ -24,16 +24,16 @@ sfreq = args.sfreq; dim = args.dim; band = args.band; nfreqs = args.nfreqs;
 bandstr = mat2str(band);
 
 [n,m,Nt] = size(X); % Number of concatenated trials
+trial_idx = 1:Nt; % Indices of trials
 
 if strcmp(connect, 'groupwise')
     ng = length(group);
-    F1 = zeros(ng,ng,Ns); % F for permuted condition 1
-    F2 = zeros(ng,ng,Ns); % F for permuted condition 2
+    F = zeros(ng,ng,Ns);
 else
-    F1 = zeros(n,n,Ns); % F for permuted condition 1
-    F2 = zeros(n,n,Ns); % F for permuted condition 2
+    F = zeros(n,n,Ns);
 end
-
+F1 = zeros(n,n,Ns);
+F2 = zeros(n,n,Ns);
 % Future and past regression for state space modeling
 pf = 2 * morder;
 
@@ -49,20 +49,16 @@ for s=1:Ns
     X1 = X(:,:,trial1);
     X2 = X(:,:,trial2);
     % Estimate SS model for each conditions
-    % condition 1
     [A1,C1,K1,V1,~,~] = tsdata_to_ss(X1,pf,ssmo);
-    model1.A = A1; model1.C = C1; model1.K = K1; model1.V = V1;
-    % condition 2
     [A2,C2,K2,V2,~,~] = tsdata_to_ss(X2,pf,ssmo);
-    model2.A = A2; model2.C = C2; model2.K = K2; model2.V = V2;
+    model1.A = A1; model1.C = C1; model1.K = K1; model1.V =V1;
+    model2.A = A2; model2.C = C2; model2.K = K2; model1.V =V2;
     % Compute band specific GC 
-    % condition 1
     F1(:,:,s) = ss_to_GC(model1, 'connect', connect ,'group', group,...
     'dim', dim, 'sfreq', sfreq, 'nfreqs', nfreqs, 'band',band);
-    % condition 2
     F2(:,:,s) = ss_to_GC(model2, 'connect', connect ,'group', group,...
     'dim', dim, 'sfreq', sfreq, 'nfreqs', nfreqs, 'band',band);
 end
 fprintf('\n');
-tstat = F1 - F2;
+tstat = permF{1} - permF{2};
 end

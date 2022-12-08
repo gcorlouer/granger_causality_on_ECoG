@@ -1,5 +1,7 @@
 % In this script we run 2 chan GC analysis
 bands = struct;
+bands.delta = [1 4];
+bands.theta = [4 7];
 bands.alpha = [8 12];
 bands.beta = [13 30];
 bands.gamma = [32 60];

@@ -56,14 +56,16 @@ Xcat = cat(3, X1,X2);
 
 %% Calculate permutation GC for each condition
 
-for c=1:2   
-    perm_F{c} = permutation_tsdata_to_mvgc(Xcat,x,y,'Ns',Ns,'morder',p);
-    % Permutation median and mad
-    Fpm(c) = median(perm_F{c});
-    Fpd(c) = mad(perm_F{c},1);
-    % Calculate actual GC
-    Fa(c) = var_to_mvgc(A,V,x,y);
-end
+testStat = permutation_tsdata_to_mvgc(Xcat,x,y,'Ns',Ns,'morder',p);
+
+% for c=1:2   
+%     perm_F{c} = permutation_tsdata_to_mvgc(Xcat,x,y,'Ns',Ns,'morder',p);
+%     % Permutation median and mad
+%     Fpm(c) = median(perm_F{c});
+%     Fpd(c) = mad(perm_F{c},1);
+%     % Calculate actual GC
+%     Fa(c) = var_to_mvgc(A,V,x,y);
+% end
 
 % Calculate estimated GC y -> x | z test statistic
 VAR = ts_to_var_parameters(X1, 'morder', p, 'regmode', regmode);
@@ -73,7 +75,7 @@ Fs(2) = var_to_mvgc(VAR.A, VAR.V,x,y);
 
 % Compute p value and Z scores
 
-testStat = perm_F{1} - perm_F{2};
+%testStat = perm_F{1} - perm_F{2};
 observedStat = Fs(1) - Fs(2);
 count = 0;
 for s=1:Ns
@@ -111,7 +113,7 @@ end
 
 % Compute statistics
 single_z    = mann_whitney(single_F{1},single_F{2}); % z-score ~ N(0,1) under H0
-pval = 2*(1-normcdf(abs(z)));     % p-value (2-tailed test)
+pval = 2*(1-normcdf(abs(single_z)));     % p-value (2-tailed test)
 single_sig  = pval < alpha;       % significant (reject H0)?
 
 %% Create dataset to plot histogram in python
@@ -126,6 +128,6 @@ stat.single_trial.z = single_z;
 stat.single_trial.sig = single_sig;
 % Save statistics
 datadir = fullfile('~', 'projects', 'cifar', 'results');
-fname = 'permtest_vs_single_trial.mat';
+fname = 'edited_permtest_vs_single_trial.mat';
 fpath = fullfile(datadir, fname);
 save(fpath, 'stat')

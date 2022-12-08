@@ -45,7 +45,7 @@ plt.rcParams.update(params)
 #%%
 
 cohort = ['AnRa',  'ArLa', 'DiAs']
-signal = 'hfa'
+signal = 'lfp'
 # Useful paths
 cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
@@ -86,7 +86,8 @@ def plot_condition_sgc(F):
                     ax[p,s].set_xscale("linear")
                     ax[p,s].set_yscale("log")
                     ax[c,s].set_ylim(0.00001, 1)
-                    ax[p,0].set_ylabel(f"{pair}")
+                    ax[p,0].set_ylabel(f"Spectral GC \n  {pair}")
+                    ax[-1,s].set_xlabel("Frequency (Hz)")
                     ax[0,s].set_title(f"Subject {s}")
     handles, labels = ax[p,s].get_legend_handles_labels()
     fig.legend(handles, labels, loc='upper right')
@@ -117,7 +118,8 @@ def plot_direction_sgc(F):
                     ax[c,s].set_xscale("linear")
                     ax[c,s].set_yscale("log")
                     ax[c,s].set_ylim(0.00001, 1)
-                    ax[c,0].set_ylabel(f"{condition}")
+                    ax[-1,s].set_xlabel("Frequency (Hz)")
+                    ax[c,0].set_ylabel(f"Spectral GC \n {condition}")
                     ax[0,s].set_title(f"Subject {s}")
     handles, labels = ax[p,s].get_legend_handles_labels()
     fig.legend(handles, labels, loc='upper right')
@@ -126,24 +128,15 @@ def plot_direction_sgc(F):
 
 plot_condition_sgc(F)
 figpath = Path('~','thesis','overleaf_project', 'figures','results_figures').expanduser()
-fname =  "_".join(["magnitude", connectivity, bandstr,"GC.pdf"])
+fname =  "_".join(["spectral_gc", signal, "condition.pdf"])
 figpath = figpath.joinpath(fname)
 plt.savefig(figpath)
 #%%
 
 plot_direction_sgc(F)
 figpath = Path('~','thesis','overleaf_project', 'figures','results_figures').expanduser()
-fname =  "_".join(["magnitude", connectivity, bandstr,"GC.pdf"])
+fname =  "_".join(["spectral_gc", signal,  "direction.pdf"])
 figpath = figpath.joinpath(fname)
 plt.savefig(figpath)
-
-
-
-
-
-
-
-
-
 
 #%%

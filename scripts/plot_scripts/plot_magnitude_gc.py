@@ -55,7 +55,6 @@ eeg_bands_fig_title_dic = {"[1 4]":"δ", "[4 7]":"θ", "[8 12]": "α", "[13 30]"
 # Variable inputs of the script
 connect = "groupwise" # pairwise or groupwise
 cohort = ['AnRa',  'ArLa', 'DiAs']
-signal = 'hfa'
 connectivity = 'groupwise'
 cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
@@ -125,8 +124,12 @@ def plot_gc(F, cohort, vmax = 0.1):
     plt.suptitle(f"Single subject {connectivity} conditional GC")
     
 #%%
-vmax = 0.01
+vmax_dic = 0.01
 for band in eeg_bands:
+    if band == '[0 62]':
+        vmax = 0.03
+    else:
+        vmax = 0.01
     # Useful paths
     bandstr = eeg_bands_fname_dic[band]
     fname = "_".join(['magnitude', connect, band, 'GC.mat'])

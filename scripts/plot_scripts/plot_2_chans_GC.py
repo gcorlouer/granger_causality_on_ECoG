@@ -41,7 +41,7 @@ cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
 result_path = cifar_path.joinpath('results')
 
-eeg_bands = {"[8 12]": "α", "[13 30]": "β",
+eeg_bands = {"[1 4]":"δ", "[4 7]": "θ", "[8 12]": "α", "[13 30]": "β",
              "[32 60]": "γ", "[60 120]":"hγ", "[0 62]": "hfa"}
 bands = list(eeg_bands.keys())
 conditions = ['Rest', 'Face', 'Place']
@@ -69,7 +69,10 @@ for i, band in enumerate(bands):
                 gc.append(bu_td[j])
     if i<=nbands-1:
         ax[i].set_xticklabels([])
-    ymax = max(gc) + 0.001
+    if band == '[0 62]':
+        ymax = max(gc) + 0.001
+    else:
+        ymax = max(gc) + 0.001
     ax[i].bar(xticks, gc, width=0.1)
     ax[i].set_ylim(0, ymax)
     band_name = eeg_bands[band]

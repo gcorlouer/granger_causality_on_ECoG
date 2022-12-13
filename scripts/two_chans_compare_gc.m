@@ -31,7 +31,7 @@ for c=1:nComp
                     X = X(:,:, trials);
                 end
                 indices = gc_input.indices;
-                Xc{i} = X;
+                Xc{i} = X; % condition i time series
                 [n,m,N] = size(Xc{i});
                 sfreq = gc_input.sfreq;
                 % Estimate SS model

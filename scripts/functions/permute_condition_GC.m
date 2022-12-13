@@ -44,15 +44,15 @@ for s=1:Ns
     end
     % Sample trials without replacement
     trials = randperm(Nt);
-    trial1 = trials(1:N);
-    trial2 = trials(N+1:Nt);
-    X1 = X(:,:,trial1);
-    X2 = X(:,:,trial2);
     % Estimate SS model for each conditions
     % condition 1
+    trial1 = trials(1:N);
+    X1 = X(:,:,trial1);
     [A1,C1,K1,V1,~,~] = tsdata_to_ss(X1,pf,ssmo);
     model1.A = A1; model1.C = C1; model1.K = K1; model1.V = V1;
     % condition 2
+    trial2 = trials(N+1:Nt);
+    X2 = X(:,:,trial2);
     [A2,C2,K2,V2,~,~] = tsdata_to_ss(X2,pf,ssmo);
     model2.A = A2; model2.C = C2; model2.K = K2; model2.V = V2;
     % Compute band specific GC 

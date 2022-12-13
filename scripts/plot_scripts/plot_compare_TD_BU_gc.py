@@ -20,14 +20,14 @@ from pathlib import Path
 #%%
 
 plt.style.use('ggplot')
-fig_width = 24  # figure width in cm
+fig_width = 28  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
-label_size = 12
-tick_size = 8
+label_size = 14
+tick_size = 12
 params = {'backend': 'ps',
           'lines.linewidth': 1.5,
           'axes.labelsize': label_size,
@@ -104,14 +104,17 @@ def plot_TD_BU_zscore(F, cohort, data_path, cmap = 'PuOr',
                     else:
                         continue                 
             fband = eeg_bands_fig_title_dic[bandstr]
-            ax[0,s].set_title(f"S{s}, {fband}")
-    plt.suptitle(f"Top-down relative to bottom-up GC")
+            if fband == "hfa":
+                ax[0,s].set_title(f"Subject {s}, HFA",fontweight="bold")
+            else:
+                ax[0,s].set_title(f"Subject {s}, {fband}-band",fontweight="bold")
+    #plt.suptitle(f"Top-down relative to bottom-up GC")
     print(f"\n Critical Z score is {zcrit}\n")
 
 #%% Plot results
 
 cohort = ['AnRa',  'ArLa', 'DiAs']
-cmap ='PuOr'
+cmap ='PuOr_r'
 vmax = 10
 
 for band in eeg_bands:

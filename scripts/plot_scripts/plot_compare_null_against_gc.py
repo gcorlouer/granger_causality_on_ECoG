@@ -21,14 +21,14 @@ import seaborn as sns
 #%%
 
 plt.style.use('ggplot')
-fig_width = 24  # figure width in cm
+fig_width = 28  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
-label_size = 10
-tick_size = 8
+label_size = 14
+tick_size = 12
 params = {'backend': 'ps',
           'lines.linewidth': 1.5,
           'axes.labelsize': label_size,
@@ -45,7 +45,7 @@ plt.rcParams.update(params)
 
 #%%
 # Variable inputs of the script
-function = 'MI' # MI or GC
+function = 'GC' # MI or GC
 connect = "pairwise" # pairwise or groupwise
 plot_dic = {"MI": {"pairwise": 0.02, "groupwise": 0.1} , "GC":{"pairwise":0.005, "groupwise":0.01}}
 vmax = plot_dic[function][connect]
@@ -94,13 +94,6 @@ def plot_functional_connectivity(F, cohort, function='GC', vmax=5, vmin=0,
             # Get statistics from matlab analysis
             stat = F[subject][0][0][condition][0][0][function][0][0]['F'][0][0]
             sig = F[subject][0][0][condition][0][0][function][0][0]['sig'][0][0]
-            # Relative to rest
-            #statb = F[subject][0][0]['Rest'][0][0][function][0][0]['F'][0][0]
-            #stat = (stat - statb)
-            #stat = (stat - statb)/statb
-            #stat = np.log(stat/statb)
-            #max_stat = np.amax(stat)
-            #vmax = round(max_stat)
             # Plot Z score as a heatmap
             if connectivity == 'pairwise':
                 # Hierarchical ordering
@@ -125,7 +118,7 @@ def plot_functional_connectivity(F, cohort, function='GC', vmax=5, vmin=0,
                 ax[c,s].xaxis.set_ticks_position('top')
                 ax[c,s].xaxis.set_label_position('top')
                 ax[c,0].set_ylabel(f"{function } {condition}")
-                ax[0,s].set_title(f"S{s}")
+                ax[0,s].set_title(f"Subject {s}", fontweight="bold")
                 # Make ticks label
             else:
                 ticks_labels = populations
@@ -139,7 +132,7 @@ def plot_functional_connectivity(F, cohort, function='GC', vmax=5, vmin=0,
                 ax[c,s].xaxis.set_ticks_position('top')
                 ax[c,s].xaxis.set_label_position('top')
                 ax[c,0].set_ylabel(f"{function } {condition}")
-                ax[0,s].set_title(f"S{s}")
+                ax[0,s].set_title(f"Subject {s}", fontweight="bold")
                 # if c>=1:
                 #     ax[c,s].set_xticks([]) # (turn off xticks)
                 # if s>=1:
@@ -153,7 +146,7 @@ def plot_functional_connectivity(F, cohort, function='GC', vmax=5, vmin=0,
                                  color='k')
                     else:
                         continue                 
-    plt.suptitle(f"Single subject {connectivity[0]} conditional {function}")
+    #plt.suptitle(f"Single subject {connectivity[0]} conditional {function}")
     
 #%%
 connectivity = F['connectivity'][0][0][0]

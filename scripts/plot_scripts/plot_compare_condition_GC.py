@@ -17,14 +17,14 @@ from pathlib import Path
 #%%
 
 plt.style.use('ggplot')
-fig_width = 24  # figure width in cm
+fig_width = 28  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
-label_size = 10
-tick_size = 8
+label_size = 14
+tick_size = 12
 params = {'backend': 'ps',
           'lines.linewidth': 1.5,
           'axes.labelsize': label_size,
@@ -52,7 +52,7 @@ eeg_bands_fig_title_dic = {"[1 4]":"δ", "[4 7]":"θ", "[ 8 12]": "α", "[13 30]
              "[32 60]": "γ", "[ 60 120]":"hγ", "[ 0 62]": "hfa"} # To write fig titles
 
 
-def plot_compare_condition_GC(F, cohort, cmap='BrBg',
+def plot_compare_condition_GC(F, cohort, cmap='BrBg_r',
                        vmin = -5, vmax=5, tau_x=0.5, tau_y=0.8):
     """
     We plot Z score from comparing permutation group F in condition 1 with
@@ -113,7 +113,7 @@ def plot_compare_condition_GC(F, cohort, cmap='BrBg',
                 ax[c,s].xaxis.set_ticks_position('top')
                 ax[c,s].xaxis.set_label_position('top')
                 ylabel = comparisons_dic[comparison]
-                ax[c,0].set_ylabel(f"Z, {ylabel}")
+                ax[c,0].set_ylabel(f"Z-score,\n {ylabel}")
                 # Plot statistical significant entries
                 for y in range(z.shape[0]):
                     for x in range(z.shape[1]):
@@ -136,7 +136,7 @@ def plot_compare_condition_GC(F, cohort, cmap='BrBg',
                 ax[c,s].xaxis.set_label_position('top')
                 g.set_yticklabels(g.get_yticklabels(), rotation = 90)
                 ylabel = comparisons_dic[comparison]
-                ax[c,0].set_ylabel(f"Z, {ylabel}")
+                ax[c,0].set_ylabel(f"Z-score,\n {ylabel}")
                 # Plot statistical significant entries
                 for y in range(z.shape[0]):
                     for x in range(z.shape[1]):
@@ -147,13 +147,16 @@ def plot_compare_condition_GC(F, cohort, cmap='BrBg',
                         else:
                             continue                 
             fband = eeg_bands_fig_title_dic[bandstr]
-            ax[0,s].set_title(f"S{s}, {fband}")
-    plt.suptitle(f"Singe subject {connectivity[0]} GC between conditions")
+            if fband == "hfa":
+                ax[0,s].set_title(f"Subject {s}, HFA",fontweight="bold")
+            else:
+                ax[0,s].set_title(f"Subject {s}, {fband}-band",fontweight="bold")
+    #plt.suptitle(f"Singe subject {connectivity[0]} GC between conditions")
     print(f"\n Critical Z score is {zcrit}\n")
 #%%
-connect = "groupwise"
+connect = "pairwise"
 for band in eeg_bands:
-    cmap ='PuOr'
+    cmap ='PuOr_r'
     cohort = ['AnRa',  'ArLa', 'DiAs']
     # Useful paths
     cifar_path = Path('~','projects','cifar').expanduser()

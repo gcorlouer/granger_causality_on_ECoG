@@ -18,14 +18,14 @@ import seaborn as sns
 #%%
 
 plt.style.use('ggplot')
-fig_width = 24  # figure width in cm
+fig_width = 28  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
-label_size = 10
-tick_size = 8
+label_size = 14
+tick_size = 12
 params = {'backend': 'ps',
           'lines.linewidth': 1.5,
           'axes.labelsize': label_size,

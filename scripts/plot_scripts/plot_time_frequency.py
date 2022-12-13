@@ -9,14 +9,14 @@ from mne.viz import centers_to_edges
 #%%
 
 plt.style.use('ggplot')
-fig_width = 24  # figure width in cm
+fig_width = 28  # figure width in cm
 inches_per_cm = 0.393701               # Convert cm to inch
 golden_mean = (np.sqrt(5)-1.0)/2.0         # Aesthetic ratio
 fig_width = fig_width*inches_per_cm  # width in inches
 fig_height = fig_width*golden_mean      # height in inches
 fig_size =  [fig_width,fig_height]
-label_size = 12
-tick_size = 8
+label_size = 14
+tick_size = 12
 params = {'backend': 'ps',
           'lines.linewidth': 1.5,
           'axes.labelsize': label_size,
@@ -26,7 +26,8 @@ params = {'backend': 'ps',
           'xtick.labelsize': tick_size,
           'ytick.labelsize': tick_size,
           'text.usetex': False,
-          'figure.figsize': fig_size}
+          'figure.figsize': fig_size,
+          "axes.labelweight": "bold"}
 plt.rcParams.update(params)
 
 
@@ -90,7 +91,7 @@ def plot_tf(fpath, vmax, vmin, subject='DiAs'):
         figpath = figpath.joinpath(fname)
         plt.show()
 #%%
-subject = 'DiAs'
+subject = 'ArLa'
 vmax = vdict[subject]
 vmin = [-vmax[i] for i in range(len(vmax))]
 plot_tf(fpath, subject=subject, vmax=vmax, vmin=vmin)

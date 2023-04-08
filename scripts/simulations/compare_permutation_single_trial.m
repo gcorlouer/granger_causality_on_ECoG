@@ -77,14 +77,8 @@ Fs(2) = var_to_mvgc(VAR.A, VAR.V,x,y);
 
 %testStat = perm_F{1} - perm_F{2};
 observedStat = Fs(1) - Fs(2);
-count = 0;
-for s=1:Ns
-    if abs(testStat(s))>abs(observedStat)
-        count=count+1;
-    else
-        continue 
-    end
-end
+count = abs(tstat) > abs(obsStat);
+count = sum(count);
 
 pval = count/Ns;
 mT = mean(testStat);

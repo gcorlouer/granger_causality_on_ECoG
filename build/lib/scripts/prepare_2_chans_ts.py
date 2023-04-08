@@ -26,7 +26,7 @@ result_path = cifar_path.joinpath('results')
 
 chans = ['LTo1-LTo2', 'LGRD60-LGRD61']
 
-signal = 'hfa'
+signal = 'lfp'
 # Signal dic
 hfa_dic = {'suffix': '_hfb_continuous_raw.fif', 'log_transf': True, 
            'l_freq':0.1, 'decim': 4}

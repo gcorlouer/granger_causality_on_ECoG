@@ -10,7 +10,7 @@ arguments
     args.dim double = 3; % dimension along which to integrate
     args.band double = [0 40]; % frequency band
     args.sfreq double = 250; 
-    args.nfreqs double = 1024
+    args.nfreqs double = 1024;
 end
 
 group = args.group; connect = args.connect;

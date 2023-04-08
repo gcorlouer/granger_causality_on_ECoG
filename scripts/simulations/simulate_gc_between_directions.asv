@@ -29,15 +29,8 @@ condition = 'Face';
 gc_input = read_cdt_time_series('datadir', datadir, 'subject', subject,...
                     'condition',condition);
 indices = gc_input.indices;
-fn = fieldnames(indices);
-ng = length(fn);
-group = cell(ng,1);
-for k=1:length(fn)
-    group{k} = double(indices.(fn{k}));
-end
-group = group';
 %% Initialize 
-n = 5;
+
 GC = struct;
 rng_seed(seed);
 A = cell(2,1);

@@ -33,6 +33,7 @@ F_idx = indices.('F');
 % Sizes
 nR = length(R_idx);
 nF = length(F_idx);
+npair = nR * nF;
 count = zeros(nR,nF);
 T = zeros(nR,nF,Ns);
 Ta = zeros(nR,nF);
@@ -43,6 +44,7 @@ for i=1:nR
     for j=1:nF
         iR = R_idx(i);
         iF = F_idx(j);
+        ipair = (i-1) * nF + j;
         x = X(iR,:,:);
         y = X(iF,:,:);
         % Compute observed TD - BU GC
@@ -55,7 +57,7 @@ for i=1:nR
         [~,~,Nt] = size(xRF);
         for s=1:Ns
             if mod(s, Ns/10) == 0
-                fprintf('TD vs BU %s GC permutation sample %d of %d \n',bandstr,s,Ns);
+                fprintf('Pair %d/%d, TD vs BU %s GC permutation sample %d of %d \n',ipair, npair, bandstr,s,Ns);
             end
             % Permute trial index
             trials = randperm(Nt);
@@ -94,6 +96,7 @@ zcrit = sqrt(2)*erfcinv(pcrit);
 
 % Return statistics
 stat.T = T;
+stat.Ta = Ta;
 stat.pval = pcrit;
 stat.sig = sig;
 stat.z = z;

@@ -12,6 +12,8 @@ if ~exist('m',      'var'), m       = 100;     end % numbers of observations per
 if ~exist('N',      'var'), N       = 20;      end % numbers of trials
 if ~exist('rho',    'var'), rho     = 0.9;       end % spectral radii
 if ~exist('wvar',   'var'), wvar    = 0.9;   end % var coefficients decay weighting factors
+if ~exist('perturbation', 'var'), perturbation = 100; end % perturbation
+
 if ~exist('rmi',    'var'), rmi     = 0.8;   end % residuals log-generalised correlations (multi-information):
 if ~exist('regm',   'var'), regmode    = 'OLS';       end % VAR model estimation regression mode ('OLS' or 'LWR')
 if ~exist('debias', 'var'), debias  = true;        end % Debias GC statistics? (recommended for inference)
@@ -24,17 +26,25 @@ if ~exist('fignum', 'var'), fignum  = 1;           end % figure number
 %%%%%%%%%%%%%%%%%%%%%%%%%############%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialize 
 input_parameters
-
-connectivity_matrix = [[1;1],[0;1]];
-[n, ~] = size(connectivity_matrix);
-A = var_rand(connectivity_matrix,p,rho);
-V = corr_rand(n,rmi);
-GC = struct;
 rng_seed(seed);
-% Generate 2 conditions specific time series
+n = 5;
+nR = floor(n/2);
+indices = struct;
+indices.R = 1:nR;
+indices.F = nR+1:n;
+iR = indices.R;
+iF = indices.F;
+nF = length(iF);
+GC = struct;
+
+%% Simulate time series
+A = var_rand(n,p, rho, wvar);
+V = corr_rand(n,rmi);
+
 X = var_to_tsdata(A,V,m,N);
-indices.R = 1;
-indices.F = 2;
+X(:,1,:) = perturbation * X(:,1,:); % perturbate
+
+%% Compute TD vs BU GC
 stat = compare_TD_BU_pgc(X, indices, 'morder', morder, 'ssmo', ssmo,...
             'Ns',Ns,'alpha',alpha, 'mhtc',mhtc, ...
             'sfreq',sfreq, 'nfreqs', nfreqs,'dim',dim, 'band',band);
@@ -44,7 +54,8 @@ GC.('sig') = stat.sig;
 GC.('pval') = stat.pval;
 GC.('zcrit') = stat.zcrit;
 GC.('band') = band;
-GC.('connectivity') = connect;
+GC.('indices') = indices;
+GC.('Fd') = stat.Ta;
 fprintf('\n')
 
 bandstr = mat2str(band);

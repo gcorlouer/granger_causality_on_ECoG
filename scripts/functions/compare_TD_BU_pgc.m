@@ -40,15 +40,17 @@ Ta = zeros(nR,nF);
 
 [~,~,N] = size(X);
 
+X_R = X(R_idx,:,:);
+X_F = X(F_idx,:,:);
+
 for i=1:nR
+    x = X_R(i,:,:);
     for j=1:nF
-        iR = R_idx(i);
-        iF = F_idx(j);
         ipair = (i-1) * nF + j;
-        x = X(iR,:,:);
-        y = X(iF,:,:);
+        y = X_F(j,:,:);
+        X_RF = cat(1,x,y);
         % Compute observed TD - BU GC
-        [A,C,K,V,~,~] = tsdata_to_ss(X([iR iF],:,:), pf, ssmo);
+        [A,C,K,V,~,~] = tsdata_to_ss(X_RF, pf, ssmo);
         f = ss_to_spwcgc(A,C,K,V, nfreqs);
         F = bandlimit(f,dim, sfreq, band);
         Ta(i,j) = F(1,2) - F(2,1);
@@ -56,7 +58,7 @@ for i=1:nR
         xRF = cat(3,x,y);
         [~,~,Nt] = size(xRF);
         for s=1:Ns
-            if mod(s, Ns/10) == 0
+            if mod(s, Ns) == 0
                 fprintf('Pair %d/%d, TD vs BU %s GC permutation sample %d of %d \n',ipair, npair, bandstr,s,Ns);
             end
             % Permute trial index
@@ -85,19 +87,20 @@ for i=1:nR
      end
 end
 % Compute p value and significance
-pval = count./Ns;
+pval = (count + 1)/(Ns + 1); % continuity correction
 [sig, pcrit] = significance(pval,alpha,mhtc,[]);
 
 % Compute z score
 mT = mean(T,3);
 sT = std(T,0,3);
 z = (Ta - mT)./sT;
-zcrit = sqrt(2)*erfcinv(pcrit);
+zcrit = sqrt(2)*erfcinv(alpha);
 
 % Return statistics
 stat.T = T;
+stat.count  = count;
 stat.Ta = Ta;
-stat.pval = pcrit;
+stat.pval = pval; %Need change for mht correction
 stat.sig = sig;
 stat.z = z;
 stat.zcrit = zcrit;

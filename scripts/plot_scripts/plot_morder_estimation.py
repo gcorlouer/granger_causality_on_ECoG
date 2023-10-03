@@ -42,7 +42,7 @@ cohort = ['AnRa',  'ArLa', 'DiAs']
 cifar_path = Path('~','projects','cifar').expanduser()
 data_path = cifar_path.joinpath('data')
 result_path = cifar_path.joinpath('results')
-signal = 'hfa'
+signal = 'lfp'
 if signal == 'lfp':
     infocrit = 'bic'
 elif signal == 'hfa':
@@ -79,15 +79,15 @@ def plot_var_model_order(model_order, cohort, infocrit='aic'):
             ax[c,s].annotate(r'$\rho$'+f'={rho}', 
                        xy = (0.50, 0.50), xycoords='axes fraction', fontsize = 12)
             ticks_labels = [0,5,10,15,20,25,30]
-            ax[0,s].set_title(f'Subject {s}')
-            ax[-1,s].set_xlabel('Lags (obs)')
+            ax[0,s].set_title(f'Subject {s}, {signal}')
+            ax[-1,s].set_xlabel('Lags (observations)')
             # if c<=1:
             #             ax[c,s].set_xticks([]) # (turn off xticks)
             # if s>=1:
             #             ax[c,s].set_yticks([]) # (turn off xticks)
             ax[c,s].set_xticks([0,5,10,15,20,25,30])
             ax[c,s].set_xticklabels(ticks_labels)
-            ax[c,0].set_ylabel(f'Morder {condition}')
+            ax[c,0].set_ylabel(f'Information \n criterion \n {condition}')
     #ax[-1,-1].legend()
     handles, labels = ax[c,s].get_legend_handles_labels()
     fig.legend(handles, labels, loc='upper right')
@@ -107,8 +107,8 @@ def plot_ss_model_order(model_order, cohort, xmax=50):
             ax[c,s].plot(lags, ssvc, color = 'b')
             ax[c,s].axvline(x=morder, color='k')
             ticks_labels = [0,10,20,30,40,50]
-            ax[0,s].set_title(f'SVC, subject {s}')
-            ax[-1,s].set_xlabel('Lags (obs)')
+            ax[0,s].set_title(f'Subject {s}, {signal}')
+            ax[-1,s].set_xlabel('Lags (observations)')
             # if c<=1:
             #             ax[c,s].set_xticks([]) # (turn off xticks)
             # if s>=1:
@@ -116,7 +116,7 @@ def plot_ss_model_order(model_order, cohort, xmax=50):
             ax[c,s].set_xlim(0,xmax)
             ax[c,s].set_xticks(ticks_labels)
             ax[c,s].set_xticklabels(ticks_labels)
-            ax[c,0].set_ylabel(f'{condition}')
+            ax[c,0].set_ylabel(f'Singular \n value criterion \n {condition}')
     #ax[-1,-1].legend()
     handles, labels = ax[c,s].get_legend_handles_labels()
     fig.legend(handles, labels, loc='upper right')
@@ -124,7 +124,7 @@ def plot_ss_model_order(model_order, cohort, xmax=50):
 
 plot_var_model_order(model_order, cohort, infocrit=infocrit)
 fpath = Path('~','thesis','overleaf_project', 'figures','method_figure').expanduser()
-fname = signal + '_varmorder_multi_trial.pdf'
+fname = signal + '_varmorder_multi_trial_corrected.pdf'
 figpath = fpath.joinpath(fname)
 plt.savefig(figpath)
 
@@ -133,6 +133,6 @@ plt.savefig(figpath)
 
 plot_ss_model_order(model_order, cohort)
 fpath = Path('~','thesis','overleaf_project', 'figures','method_figure').expanduser()
-fname = signal + '_ssmorder_multi_trial.pdf'
+fname = signal + '_ssmorder_multi_trial_corrected.pdf'
 figpath = fpath.joinpath(fname)
 plt.savefig(figpath)

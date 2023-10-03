@@ -14,7 +14,7 @@ alpha = args.alpha; mhtc = args.mhtc; Ns = args.Ns ;
 count = abs(tstat) > abs(obsStat);
 count = sum(count, 3);
 % Compute p value and significance
-pval = count/Ns;
+pval = (count +1)/(Ns + 1); % continuity correction
 [sig, pcrit] = significance(pval,alpha,mhtc,[]);
 
 % Compute z score

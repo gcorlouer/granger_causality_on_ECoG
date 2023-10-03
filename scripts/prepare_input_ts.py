@@ -6,7 +6,7 @@ import argparse
 #%% Parameters
 conditions = ['Rest', 'Face', 'Place', 'baseline']
 cohort = ['AnRa',  'ArLa', 'DiAs']
-signal = 'lfp'
+signal = 'hfa'
 
 # Paths (Change before running. Run from root.)
 cifar_path = Path('~','projects','cifar').expanduser()

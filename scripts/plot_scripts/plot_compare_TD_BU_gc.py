@@ -137,4 +137,4 @@ for band in eeg_bands:
     bandstr = eeg_bands_fname_dic[band]
     fname =  "_".join(["compare", "td_vs_bu","condition", bandstr,"GC.pdf"])
     figpath = figpath.joinpath(fname)
-    plt.savefig(figpath)
+    #plt.savefig(figpath)

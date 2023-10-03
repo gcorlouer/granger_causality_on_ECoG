@@ -5,14 +5,15 @@
 %
 % Simulation parameters - override on command line
 
-
-if ~exist('p',      'var'), p       = 5;       end % model orders
-if ~exist('ssmo',      'var'), ssmo       = 20;       end % model orders
+if ~exist('dF',      'var'), dF       = 0;       end % True difference
+if ~exist('p',      'var'), p       = 5;       end % model order
+if ~exist('ssmo',      'var'), ssmo       = 20;       end % SS model order
+if ~exist('n',      'var'), n       = 2;       end % Number of channels
 if ~exist('m',      'var'), m       = 100;     end % numbers of observations per trial
 if ~exist('N',      'var'), N       = 20;      end % numbers of trials
 if ~exist('rho',    'var'), rho     = 0.9;       end % spectral radii
 if ~exist('wvar',   'var'), wvar    = 0.9;   end % var coefficients decay weighting factors
-if ~exist('perturbation', 'var'), perturbation = 100; end % perturbation
+if ~exist('perturbation', 'var'), perturbation = 2; end % perturbation
 
 if ~exist('rmi',    'var'), rmi     = 0.8;   end % residuals log-generalised correlations (multi-information):
 if ~exist('regm',   'var'), regmode    = 'OLS';       end % VAR model estimation regression mode ('OLS' or 'LWR')
@@ -27,7 +28,6 @@ if ~exist('fignum', 'var'), fignum  = 1;           end % figure number
 %% Initialize 
 input_parameters
 rng_seed(seed);
-n = 5;
 nR = floor(n/2);
 indices = struct;
 indices.R = 1:nR;
@@ -38,15 +38,20 @@ nF = length(iF);
 GC = struct;
 
 %% Simulate time series
-A = var_rand(2,p, wvar);
-V = corr_rand(n);
+
+if dF == 0 % Set true TD - BU = 0
+    C = eye(n); % other possible choices: upper or lower diag are ones 
+else
+    C = ones(n,n);
+    C = triu(C, 0);
+end
+A = var_rand(C,p, rho, wvar);
+V = corr_rand(n,rmi);
 
 X = var_to_tsdata(A,V,m,N);
-X(:,1,:) = perturbation * X(:,1,:); % perturbate
+X(:,1,:) = (1 + perturbation) * X(:,1,:); % perturbate
 
 %% Compute TD vs BU GC
-Fa = var_to_pwcgc(A, V);
-Fd = Fa(iR,iF) - Fa(iF,iR)';
 stat = compare_TD_BU_pgc(X, indices, 'morder', morder, 'ssmo', ssmo,...
             'Ns',Ns,'alpha',alpha, 'mhtc',mhtc, ...
             'sfreq',sfreq, 'nfreqs', nfreqs,'dim',dim, 'band',band);
@@ -57,7 +62,9 @@ GC.('pval') = stat.pval;
 GC.('zcrit') = stat.zcrit;
 GC.('band') = band;
 GC.('indices') = indices;
-GC.('Fd') = Fd;
+GC.('Fd') = stat.Ta;
+GC.('C') = C;
+fprintf("")
 fprintf('\n')
 
 bandstr = mat2str(band);

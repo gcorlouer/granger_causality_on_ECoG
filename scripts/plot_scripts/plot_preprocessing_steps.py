@@ -463,8 +463,9 @@ def plot_linreg(reg, xlabels, ylabels):
         plt.scatter(x,y, color='b')
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.annotate(f'r={round(stats.rvalue,2)}\n p={round(stats.pvalue,3)}', 
-                       xy = (0.75, 0.75), xycoords='axes fraction', fontsize = 12)
+        pval = '{:.1e}'.format(stats.pvalue)
+        plt.annotate(f'r={round(stats.rvalue,2)}\n'f'p={pval}', 
+                       xy = (0.6, 0.75), xycoords='axes fraction', fontsize = 12)
         plt.tight_layout()
 
 reg = [('Y','latency'), ('Y','visual_responsivity'),('latency', 'visual_responsivity'),
@@ -472,7 +473,7 @@ reg = [('Y','latency'), ('Y','visual_responsivity'),('latency', 'visual_responsi
 xlabels = ['Y axis (MNI)', 'Y axis (MNI)', 'latency (ms)', 'Y (MNI)']
 ylabels = ['latency (ms)', 'responsivity (z)', 'responsivity (z)', 'selectivity (z)']
 fpath = home.joinpath('thesis','overleaf_project','figures','method_figure')
-figname = 'visual_hierarchy.pdf'
+figname = 'visual_hierarchy_corrected.pdf'
 plot_linreg(reg, xlabels, ylabels)
 fpath = fpath.joinpath(figname)
 plt.savefig(fpath)

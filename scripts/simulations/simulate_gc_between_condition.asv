@@ -97,6 +97,7 @@ GC.('connectivity') = connect;
 fprintf('\n')
 
 bandstr = mat2str(band);
-fname = ['compare_condition_simulated_GC_' int2str(n) '_' connect '_' bandstr 'Hz.mat'];
+fname = ['compare_condition_simulated_GC_' int2str(n) 'x' int2str(m) 'x' int2str(N) ... 
+    '_' 'nperm' '_' int2str(Ns) '_' connect '_' int2str(morder) '_' bandstr '_' 'Hz.mat'];
 fpath = fullfile(datadir, fname);
 save(fpath, 'GC')

@@ -1,1 +1,0 @@
-rsync -aP gc349@neocortex:~/projects/cifar/results/ ~/projects/cifar/results/

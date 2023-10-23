@@ -4,10 +4,10 @@ MVGC pipeline on ECoG times series during visual perception and recall (data is 
 ## Pipeline
 
 In folder pipeline:
-* preprocessing: visualise channels, extract high frequency broadband amplitude, epoching, prepare input time series
-* modeling: State space and VAR modeling (model order and parameters estimation)
+* preprocessing: visualize channels, extract high-frequency broadband amplitude, epoching, prepare input time series
+* modeling: State-space (SS) and VAR modeling (model order and parameters estimation)
 * gc_analyses: Estimate MVGC, compare MVGC between experimental conditions and directions of information flow
-
+* plot_scripts: Plot results from VAR/SS modeling and GC analyses
 
 ### Dependencies:
 

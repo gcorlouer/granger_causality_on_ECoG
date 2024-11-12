@@ -7,8 +7,8 @@ Created on Thu Jan 13 22:44:37 2022
 """
 
 
-from src.preprocessing_lib import EcogReader, VisualDetector
-from src.input_config import args
+from libs.preprocessing_lib import EcogReader, VisualDetector
+from libs.input_config import args
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -41,11 +41,6 @@ def test_detect():
     for i in range(nchan):
         plt.plot(time, X[i,:])
     
-    # Plot response for channel who are not visually responsive
-    
-    
-    
+    # Plot response for channel who are not visually responsive 
 test_detect()
-
-#%%
 

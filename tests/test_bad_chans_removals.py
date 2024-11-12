@@ -1,9 +1,9 @@
 """
 This script contains testing functions for each steps of bad channels removal
 """
-from src.preprocessing_lib import Ecog, drop_bad_chans, pick_99_percentile_chans
-from src.preprocessing_lib import mark_high_std_outliers, mark_physio_chan
-from src.input_config import args
+from libs.preprocessing_lib import Ecog, drop_bad_chans, pick_99_percentile_chans
+from libs.preprocessing_lib import mark_high_std_outliers, mark_physio_chan
+from libs.input_config import args
 
 import numpy as np
 

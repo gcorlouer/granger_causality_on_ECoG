@@ -1,5 +1,5 @@
-from src.preprocessing_lib import Ecog
-from src.input_config import args
+from libs.preprocessing_lib import Ecog
+from libs.input_config import args
 
 #%% Some unit tests
 

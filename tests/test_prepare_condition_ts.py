@@ -7,8 +7,8 @@ In this script we test condition specific time series
 """
 
 
-from src.preprocessing_lib import EcogReader, Epocher, prepare_condition_ts
-from src.input_config import args
+from libs.preprocessing_lib import EcogReader, Epocher, prepare_condition_ts
+from libs.input_config import args
 from pathlib import Path
 from scipy.io import savemat
 

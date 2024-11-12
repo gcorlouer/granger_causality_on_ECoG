@@ -6,8 +6,8 @@ Created on Thu Jan 13 00:58:02 2022
 @author: guime
 """
 
-from src.preprocessing_lib import EcogReader, Epocher
-from src.input_config import args
+from libs.preprocessing_lib import EcogReader, Epocher
+from libs.input_config import args
 
 import mne
 import numpy as np

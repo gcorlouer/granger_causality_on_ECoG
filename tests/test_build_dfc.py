@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-from src.preprocessing_lib import EcogReader, build_dfc, parcellation_to_indices
-from src.input_config import args
+from libs.preprocessing_lib import EcogReader, build_dfc, parcellation_to_indices
+from libs.input_config import args
 from scipy.io import loadmat
 from pathlib import Path
 
@@ -93,10 +93,3 @@ fc_dict['bias'] = bias
 
 # Build dataframe
 dfc = pd.DataFrame.from_dict(fc_dict)
-
-#%% Testing building dictionnary made of arrays
-
-ad = {'a':[], 'b':[]}
-a = [0]*2
-b = [0]*2
-a[0] = 

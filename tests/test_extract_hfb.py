@@ -1,5 +1,5 @@
-from src.preprocessing_lib import EcogReader, HfbExtractor
-from src.input_config import args
+from libs.preprocessing_lib import EcogReader, HfbExtractor
+from libs.input_config import args
 
 import matplotlib.pyplot as plt
 #%%

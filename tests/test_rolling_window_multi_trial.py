@@ -6,9 +6,9 @@ Created on Tue Mar 15 13:21:59 2022
 @author: guime
 """
 
-from src.input_config import args
-from src.preprocessing_lib import EcogReader
-from src.plotting_lib import plot_rolling_specrad, plot_multi_fc, sort_populations
+from libs.input_config import args
+from libs.preprocessing_lib import EcogReader
+from libs.plotting_lib import plot_rolling_specrad, plot_multi_fc, sort_populations
 from pathlib import Path
 from scipy.io import loadmat
 

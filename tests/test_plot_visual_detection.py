@@ -13,7 +13,7 @@ import numpy as np
 import seaborn as sns
 import pandas as pd 
 
-from src.preprocessing_lib import EcogReader, Epocher
+from libs.preprocessing_lib import EcogReader, Epocher
 from pathlib import Path
 from scipy.stats import linregress
 
@@ -47,9 +47,6 @@ min_Y = np.amin(Y)
 aY = np.arange(min_Y, max_Y)
 # linear slope for latency/Y
 l_Y = stats_Y.slope*alatency + stats_Y.intercept
-# Linear slope for visual response/Y
-#l_visual = stats_visual*aY +stats_visual.intercept
-# Linear slope for
 # Plot figure of linear regression
 plt.plot(alatency, l_Y)
 plt.scatter(latency, Y)

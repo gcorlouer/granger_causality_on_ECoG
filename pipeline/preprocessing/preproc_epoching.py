@@ -9,26 +9,35 @@ and save it as a derivatives
 
 
 from src.preprocessing_lib import EcogReader, Epocher
-from src.input_config import args 
+from src.input_config import args
 
-#%% Epoch baseline rescale hfb  for each conditions
+# %% Epoch baseline rescale hfb  for each conditions
 
-conditions = ['Rest', 'Stim','Face', 'Place']
+conditions = ["Rest", "Stim", "Face", "Place"]
 for subject in args.cohort:
-    reader = EcogReader(args.data_path, subject=subject, stage=args.stage, 
-                   preprocessed_suffix=args.preprocessed_suffix)
+    reader = EcogReader(
+        args.data_path,
+        subject=subject,
+        stage=args.stage,
+        preprocessed_suffix=args.preprocessed_suffix,
+    )
     raw = reader.read_ecog()
     for condition in conditions:
-        epocher = Epocher(condition=condition, t_prestim=args.t_prestim, 
-                          t_postim = args.t_postim, baseline=args.baseline, 
-                          preload=args.preload, tmin_baseline=args.tmin_baseline, 
-                          tmax_baseline=args.tmax_baseline, mode=args.mode)
+        epocher = Epocher(
+            condition=condition,
+            t_prestim=args.t_prestim,
+            t_postim=args.t_postim,
+            baseline=args.baseline,
+            preload=args.preload,
+            tmin_baseline=args.tmin_baseline,
+            tmax_baseline=args.tmax_baseline,
+            mode=args.mode,
+        )
         hfb = reader.read_ecog()
         hfb = epocher.scale_epoch(hfb)
-        subject_path = args.derivatives_path.joinpath(subject, 'ieeg')
-        fname = subject + '_hfb_' + condition + '_scaled-epo.fif'
+        subject_path = args.derivatives_path.joinpath(subject, "ieeg")
+        fname = subject + "_hfb_" + condition + "_scaled-epo.fif"
         fpath = subject_path.joinpath(fname)
         hfb.save(fpath, overwrite=True)
 
-#%% Epoch ECoG
-
+# %% Epoch ECoG

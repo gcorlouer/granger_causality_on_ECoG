@@ -23,17 +23,17 @@ from src.preprocessing_lib import EcogReader
 from src.input_config import args
 from mne.viz import plot_alignment, snapshot_brain_montage
 
-#%% Read raw ECoG data
+# %% Read raw ECoG data
 
 path = args.data_path
-ecog = EcogReader(path, subject='DiAs', stage='raw_signal')
+ecog = EcogReader(path, subject="DiAs", stage="raw_signal")
 raw = ecog.read_ecog()
 
-#%% Get montage 
+# %% Get montage
 
 montage = raw.get_montage()
-print(montage.get_positions()['coord_frame'])
+print(montage.get_positions()["coord_frame"])
 
-#%%
+# %%
 
-fig = plot_alignment(raw.info, coord_frame = 'head')
+fig = plot_alignment(raw.info, coord_frame="head")

@@ -5,16 +5,14 @@ Created on Wed Feb 23 21:55:11 2022
 This script contain plotting functions for the project
 @author: guime
 """
-
-import mne
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import pandas as pd
 
-from libs.preprocessing_lib import EcogReader, Epocher, prepare_condition_scaled_ts
+from libs.preprocessing_lib import EcogReader, Epocher
+from libs.preprocessing_lib import prepare_condition_scaled_ts
 from libs.preprocessing_lib import parcellation_to_indices
-
 from pathlib import Path
 from scipy.stats import sem, linregress, ranksums
 from mne.stats import fdr_correction
@@ -81,17 +79,29 @@ def plot_narrow_broadband(
         fir_window=args.fir_window,
     )
     envelope = raw_band.copy().apply_hilbert(envelope=True)
-    # Filtered signal
-    X_filt = raw_band.copy().pick_channels(chan).crop(tmin=tmin, tmax=tmax).get_data()
+    # Create a copy of the original data
+    X_filt = raw_band.copy()
+    # Pick specific channels
+    X_filt.pick_channels(chan)
+    # Crop the data between specified times
+    X_filt.crop(tmin=tmin, tmax=tmax)
+    # Get the data
+    X_filt = X_filt.get_data()
     X_filt = X_filt[0, :]
     # muV
     X_filt = X_filt * 1e6
     print(f"Filtered signal shape is {X_filt.shape}\n")
     # Signal narrow band envelope
-    narrow_envelope = (
-        envelope.copy().pick_channels(chan).crop(tmin=tmin, tmax=tmax).get_data()
-    )
+    # Create a copy of the original data
+    narrow_envelope = envelope.copy()
+    # Select the specified channels
+    narrow_envelope.pick_channels(chan)
+    # Crop the data to the specified time interval
+    narrow_envelope.crop(tmin=tmin, tmax=tmax)
+    # Retrieve the processed data
+    narrow_envelope = narrow_envelope.get_data()
     narrow_envelope = narrow_envelope[0, :]
+    # Rescale amplitude
     narrow_envelope = narrow_envelope * 1e6
     print(f"narrow band envelope shape is {narrow_envelope.shape}\n")
     # Time axis
@@ -139,7 +149,8 @@ def plot_narrow_broadband(
 
 
 def plot_log_trial(
-    args, fpath, fname="DiAs_log_trial.pdf", chan=["LTo1-LTo2"], itrial=2, nbins=50
+    args, fpath, fname="DiAs_log_trial.pdf",
+    chan=["LTo1-LTo2"], itrial=2, nbins=50
 ):
     """
     This function plot log trial vs non log trial and their respective
@@ -234,7 +245,8 @@ def plot_log_trial(
 
 
 def plot_visual_trial(
-    args, fpath, fname="DiAs_visual_trial.pdf", chan=["LTo1-LTo2"], itrial=2, nbins=50
+    args, fpath, fname="DiAs_visual_trial.pdf",
+    chan=["LTo1-LTo2"], itrial=2, nbins=50
 ):
     """
     Plot visually responsive trial and pre/postim distribution
@@ -321,7 +333,8 @@ def plot_visual_trial(
     ax[0, 1].set_xlim(left=amin, right=amax)
     ax[0, 1].set_title("c)", loc="left")
     # Plot prestimulus histogram
-    sns.histplot(prestim, stat="probability", bins=nbins, kde=True, ax=ax[1, 1])
+    sns.histplot(prestim, stat="probability",
+                 bins=nbins, kde=True, ax=ax[1, 1])
     ax[1, 1].set_xlabel("Prestimulus Amplitude")
     ax[1, 1].set_ylabel("Probability")
     ax[1, 1].set_xlim(left=amin, right=amax)
@@ -382,7 +395,8 @@ def plot_linreg(reg, save_path, figname="visual_hierarchy.pdf"):
     Plot linear regression between latency, Y and visual responsivity for
     visual channel hierarchy
 
-    reg = [('Y','latency'), ('Y','visual_responsivity'),('latency', 'visual_responsivity'),
+    reg = [('Y','latency'), ('Y','visual_responsivity'),
+    ('latency','visual_responsivity'),
            ('Y','category_selectivity')]
 
     Regressors/regressands
@@ -423,7 +437,8 @@ def plot_linreg(reg, save_path, figname="visual_hierarchy.pdf"):
 # %% Visual channels classification plots
 
 
-def plot_condition_ts(args, fpath, subject="DiAs", figname="_condition_ts.pdf"):
+def plot_condition_ts(args, fpath, subject="DiAs",
+                      figname="_condition_ts.pdf"):
     # Prepare condition ts
     ts = prepare_condition_scaled_ts(
         args.data_path,
@@ -494,12 +509,14 @@ def plot_rolling_var(df, fpath, momax=10, figname="rolling_var.pdf"):
             for i in ic:
                 time = (
                     df["time"]
-                    .loc[(df["subject"] == cohort[s]) & (df["condition"] == cdt[c])]
+                    .loc[(df["subject"] == cohort[s])
+                         & (df["condition"] == cdt[c])]
                     .to_numpy()
                 )
                 morder = (
                     df[i]
-                    .loc[(df["subject"] == cohort[s]) & (df["condition"] == cdt[c])]
+                    .loc[(df["subject"] == cohort[s])
+                         & (df["condition"] == cdt[c])]
                     .to_numpy()
                 )
                 ax[c, s].plot(time, morder, label=i)
@@ -518,7 +535,8 @@ def plot_rolling_var(df, fpath, momax=10, figname="rolling_var.pdf"):
     plt.savefig(fpath)
 
 
-def plot_rolling_specrad(df, fpath, ncdt=3, momax=10, figname="rolling_specrad.pdf"):
+def plot_rolling_specrad(df, fpath, ncdt=3, momax=10,
+                         figname="rolling_specrad.pdf"):
     """
     Plot spectral radius along rolling window accross all subjects
     """
@@ -532,12 +550,14 @@ def plot_rolling_specrad(df, fpath, ncdt=3, momax=10, figname="rolling_specrad.p
         for s in range(nsub):
             time = (
                 df["time"]
-                .loc[(df["subject"] == cohort[s]) & (df["condition"] == cdt[c])]
+                .loc[(df["subject"] == cohort[s])
+                     & (df["condition"] == cdt[c])]
                 .to_numpy()
             )
             rho = (
                 df["rho"]
-                .loc[(df["subject"] == cohort[s]) & (df["condition"] == cdt[c])]
+                .loc[(df["subject"] == cohort[s])
+                     & (df["condition"] == cdt[c])]
                 .to_numpy()
             )
             ax[c, s].plot(time, rho, label="Spectral radius")
@@ -573,7 +593,8 @@ def sort_populations(populations, order={"R": 0, "F": 1}):
 
 
 def full_stim_multi_pfc(
-    fc, cohort, args, vmin=-3, vmax=3, F="pGC", rotation=90, tau_x=0.5, tau_y=0.8
+    fc, cohort, args, vmin=-3, vmax=3, F="pGC",
+    rotation=90, tau_x=0.5, tau_y=0.8
 ):
     """
     This function plot multitrial GC and MI during full stimulus presentation
@@ -642,10 +663,12 @@ def full_stim_multi_pfc(
 
 
 def full_stim_multi_gfc(
-    fc, cohort, args, vmin=-3, vmax=3, F="gGC", rotation=90, tau_x=0.5, tau_y=0.8
+    fc, cohort, args, vmin=-3, vmax=3,
+    F="gGC", rotation=90, tau_x=0.5, tau_y=0.8
 ):
     """
-    This function plot multitrial group GC and MI during full stimulus presentation
+    This function plot multitrial group GC
+    and MI during full stimulus presentation
     """
     (ncdt, nsub) = fc.shape
     fig, ax = plt.subplots(ncdt - 1, nsub)
@@ -703,10 +726,12 @@ def full_stim_multi_gfc(
 
 # Compute z score of single distirbution
 def single_fc_stat(
-    fc, cohort, subject="DiAs", F="pGC", baseline="Rest", alternative="two-sided"
+    fc, cohort, subject="DiAs",
+    F="pGC", baseline="Rest", alternative="two-sided"
 ):
     """
-    Compare functional connectivity (GC or MI) z score during baseline w.r.t a specific
+    Compare functional connectivity (GC or MI) z score
+    during baseline w.r.t a specific
     condition such as Face or Place presentation.
 
     Parameters:
@@ -757,10 +782,12 @@ def single_fc_stat(
 
 
 def info_flow_stat(
-    fc, cohort, args, subject="DiAs", F="gGC", baseline="Rest", alternative="two-sided"
+    fc, cohort, args,
+    subject="DiAs", F="gGC", baseline="Rest", alternative="two-sided"
 ):
     """
-    Compare functional connectivity (GC or MI) z score during baseline w.r.t a specific
+    Compare functional connectivity (GC or MI) z score
+    during baseline w.r.t a specific
     condition such as Face or Place presentation.
 
     Parameters:
@@ -788,7 +815,8 @@ def info_flow_stat(
     reader = EcogReader(args.data_path, subject=subject)
     # Get R and F index
     df_visual = reader.read_channels_info(fname="visual_channels.csv")
-    populations = parcellation_to_indices(df_visual, parcellation="group", matlab=False)
+    populations = parcellation_to_indices(df_visual,
+                                          parcellation="group", matlab=False)
     populations = list(populations.keys())
     iR = populations.index("R")
     iF = populations.index("F")
@@ -797,7 +825,8 @@ def info_flow_stat(
         # Condition-specific functional connectivity
         f = fc[c, s][F]
         # Compute z score and pvalues of bottum up minus top down
-        z[c], pval[c] = ranksums(f[iF, iR, :], f[iR, iF, :], alternative=alternative)
+        z[c], pval[c] = ranksums(f[iF, iR, :],
+                                 f[iR, iF, :], alternative=alternative)
     rejected, pval_corrected = fdr_correction(pval, alpha=0.05)
     sig = rejected
     return z, sig, pval
@@ -831,7 +860,8 @@ def plot_single_trial_pfc(
     for s in range(nsub):
         subject = cohort[s]
         z, sig, pval = single_fc_stat(
-            fc, cohort, subject=subject, F=F, baseline=baseline, alternative=alternative
+            fc, cohort, subject=subject,
+            F=F, baseline=baseline, alternative=alternative
         )
         (n, n, ncomp) = z.shape
         # Find retinotopic and face channels indices
@@ -914,7 +944,8 @@ def plot_single_trial_gfc(
     for s in range(nsub):
         subject = cohort[s]
         z, sig, pval = single_fc_stat(
-            fc, cohort, subject=subject, F=F, baseline=baseline, alternative=alternative
+            fc, cohort, subject=subject,
+            F=F, baseline=baseline, alternative=alternative
         )
         (n, n, ncomp) = z.shape
 
@@ -1033,6 +1064,3 @@ def plot_multitrial_rolling_fc(fc, figpath, top, F="gGC"):
     plt.tight_layout()
     # Save figure
     plt.savefig(figpath)
-
-
-# %% Plot rolling window single trial fc

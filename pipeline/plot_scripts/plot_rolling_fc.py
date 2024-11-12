@@ -17,24 +17,24 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 
-#%%
+# %%
 
 home = Path.home()
-result_path = Path('../results')
+result_path = Path("../results")
 # List conditions
-conditions = ['Rest', 'Face', 'Place', 'baseline']
-cohort = ['AnRa', 'ArLa', 'DiAs']
+conditions = ["Rest", "Face", "Place", "baseline"]
+cohort = ["AnRa", "ArLa", "DiAs"]
 nsub = len(args.cohort)
 
-#%%
+# %%
 # Set ymax
-top = [6,10,10]
+top = [6, 10, 10]
 # Load functional connectivity matrix
-fname = 'rolling_multi_trial_fc.mat'
+fname = "rolling_multi_trial_fc.mat"
 fc_path = result_path.joinpath(fname)
 fc = loadmat(fc_path)
-fc = fc['dataset']
-figname = 'rolling_multi_trial_fc.png'
-figpath = home.joinpath('PhD','notes','figures')
+fc = fc["dataset"]
+figname = "rolling_multi_trial_fc.png"
+figpath = home.joinpath("PhD", "notes", "figures")
 figpath = figpath.joinpath(figname)
-plot_multitrial_rolling_fc(fc, figpath, top, F='gGC')
+plot_multitrial_rolling_fc(fc, figpath, top, F="gGC")

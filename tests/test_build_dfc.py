@@ -17,79 +17,91 @@ from scipy.io import loadmat
 from pathlib import Path
 
 
-#%% Read ROI and functional connectivity data
+# %% Read ROI and functional connectivity data
 
 reader = EcogReader(args.data_path)
-# Read visual channels 
-df_visual = reader.read_channels_info(fname='visual_channels.csv')
+# Read visual channels
+df_visual = reader.read_channels_info(fname="visual_channels.csv")
 
 # List conditions
-conditions = ['Rest', 'Face', 'Place', 'baseline']
+conditions = ["Rest", "Face", "Place", "baseline"]
 
 # Load functional connectivity matrix
-result_path = Path('../results')
+result_path = Path("../results")
 
-fname = 'pairwise_fc.mat'
+fname = "pairwise_fc.mat"
 fc_path = result_path.joinpath(fname)
 
 fc = loadmat(fc_path)
-fc = fc['dataset']
+fc = fc["dataset"]
 
-#%% Build dataset fc dictionary
+# %% Build dataset fc dictionary
 
- # Shape of functional connectivity dataset.
+# Shape of functional connectivity dataset.
 (ncdt, nsub) = fc.shape
 # Flatten array to build dictionarry
 fc_flat = np.ndarray.flatten(fc.T)
 # Initialise dictionary
-fc_dict = {'subject':[],'condition':[],  'visual_idx':[],'mi':[], 'sig_mi':[],
-           'gc':[], 'sig_gc':[], 'smi':[], 'sgc': [], 'bias':[]}
-subject = [0]*(ncdt*nsub)
-condition = [0]*(ncdt*nsub)
-visual_idx = [0]*(ncdt*nsub)
-mi = [0]*(ncdt*nsub)
-sig_mi = [0]*(ncdt*nsub)
-gc = [0]*(ncdt*nsub)
-sig_gc = [0]*(ncdt*nsub)
-sgc = [0]*(ncdt*nsub)
-smi = [0]*(ncdt*nsub)
-bias = [0]*(ncdt*nsub)
+fc_dict = {
+    "subject": [],
+    "condition": [],
+    "visual_idx": [],
+    "mi": [],
+    "sig_mi": [],
+    "gc": [],
+    "sig_gc": [],
+    "smi": [],
+    "sgc": [],
+    "bias": [],
+}
+subject = [0] * (ncdt * nsub)
+condition = [0] * (ncdt * nsub)
+visual_idx = [0] * (ncdt * nsub)
+mi = [0] * (ncdt * nsub)
+sig_mi = [0] * (ncdt * nsub)
+gc = [0] * (ncdt * nsub)
+sig_gc = [0] * (ncdt * nsub)
+sgc = [0] * (ncdt * nsub)
+smi = [0] * (ncdt * nsub)
+bias = [0] * (ncdt * nsub)
 
 # Build dictionary
-for i in range(ncdt*nsub):
-    subject[i] = fc_flat[i]['subject'][0]
-    condition[i] = fc_flat[i]['condition'][0]
+for i in range(ncdt * nsub):
+    subject[i] = fc_flat[i]["subject"][0]
+    condition[i] = fc_flat[i]["condition"][0]
     # Read visual channels to track visual channels indices
-    data_path = Path('../data')
+    data_path = Path("../data")
     reader = EcogReader(data_path, subject=subject[i])
-    df_visual = reader.read_channels_info(fname='visual_channels.csv')
-    visual_idx[i] = parcellation_to_indices(df_visual,  parcellation='group', matlab=False)
+    df_visual = reader.read_channels_info(fname="visual_channels.csv")
+    visual_idx[i] = parcellation_to_indices(
+        df_visual, parcellation="group", matlab=False
+    )
     # Multitrial MI
-    mi[i] = fc_flat[i]['MI']
+    mi[i] = fc_flat[i]["MI"]
     # MI significance against null
-    sig_mi = fc_flat[i]['sigMI']
+    sig_mi = fc_flat[i]["sigMI"]
     # Multitrial gc
-    gc[i] = fc_flat[i]['F']
+    gc[i] = fc_flat[i]["F"]
     # GC significance against null
-    sig_gc[i] = fc_flat[i]['sigF']
+    sig_gc[i] = fc_flat[i]["sigF"]
     # Sample MI
-    smi[i] = fc_flat[i]['single_MI']
+    smi[i] = fc_flat[i]["single_MI"]
     # Sample GC
-    sgc[i] = fc_flat[i]['single_F']
+    sgc[i] = fc_flat[i]["single_F"]
     # Bias
-    bias[i] = fc_flat[i]['bias']
-    
+    bias[i] = fc_flat[i]["bias"]
 
-fc_dict['subject'] =subject
-fc_dict['condition'] = condition
-fc_dict['visual_idx'] = visual_idx
-fc_dict['mi'] = mi
-fc_dict['sig_mi'] = sig_mi
-fc_dict['gc'] = gc
-fc_dict['sig_gc'] = sig_gc
-fc_dict['smi'] = smi
-fc_dict['sgc'] = sgc 
-fc_dict['bias'] = bias
+
+fc_dict["subject"] = subject
+fc_dict["condition"] = condition
+fc_dict["visual_idx"] = visual_idx
+fc_dict["mi"] = mi
+fc_dict["sig_mi"] = sig_mi
+fc_dict["gc"] = gc
+fc_dict["sig_gc"] = sig_gc
+fc_dict["smi"] = smi
+fc_dict["sgc"] = sgc
+fc_dict["bias"] = bias
 
 # Build dataframe
 dfc = pd.DataFrame.from_dict(fc_dict)
